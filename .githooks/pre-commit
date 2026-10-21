@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Runs the shared check before every commit, whichever agent wrote the code.
+# Enable once per clone: ./scripts/setup.sh
+exec ./scripts/check.sh

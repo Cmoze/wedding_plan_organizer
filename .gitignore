@@ -1,0 +1,23 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Personal agent config
+.claude/settings.local.json
+.cursor/*.local*
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Common build output (trim once the stack is chosen)
+node_modules/
+dist/
+build/
+.next/
+__pycache__/
+.venv/
+*.pyc
+coverage/

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Block force pushes to main.
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" = "refs/heads/main" ] && [ "$remote_sha" != "0000000000000000000000000000000000000000" ]; then
+    if ! git merge-base --is-ancestor "$remote_sha" "$local_sha" 2>/dev/null; then
+      echo "Refusing to push: this would rewrite main (force push). Run 'git pull --rebase' instead." >&2
+      exit 1
+    fi
+  fi
+done
+exit 0

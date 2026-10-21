@@ -1,0 +1,15 @@
+name: CI
+
+# We push straight to main, so CI can't block a bad push, but it flags a break right away.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Add language setup (actions/setup-node, actions/setup-python, ...) once the stack is chosen.
+      - run: ./scripts/check.sh
