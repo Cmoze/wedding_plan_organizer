@@ -8,6 +8,11 @@ Wedding Plan Organizer: a hackathon app for planning a wedding (guests, budget, 
 Three contributors, each using a different coding agent, all pushing directly to `main`.
 Stack: not chosen yet. When it is, update the Commands and Conventions sections below.
 
+## First-time setup (required after cloning)
+- Run `./scripts/setup.sh` once in every new clone. It enables the git hooks (`.githooks/`),
+  sets `pull.rebase=true`, and creates `.env` from `.env.example`.
+- If `git config core.hooksPath` doesn't print `.githooks`, setup hasn't been run: run it before doing anything else.
+
 ## Commands
 - Check everything before finishing: `./scripts/check.sh` (formatter check + lint + typecheck + tests)
 - Install / dev: TBD once the stack is chosen.
