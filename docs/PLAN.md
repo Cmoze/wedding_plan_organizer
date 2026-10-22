@@ -132,8 +132,8 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 - [ ] Update `AGENTS.md`: commands, folder layout, conventions
 
 **Days 2–4: Wedding email inbox**
-- [ ] Choose the inbound provider (Postmark, Mailgun or Resend inbound) and test receiving one email
-  - Chosen: **Resend** (free receiving on a `*.resend.app` address, no domain needed; same account can send later). Test email still to do.
+- [x] Choose the inbound provider (Postmark, Mailgun or Resend inbound) and test receiving one email
+  - Chosen: **Resend** (free receiving, no domain needed; same account can send later). Receiving domain `jorauthook.resend.app`, any address works. Test email to `smith-jones@jorauthook.resend.app` received.
 - [ ] Address scheme: each wedding gets `<slug>@<inbound-domain>`
 - [ ] Webhook route `app/api/inbound-email`: verify the provider's signature, find the wedding by address, save to `emails`, store attachments in Supabase Storage
 - [ ] Inbox screen (pair with A): list, read view, "link to vendor/task/budget item" action
