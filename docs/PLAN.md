@@ -46,7 +46,8 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 *Owns: `app/` pages, `components/`, layout, styling, the overall user experience.*
 
 **Days 1–2: App shell and design basics**
-- [ ] Set up Next.js (App Router) + TypeScript + Tailwind + shadcn/ui (coordinate with C, who sets up the repo)
+- [x] Set up Next.js (App Router) + TypeScript + Tailwind + shadcn/ui (coordinate with C, who sets up the repo)
+  - Done by C. `app/` and `components/` already exist with create-next-app / shadcn starter files (`app/page.tsx`, `app/layout.tsx`, `components/ui/button.tsx`). They're placeholders: replace them freely.
 - [ ] App shell: navigation with Home, Tasks, Calendar, Budget, Guests, Ideas, Inbox; works on phones (bottom tab bar or hamburger menu)
 - [ ] Design basics for parents: large base font (≥16–18px), high contrast, big tap targets, plain labels
 - [ ] Auth screens: sign up, log in, "create your wedding" (names, date, rough budget, guest count)
