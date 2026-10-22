@@ -6,7 +6,10 @@ This is the single source of truth. Other agent files only point here.
 ## Project
 Wedding Plan Organizer: a hackathon app for planning a wedding (guests, budget, vendors, timeline).
 Three contributors, each using a different coding agent, all pushing directly to `main`.
-Stack: not chosen yet. When it is, update the Commands and Conventions sections below.
+Stack: responsive web app. Next.js (App Router) + TypeScript + Tailwind + shadcn/ui, Supabase
+(Postgres, Auth, Storage, Realtime), deployed on Vercel. Claude API for the AI helper.
+The week plan, feature scope and per-role to-do lists live in `docs/PLAN.md`. Read it before starting a task,
+and check items off there when you finish them.
 
 ## First-time setup (required after cloning)
 - Run `./scripts/setup.sh` once in every new clone. It enables the git hooks (`.githooks/`),
@@ -32,9 +35,10 @@ Stack: not chosen yet. When it is, update the Commands and Conventions sections 
 - Keep changes small. If a task needs a huge diff, stop and propose splitting it.
 
 ## Ownership (avoid editing the same files at once)
-- Contributor A: TBD (e.g. frontend)
-- Contributor B: TBD (e.g. API / backend)
-- Contributor C: TBD (e.g. data / integrations)
+- Role A, Frontend / UI (name: TBD): `app/` pages, `components/`, layout, styling.
+- Role B, Data model + auth + roles (name: TBD): `supabase/migrations/`, RLS policies, generated types, `lib/db/`.
+- Role C, Integrations (name: TBD): repo tooling, Vercel, `app/api/` webhook and AI routes, `lib/email/`, `lib/ai/`.
+- Changing the database schema is B's call; propose changes to B instead of editing migrations yourself.
 
 ## Conventions
 - Formatting follows `.editorconfig`; add the stack's formatter config when chosen.
