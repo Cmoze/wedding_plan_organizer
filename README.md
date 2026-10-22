@@ -2,6 +2,8 @@
 
 Hackathon project. Three contributors, three different coding agents, one shared rulebook: [AGENTS.md](AGENTS.md).
 
+Live app: https://wedding-plan-organizer.vercel.app (every push to `main` deploys automatically).
+
 ## First-time setup
 ```bash
 git clone https://github.com/Cmoze/wedding_plan_organizer.git

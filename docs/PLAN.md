@@ -128,6 +128,7 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 - [x] Fill in `scripts/check.sh`: Prettier check, ESLint, `tsc --noEmit`, Vitest
 - [ ] `.env.example` with every variable name (Supabase URL/keys, email provider key, Anthropic key); real values only in `.env` and Vercel settings
 - [ ] Connect Vercel to the repo: automatic deploys from `main`, preview URLs, environment variables set
+  - Connected: https://wedding-plan-organizer.vercel.app (project `cmoze/wedding-plan-organizer`). Environment variables still to add once Supabase exists.
 - [ ] Update `AGENTS.md`: commands, folder layout, conventions
 
 **Days 2–4: Wedding email inbox**

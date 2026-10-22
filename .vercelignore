@@ -1,0 +1,4 @@
+# Keep local secrets out of CLI deploys (Vercel gets env vars from project settings)
+.env
+.env.*
+!.env.example
