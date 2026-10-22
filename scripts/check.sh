@@ -1,19 +1,23 @@
 #!/usr/bin/env bash
 # Single check command for humans, agents, the pre-commit hook and CI.
-# Fill in the steps once the stack is chosen.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+if [ ! -d node_modules ]; then
+  echo "node_modules is missing: run 'npm install' first." >&2
+  exit 1
+fi
+
 echo "==> format check"
-# e.g. npx prettier --check .   |   ruff format --check .
+npx prettier --check .
 
 echo "==> lint"
-# e.g. npx eslint .             |   ruff check .
+npx eslint .
 
 echo "==> typecheck"
-# e.g. npx tsc --noEmit         |   mypy .
+npx next typegen >/dev/null && npx tsc --noEmit
 
 echo "==> tests"
-# e.g. npm test                 |   pytest
+npx vitest run
 
 echo "All checks passed."

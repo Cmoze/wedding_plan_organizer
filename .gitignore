@@ -21,3 +21,10 @@ __pycache__/
 .venv/
 *.pyc
 coverage/
+
+# Next.js / Vercel
+/out/
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+*.pem

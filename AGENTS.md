@@ -18,7 +18,10 @@ and check items off there when you finish them.
 
 ## Commands
 - Check everything before finishing: `./scripts/check.sh` (formatter check + lint + typecheck + tests)
-- Install / dev: TBD once the stack is chosen.
+- Install: `npm install` (run again after any pull that changes `package.json`)
+- Dev server: `npm run dev` (http://localhost:3000)
+- Auto-format: `npm run format`. Single steps: `npm run lint`, `npm run typecheck`, `npm test`
+- Add a shadcn component: `npx shadcn@latest add <name>` (lands in `components/ui/`)
 
 ## Git workflow (we push straight to main)
 - Run `git pull --rebase` before starting work and again right before pushing.
@@ -41,8 +44,21 @@ and check items off there when you finish them.
 - Changing the database schema is B's call; propose changes to B instead of editing migrations yourself.
 
 ## Conventions
-- Formatting follows `.editorconfig`; add the stack's formatter config when chosen.
-- Folder layout, naming, error handling, testing patterns: TBD.
+- Formatting: Prettier (with the Tailwind class-sorting plugin) plus `.editorconfig`. Markdown is not auto-formatted.
+- Imports use the `@/` alias for the repo root (`@/components/ui/button`, `@/lib/utils`).
+- Tests: Vitest, files named `*.test.ts(x)`, kept next to the code or in `tests/`.
+- Folder layout: `app/` routes, `components/` (shadcn primitives in `components/ui/`), `lib/` server and shared code.
+- Naming, error handling: TBD.
 
 ## Lessons learned
 <!-- When an agent makes the same mistake twice, add one line here. -->
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
