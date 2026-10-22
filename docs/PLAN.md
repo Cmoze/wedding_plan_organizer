@@ -123,8 +123,8 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 *Owns: repo setup/tooling, `app/api/` routes for webhooks and AI, `lib/email/`, `lib/ai/`, environment variables.*
 
 **Day 1: Foundation (unblocks everyone)**
-- [ ] Set up the Next.js project in the repo (coordinate with A on structure)
-- [ ] Fill in `scripts/check.sh`: Prettier check, ESLint, `tsc --noEmit`, Vitest
+- [x] Set up the Next.js project in the repo (coordinate with A on structure)
+- [x] Fill in `scripts/check.sh`: Prettier check, ESLint, `tsc --noEmit`, Vitest
 - [ ] `.env.example` with every variable name (Supabase URL/keys, email provider key, Anthropic key); real values only in `.env` and Vercel settings
 - [ ] Connect Vercel to the repo: automatic deploys from `main`, preview URLs, environment variables set
 - [ ] Update `AGENTS.md`: commands, folder layout, conventions
