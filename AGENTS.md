@@ -35,9 +35,9 @@ and check items off there when you finish them.
 - Keep changes small. If a task needs a huge diff, stop and propose splitting it.
 
 ## Ownership (avoid editing the same files at once)
-- Role A, Frontend / UI (name: TBD): `app/` pages, `components/`, layout, styling.
-- Role B, Data model + auth + roles (name: TBD): `supabase/migrations/`, RLS policies, generated types, `lib/db/`.
-- Role C, Integrations (name: TBD): repo tooling, Vercel, `app/api/` webhook and AI routes, `lib/email/`, `lib/ai/`.
+- Role A, Frontend / UI (Kai): `app/` pages, `components/`, layout, styling.
+- Role B, Data model + auth + roles (Caleb): `supabase/migrations/`, RLS policies, generated types, `lib/db/`.
+- Role C, Integrations (Carter): repo tooling, Vercel, `app/api/` webhook and AI routes, `lib/email/`, `lib/ai/`.
 - Changing the database schema is B's call; propose changes to B instead of editing migrations yourself.
 
 ## Conventions

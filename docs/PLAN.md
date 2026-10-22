@@ -42,7 +42,7 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 
 ---
 
-## Role A: Frontend / UI
+## Role A (Kai): Frontend / UI
 *Owns: `app/` pages, `components/`, layout, styling, the overall user experience.*
 
 **Days 1–2: App shell and design basics**
@@ -74,7 +74,7 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 
 ---
 
-## Role B: Data model, auth and roles
+## Role B (Caleb): Data model, auth and roles
 *Owns: `supabase/migrations/`, Row Level Security policies, generated types, data-access functions in `lib/db/`.*
 
 **Day 1: Data model (top priority, everyone waits on this)**
@@ -119,7 +119,7 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 
 ---
 
-## Role C: Integrations (deploy, email inbox, AI)
+## Role C (Carter): Integrations (deploy, email inbox, AI)
 *Owns: repo setup/tooling, `app/api/` routes for webhooks and AI, `lib/email/`, `lib/ai/`, environment variables.*
 
 **Day 1: Foundation (unblocks everyone)**
