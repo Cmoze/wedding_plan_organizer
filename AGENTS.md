@@ -43,6 +43,18 @@ and check items off there when you finish them.
 - Role C, Integrations (Carter): repo tooling, Vercel, `app/api/` webhook and AI routes, `lib/email/`, `lib/ai/`.
 - Changing the database schema is B's call; propose changes to B instead of editing migrations yourself.
 
+## Backend collaboration (Supabase)
+- Everyone uses one shared Supabase dev project; put its URL and keys in your own `.env`.
+- Schema changes live only as migration files in `supabase/migrations/`. Only B (Caleb) writes them and
+  runs `supabase db push`, then regenerates `lib/db/types.ts` and pushes migrations + types together.
+- Need a table, column, bucket or policy? Write down what you need (fields, who can read/write) and ask B,
+  or open a GitHub issue. Don't edit migrations or RLS yourself.
+- App code reads and writes data through functions in `lib/db/`, not ad-hoc queries in pages or routes.
+  If a function you need doesn't exist yet, stub it with the agreed signature, mark it `// TODO(B)`, and tell B.
+- The service-role key is server-only (webhooks, AI routes). Never import it in client components or
+  expose it with a `NEXT_PUBLIC_` prefix. Tell B which routes use it, since they bypass RLS.
+- After pulling new migrations or types, run `npm install` and restart `npm run dev`.
+
 ## Conventions
 - Formatting: Prettier (with the Tailwind class-sorting plugin) plus `.editorconfig`. Markdown is not auto-formatted.
 - Imports use the `@/` alias for the repo root (`@/components/ui/button`, `@/lib/utils`).
