@@ -1,14 +1,17 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import {
   CalendarDays,
   CheckSquare,
   Heart,
   Home,
   Inbox,
+  LogOut,
   Menu,
   UsersRound,
   Wallet,
 } from "lucide-react";
+import { signOutAction } from "@/app/actions";
 
 const sections = [
   { id: "home", label: "Home", icon: Home },
@@ -56,8 +59,14 @@ const sectionCopy: Record<SectionId, { title: string; description: string }> = {
 
 export function WorkspaceShell({
   activeSection,
+  account,
+  children,
 }: {
   activeSection: SectionId;
+  /** Shown in the header once the wedding has loaded. */
+  account?: { weddingTitle: string; userName: string };
+  /** The section's content; without it the section shows its placeholder. */
+  children?: ReactNode;
 }) {
   const current = sectionCopy[activeSection];
 
@@ -98,11 +107,31 @@ export function WorkspaceShell({
             <p className="hidden text-sm font-medium text-[#617168] lg:block">
               A little progress, shared by everyone.
             </p>
-            <div className="flex h-12 items-center gap-2 rounded-full border border-[#e1e3dc] bg-white px-4 text-sm font-semibold">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#e6eee8] text-xs text-[#294b40]">
-                W
-              </span>
-              Wedding team
+            <div className="flex items-center gap-2">
+              <div className="flex h-12 items-center gap-2 rounded-full border border-[#e1e3dc] bg-white px-4 text-sm font-semibold">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#e6eee8] text-xs text-[#294b40]">
+                  {(account?.userName || "W").charAt(0).toUpperCase()}
+                </span>
+                <span className="flex flex-col leading-tight">
+                  <span>{account?.weddingTitle ?? "Wedding team"}</span>
+                  {account?.userName && (
+                    <span className="text-xs font-normal text-[#66756c]">
+                      {account.userName}
+                    </span>
+                  )}
+                </span>
+              </div>
+              {account && (
+                <form action={signOutAction}>
+                  <button
+                    type="submit"
+                    aria-label="Log out"
+                    className="flex h-12 w-12 items-center justify-center rounded-full border border-[#e1e3dc] bg-white text-[#294b40] hover:bg-[#f1f3ee] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#426c5a]"
+                  >
+                    <LogOut className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                </form>
+              )}
             </div>
           </header>
 
@@ -118,11 +147,12 @@ export function WorkspaceShell({
                 {current.description}
               </p>
 
-              {activeSection === "home" ? (
-                <HomeWelcome />
-              ) : (
-                <SectionWelcome section={activeSection} />
-              )}
+              {children ??
+                (activeSection === "home" ? (
+                  <HomeWelcome />
+                ) : (
+                  <SectionWelcome section={activeSection} />
+                ))}
             </div>
           </main>
         </div>
