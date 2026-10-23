@@ -61,11 +61,14 @@ describe.skipIf(!process.env.RUN_DB_TESTS)(
     let couple: Db, planner: Db, helper: Db, outsider: Db;
     let weddingId: string;
     let outsiderId: string;
-    const admin = createClient<Database>(url, serviceKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    // Created in beforeAll, not here: describe bodies run even when skipped, and
+    // createClient throws without a URL (so `npm test` failed on machines without .env values).
+    let admin: Db;
 
     beforeAll(async () => {
+      admin = createClient<Database>(url, serviceKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      }) as Db;
       [couple, planner, helper] = await Promise.all([
         signIn("couple@demo.wedding"),
         signIn("planner@demo.wedding"),
