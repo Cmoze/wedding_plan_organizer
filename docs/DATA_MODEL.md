@@ -108,3 +108,4 @@ only webhooks and AI routes may use it.
 
 `npm run db:seed` creates a demo wedding with three logins (password `demo-password-123`):
 `couple@demo.wedding`, `planner@demo.wedding`, `helper@demo.wedding`. `npm run db:seed -- --reset` wipes and recreates it.
+`npm run test:db` then signs in as each role and checks the permissions above against the dev project.

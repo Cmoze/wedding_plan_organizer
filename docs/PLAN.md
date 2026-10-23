@@ -38,6 +38,7 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 - [ ] Create the Supabase project (dev) and the Vercel project; add all three people to both
   - Supabase dev project created: `wedding-plan-organizer-dev` (ref `iafqkveouictofowncpz`, us-west-1), URL `https://iafqkveouictofowncpz.supabase.co`. Repo is linked (`supabase/config.toml`); regenerate types with `npm run db:types`. Kai and Carter still need to be invited to the Supabase org.
 - [ ] Agree on the data model (B drafts it, everyone reviews)
+  - Draft is in `docs/DATA_MODEL.md` (tables, who-can-do-what, how to call `lib/db/`). Review it and tell Caleb what to change.
 - [ ] Write the demo script together (the 2–3 minute story you'll show the judges)
 - [ ] Fill in names in the Ownership section of `AGENTS.md`
 
@@ -81,6 +82,7 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 
 **Day 1: Data model (top priority, everyone waits on this)**
 - [ ] Draft the tables and relationships, share them, get sign-off from A and C:
+  - Drafted and built: `docs/DATA_MODEL.md`. Still waiting on sign-off; changes go in new migrations.
   - `weddings` (names, date, budget total, inbound email slug)
   - `members` (user ↔ wedding, role: couple / planner / helper, display name)
   - `invites` (wedding, token, role, expires)
@@ -93,31 +95,46 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
   - `emails` (from, subject, body, received at, linked items)
   - `activity` (who did what, when)
   - `registry_links` (store name, URL)
-- [ ] Decide the **checklist template** format (seed table or JSON file of ~40 standard tasks with "months before wedding" offsets)
+- [x] Decide the **checklist template** format (seed table or JSON file of ~40 standard tasks with "months before wedding" offsets)
+  - Seeded table `checklist_templates` (41 tasks).
 
 **Days 1–2: Database and security**
-- [ ] Migrations for every table, with foreign keys, indexes on `wedding_id`, and `created_at`/`updated_at`
-- [ ] **Row Level Security on every table**: only members of a wedding can see its rows; helpers can read, comment and update only tasks assigned to them; couple/planner can edit everything
-- [ ] Generate TypeScript types (`supabase gen types`) and commit them; rerun after every schema change
-- [ ] Seed script with a realistic demo wedding (guests, tasks, budget, ideas), used by A's screens and the demo
+- [x] Migrations for every table, with foreign keys, indexes on `wedding_id`, and `created_at`/`updated_at`
+- [x] **Row Level Security on every table**: only members of a wedding can see its rows; helpers can read, comment and update only tasks assigned to them; couple/planner can edit everything
+- [x] Generate TypeScript types (`supabase gen types`) and commit them; rerun after every schema change
+  - `npm run db:types`
+- [x] Seed script with a realistic demo wedding (guests, tasks, budget, ideas), used by A's screens and the demo
+  - `npm run db:seed` (or `-- --reset`). Logins: `couple@demo.wedding`, `planner@demo.wedding`, `helper@demo.wedding`, password `demo-password-123`.
 
 **Days 2–3: Auth and collaboration plumbing**
-- [ ] Supabase Auth with email + password and/or magic link (magic link is easiest for parents)
-- [ ] "Create wedding" function: makes the wedding, adds the creator as `couple`, copies the checklist template into `tasks` with due dates calculated from the wedding date
-- [ ] Invite flow: create token → open link → sign up/log in → join with that role
-- [ ] Storage bucket for idea photos, with access rules matching table permissions
+- [x] Supabase Auth with email + password and/or magic link (magic link is easiest for parents)
+  - Email + password only. `signUp` / `signIn` / `signOut` / `getCurrentUser` in `lib/db/auth.ts`; `proxy.ts` keeps sessions fresh.
+- [x] "Create wedding" function: makes the wedding, adds the creator as `couple`, copies the checklist template into `tasks` with due dates calculated from the wedding date
+  - `createWedding()` in `lib/db/weddings.ts`.
+- [x] Invite flow: create token → open link → sign up/log in → join with that role
+  - `createInvite`, `inviteUrl` (links to `/invite/<token>`; A builds that page), `getInvitePreview`, `acceptInvite` in `lib/db/invites.ts`.
+- [x] Storage bucket for idea photos, with access rules matching table permissions
+  - `idea-photos` (plus `email-attachments` for C's webhook). `uploadIdeaPhoto`, `getIdeaPhotoUrls` in `lib/db/ideas.ts`.
 
 **Days 3–5: Data-access layer and features**
-- [ ] `lib/db/` functions A can call: `getTasks`, `createTask`, `updateTaskStatus`, `getBudgetSummary`, `getCalendarItems` (merges tasks, events and budget due dates), etc.
-- [ ] **CSV guest import**: parse, map columns, group by address into households, preview before saving
-- [ ] Guest list CSV export (for envelopes / mail merge)
-- [ ] Activity logging (database triggers or calls inside each write function)
-- [ ] Realtime subscriptions for tasks and comments, so collaborators see changes live
+- [x] `lib/db/` functions A can call: `getTasks`, `createTask`, `updateTaskStatus`, `getBudgetSummary`, `getCalendarItems` (merges tasks, events and budget due dates), etc.
+  - Overview and usage in `docs/DATA_MODEL.md`.
+- [x] **CSV guest import**: parse, map columns, group by address into households, preview before saving
+  - `parseGuestCsv` (preview, in `lib/db/guest-csv.ts`) then `importGuests` (save, in `lib/db/guests.ts`). A builds the upload + preview screen.
+- [x] Guest list CSV export (for envelopes / mail merge)
+  - `guestListToCsv` (per envelope or per guest).
+- [x] Activity logging (database triggers or calls inside each write function)
+  - Database triggers; read with `getActivity` / `describeActivity`.
+- [x] Realtime subscriptions for tasks and comments, so collaborators see changes live
+  - `subscribeToWedding` in `lib/db/realtime.ts` (tasks, comments, activity).
 
 **Days 6–7: Hardening**
-- [ ] Log in as each role and confirm permissions block what they should
-- [ ] Run Supabase security/performance advisors and fix what they flag
+- [x] Log in as each role and confirm permissions block what they should
+  - `npm run test:db` (14 checks against the dev project; run after `npm run db:seed -- --reset`).
+- [x] Run Supabase security/performance advisors and fix what they flag
+  - Remaining warnings are intentional (`create_wedding`, `accept_invite`, `get_invite` are callable on purpose and check the caller themselves) plus "leaked password protection", a dashboard setting.
 - [ ] Reset and reseed the demo data before presenting
+  - Run `npm run db:seed -- --reset` right before the demo.
 
 ---
 

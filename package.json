@@ -12,6 +12,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:db": "RUN_DB_TESTS=1 node --env-file=.env node_modules/vitest/vitest.mjs run tests/permissions.db.test.ts",
     "db:seed": "node --env-file=.env scripts/seed.mts",
     "db:types": "supabase gen types typescript --linked --schema public > lib/db/types.ts && prettier --write lib/db/types.ts"
   },
