@@ -22,6 +22,12 @@ and check items off there when you finish them.
 - Dev server: `npm run dev` (http://localhost:3000)
 - Auto-format: `npm run format`. Single steps: `npm run lint`, `npm run typecheck`, `npm test`
 - Add a shadcn component: `npx shadcn@latest add <name>` (lands in `components/ui/`)
+- Production build (what Vercel runs): `npm run build`
+- Demo data in the shared dev project: `npm run db:seed` (`-- --reset` to recreate it)
+- Per-role RLS tests against the dev project (not part of `npm test`): `npm run test:db`
+- Regenerate DB types (B only, after a migration): `npm run db:types`
+- Env vars: local values in `.env`; deployed values in Vercel (`vercel env ls`, `vercel env add <NAME> <env>`).
+  When you add a variable, add its name to `.env.example` and set it in Vercel for production, preview and development.
 
 ## Git workflow (we push straight to main)
 - Run `git pull --rebase` before starting work and again right before pushing.
@@ -59,8 +65,23 @@ and check items off there when you finish them.
 - Formatting: Prettier (with the Tailwind class-sorting plugin) plus `.editorconfig`. Markdown is not auto-formatted.
 - Imports use the `@/` alias for the repo root (`@/components/ui/button`, `@/lib/utils`).
 - Tests: Vitest, files named `*.test.ts(x)`, kept next to the code or in `tests/`.
-- Folder layout: `app/` routes, `components/` (shadcn primitives in `components/ui/`), `lib/` server and shared code.
-- Naming, error handling: TBD.
+- Folder layout:
+  - `app/`: routes (App Router). `app/api/`: webhook and AI route handlers.
+  - `components/`: app components; shadcn primitives in `components/ui/`.
+  - `lib/db/`: data access, one file per area (`guests.ts`, `budget.ts`, ...); `lib/db/types.ts` is generated, don't edit.
+  - `lib/db/supabase/`: client factories. `browser.ts` for Client Components, `server.ts` for Server
+    Components/Actions/Route Handlers, `admin.ts` (service role, server-only) for webhooks and AI routes.
+  - `lib/email/`, `lib/ai/`: inbound email and Claude helpers. `lib/utils.ts`: shared helpers (`cn`).
+  - `proxy.ts`: Next 16's replacement for `middleware.ts`; refreshes the Supabase session.
+  - `supabase/migrations/`: schema (B only). `scripts/`: setup, check, seed. `docs/`: plan and data model.
+  - `tests/`: cross-cutting tests; `*.db.test.ts` hit the real dev project and only run via `npm run test:db`.
+- Naming: files kebab-case (`guest-csv.ts`), React components PascalCase, functions camelCase,
+  DB columns snake_case (keep them as-is in TS; don't remap).
+- Data functions take the Supabase client as the first argument (`getGuestList(db, weddingId)`),
+  so the same function works in the browser, on the server and in scripts.
+- Error handling: `lib/db/` wraps Supabase results in `unwrap()`, which throws a `DbError`. Callers catch
+  where they can show a message (UI) or return a status (API routes); don't swallow errors silently.
+- Server-only modules start with `import "server-only";`.
 
 ## Lessons learned
 <!-- When an agent makes the same mistake twice, add one line here. -->
