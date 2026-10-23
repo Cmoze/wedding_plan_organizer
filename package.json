@@ -11,7 +11,8 @@
     "format:check": "prettier --check .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:types": "supabase gen types typescript --linked --schema public > lib/db/types.ts && prettier --write lib/db/types.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

@@ -4,5 +4,7 @@ coverage/
 node_modules/
 package-lock.json
 next-env.d.ts
+supabase/.temp/
+supabase/.branches/
 # Markdown is hand-edited by everyone; skip it to avoid churn and merge conflicts
 *.md

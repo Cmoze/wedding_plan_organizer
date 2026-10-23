@@ -36,6 +36,7 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 ## Day 0: All three together (about 1 hour)
 - [ ] Each person clones the repo and runs `./scripts/setup.sh`
 - [ ] Create the Supabase project (dev) and the Vercel project; add all three people to both
+  - Supabase dev project created: `wedding-plan-organizer-dev` (ref `iafqkveouictofowncpz`, us-west-1), URL `https://iafqkveouictofowncpz.supabase.co`. Repo is linked (`supabase/config.toml`); regenerate types with `npm run db:types`. Kai and Carter still need to be invited to the Supabase org.
 - [ ] Agree on the data model (B drafts it, everyone reviews)
 - [ ] Write the demo script together (the 2–3 minute story you'll show the judges)
 - [ ] Fill in names in the Ownership section of `AGENTS.md`
