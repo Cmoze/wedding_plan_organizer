@@ -1,0 +1,12 @@
+# Force LF everywhere so Prettier (endOfLine: lf) passes on every OS, including
+# Windows clones with core.autocrlf=true.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
