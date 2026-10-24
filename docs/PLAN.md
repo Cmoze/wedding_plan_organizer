@@ -156,13 +156,14 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
   - Slug is `weddings.email_slug`; `+tags` are ignored (`maya-jordan+venue@…` reaches `maya-jordan`). Parsing in `lib/email/address.ts`.
 - [x] Webhook route `app/api/inbound-email`: verify the provider's signature, find the wedding by address, save to `emails`, store attachments in Supabase Storage
   - Live and tested end to end (2026-10-23): Gmail → `maya-jordan@jorauthook.resend.app` → Resend webhook (200) → row in `emails`. Resend webhook registered for `email.received`.
-- [ ] Inbox screen (pair with A): list, read view, "link to vendor/task/budget item" action
-- [ ] Forwarding instructions shown in the app ("Forward any vendor email to smith-jones@…")
+- [x] Inbox screen (pair with A): list, read view, "link to vendor/task/budget item" action
+  - `components/wedding/sections/inbox.tsx` (`/?section=inbox`, `&email=<id>` for one email). Emails get linked when an AI suggestion is accepted; there's no manual "link to existing item" picker yet.
+- [x] Forwarding instructions shown in the app ("Forward any vendor email to smith-jones@…")
 - [ ] **Stretch:** sending/replying (needs a domain plus SPF/DKIM setup; only if time allows)
 
 **Days 4–6: AI helper (Claude API)**
 - [x] Server-only `lib/ai/` wrapper; the API key is never sent to the browser
-- [ ] **Email → actions** (API done: `POST /api/ai/email-actions`; UI pending with A): pull out dates, amounts, vendor names and to-dos from an incoming email; show "Add $500 deposit due Nov 3 to budget + calendar?" with accept/dismiss
+- [x] **Email → actions** (`POST /api/ai/email-actions`; UI is the "Add this to your plan" card on each inbox email): pull out dates, amounts, vendor names and to-dos from an incoming email; show "Add $500 deposit due Nov 3 to budget + calendar?" with accept/dismiss
 - [ ] **Personalized checklist** (API done: `POST /api/ai/checklist`; UI pending with A): tweak the template based on date, guest count and budget
 - [ ] **"What should we do this week?"** (API done: `GET /api/ai/weekly-summary`; UI pending with A) summary on the dashboard, built from overdue and upcoming tasks
 - [ ] **Stretch:** photo of a handwritten list → guests or tasks, with a preview before saving

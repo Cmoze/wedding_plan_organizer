@@ -8,6 +8,7 @@ import { BudgetSection } from "@/components/wedding/sections/budget";
 import { CalendarSection } from "@/components/wedding/sections/calendar";
 import { ChecklistSection } from "@/components/wedding/sections/checklist";
 import { IdeasSection } from "@/components/wedding/sections/ideas";
+import { InboxSection } from "@/components/wedding/sections/inbox";
 import { getCurrentUser } from "@/lib/db/auth";
 import { toDateString } from "@/lib/db/shared";
 import { createClient } from "@/lib/db/supabase/server";
@@ -72,6 +73,7 @@ async function SectionWorkspace({
     calendar: <CalendarSection ctx={ctx} month={param("month")} />,
     budget: <BudgetSection ctx={ctx} />,
     ideas: <IdeasSection ctx={ctx} boardId={param("board")} />,
+    inbox: <InboxSection ctx={ctx} emailId={param("email")} />,
   };
 
   return (

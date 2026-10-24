@@ -9,6 +9,7 @@ import {
   updateBudgetItem,
 } from "@/lib/db/budget";
 import { addComment } from "@/lib/db/comments";
+import { deleteEmail } from "@/lib/db/emails";
 import { createEvent, deleteEvent } from "@/lib/db/events";
 import {
   addReaction,
@@ -277,4 +278,12 @@ export async function addIdeaCommentAction(form: FormData) {
     required(form, "body"),
   );
   refresh();
+}
+
+// inbox -----------------------------------------------------------------------
+
+export async function deleteEmailAction(form: FormData) {
+  const db = await signedInDb();
+  await deleteEmail(db, required(form, "emailId"));
+  redirect("/?section=inbox");
 }
