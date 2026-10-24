@@ -42,7 +42,7 @@ Every table except `checklist_templates` has `id uuid`, `wedding_id`, `created_a
 | `tasks` | `title`, `notes`, `category`, `due_date`, `months_before`, `status` (`todo` / `in_progress` / `done` / `booked`), `assignee_id` (a member), `vendor_id`, `completed_at`, `template_id` |
 | `events` | `title`, `description`, `starts_at`, `ends_at`, `all_day`, `location` |
 | `vendors` | `name`, `type`, `contact_name`, `phone`, `email`, `website`, `status` (`considering` / `contacted` / `booked` / `declined`), `notes` |
-| `budget_items` | `category`, `description`, `estimated`, `actual`, `paid`, `due_date`, `vendor_id` |
+| `budget_items` | `category`, `description`, `estimated`, `actual`, `paid`, `due_date`, `vendor_id`, `task_id` (the task whose cost this is; at most one expense per task) |
 | `households` | `name` (as written on the envelope), address fields, `side` (`partner1` / `partner2` / `both`), `notes` |
 | `guests` | `household_id`, `first_name`, `last_name`, `email`, `phone`, `rsvp` (`pending` / `attending` / `declined`), `meal_choice`, `plus_one_allowed`, `is_child` |
 | `idea_boards` | `title`, `category` |

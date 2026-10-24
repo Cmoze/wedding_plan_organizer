@@ -167,7 +167,7 @@ export function NewWeddingForm() {
       </div>
       <Field
         label="Wedding date"
-        hint="A guess is fine. Checklist due dates count back from it."
+        hint="A guess is fine. You can leave it blank for now."
       >
         <input name="weddingDate" type="date" className={inputClass} />
       </Field>

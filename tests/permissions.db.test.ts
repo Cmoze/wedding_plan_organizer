@@ -4,7 +4,11 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { getBudgetSummary } from "@/lib/db/budget";
+import {
+  deleteBudgetItem,
+  getBudgetItems,
+  getBudgetSummary,
+} from "@/lib/db/budget";
 import { getCalendarItems } from "@/lib/db/calendar";
 import { addComment, deleteComment } from "@/lib/db/comments";
 import { getEmails } from "@/lib/db/emails";
@@ -25,8 +29,14 @@ import {
   listInvites,
 } from "@/lib/db/invites";
 import type { Db } from "@/lib/db/shared";
-import { createTask, deleteTask, getTasks, updateTask } from "@/lib/db/tasks";
-import { createVendor } from "@/lib/db/vendors";
+import {
+  createTask,
+  deleteTask,
+  finishTaskWithDetails,
+  getTasks,
+  updateTask,
+} from "@/lib/db/tasks";
+import { createVendor, deleteVendor } from "@/lib/db/vendors";
 import {
   getMembers,
   getMyMembership,
@@ -199,6 +209,41 @@ describe.skipIf(!process.env.RUN_DB_TESTS)(
           title: "Order favors",
         });
         await deleteTask(planner, task.id);
+      });
+
+      it("finishes a task with details that land in the budget once", async () => {
+        const task = await createTask(planner, weddingId, {
+          title: "Book the photographer",
+          category: "Vendors",
+        });
+        const all = await getTasks(planner, weddingId);
+        expect(Math.max(...all.map((t) => t.sort_order))).toBe(task.sort_order);
+
+        const done = await finishTaskWithDetails(planner, task.id, {
+          name: "Lens & Light",
+          cost: 3200,
+          link: "https://example.com",
+        });
+        expect(done.status).toBe("done");
+        expect(done.vendor_id).not.toBeNull();
+        await finishTaskWithDetails(planner, task.id, {
+          name: "Lens & Light",
+          cost: 3500,
+        });
+        const items = (await getBudgetItems(planner, weddingId)).filter(
+          (b) => b.task_id === task.id,
+        );
+        expect(items).toHaveLength(1);
+        expect(items[0]).toMatchObject({
+          category: "Photography",
+          description: "Lens & Light",
+          actual: 3500,
+          vendor_id: done.vendor_id,
+        });
+
+        await deleteBudgetItem(planner, items[0].id);
+        await deleteTask(planner, task.id);
+        await deleteVendor(planner, done.vendor_id!);
       });
 
       it("can invite helpers but not the couple, and can't change roles", async () => {

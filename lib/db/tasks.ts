@@ -71,15 +71,28 @@ export async function getTask(db: Db, taskId: string): Promise<Task> {
   return unwrap(await db.from("tasks").select("*").eq("id", taskId).single());
 }
 
+/** New tasks go to the end of the plan unless `sort_order` says otherwise. */
 export async function createTask(
   db: Db,
   weddingId: string,
   input: NewRow<"tasks">,
 ): Promise<Task> {
+  let sortOrder = input.sort_order;
+  if (sortOrder === undefined) {
+    const last = unwrap(
+      await db
+        .from("tasks")
+        .select("sort_order")
+        .eq("wedding_id", weddingId)
+        .order("sort_order", { ascending: false })
+        .limit(1),
+    );
+    sortOrder = (last[0]?.sort_order ?? 0) + 1;
+  }
   return unwrap(
     await db
       .from("tasks")
-      .insert({ ...input, wedding_id: weddingId })
+      .insert({ ...input, wedding_id: weddingId, sort_order: sortOrder })
       .select()
       .single(),
   );
@@ -110,47 +123,130 @@ export async function deleteTask(db: Db, taskId: string): Promise<void> {
   unwrap(await db.from("tasks").delete().eq("id", taskId));
 }
 
-export const TIMEFRAMES = [
-  { label: "12+ months out", minMonths: 12 },
-  { label: "9 to 12 months out", minMonths: 9 },
-  { label: "6 to 9 months out", minMonths: 6 },
-  { label: "3 to 6 months out", minMonths: 3 },
-  { label: "1 to 3 months out", minMonths: 1 },
-  { label: "Final month", minMonths: 0.25 },
-  { label: "Final week", minMonths: 0 },
-] as const;
-
-const DAYS_PER_MONTH = 30.44;
-
-function monthsBefore(task: Task, weddingDate: string | null): number | null {
-  if (task.months_before !== null) return Number(task.months_before);
-  if (!task.due_date || !weddingDate) return null;
-  const days =
-    (Date.parse(weddingDate) - Date.parse(task.due_date)) / 86_400_000;
-  return Math.max(0, days / DAYS_PER_MONTH);
+/**
+ * The order to do things in: the checklist's sequence (budget and guest list first, thank-you notes last),
+ * with tasks people add themselves after it in the order they were added.
+ */
+export function sortTasksInPlanOrder<
+  T extends Pick<Task, "sort_order" | "created_at">,
+>(tasks: T[]): T[] {
+  return [...tasks].sort(
+    (a, b) =>
+      a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at),
+  );
 }
 
+/** Due dates someone typed in. Checklist dates are worked out from the wedding date, so they aren't shown. */
+export const hasChosenDueDate = (
+  task: Pick<Task, "template_id" | "due_date">,
+) => task.template_id === null && task.due_date !== null;
+
+const BUDGET_CATEGORIES: [RegExp, string][] = [
+  [/venue/i, "Venue"],
+  [/photograph|videograph/i, "Photography"],
+  [/cater|cake|menu/i, "Catering"],
+  [/band|dj\b|music/i, "Music"],
+  [/flor|flower/i, "Flowers"],
+  [/invitation|save-the-date|stationery/i, "Stationery"],
+  [/hair|makeup/i, "Hair & makeup"],
+  [/dress|suit|attire|ring/i, "Attire"],
+  [/transport/i, "Transportation"],
+  [/officiant/i, "Officiant"],
+  [/honeymoon/i, "Honeymoon"],
+];
+
+/** The budget category a task's cost goes under, e.g. "Book the photographer" → "Photography". */
+export function budgetCategoryFor(task: Pick<Task, "title" | "category">) {
+  return (
+    BUDGET_CATEGORIES.find(([pattern]) => pattern.test(task.title))?.[1] ??
+    task.category ??
+    "Other"
+  );
+}
+
+export type TaskDetails = {
+  /** What was chosen: the venue, the photographer, the store. Saved as a booked vendor. */
+  name?: string;
+  link?: string;
+  /** Saved as the task's expense in the budget. */
+  cost?: number;
+  /** Replaces the task's notes; leave out to keep them, null to clear them. */
+  notes?: string | null;
+};
+
 /**
- * Groups tasks for the Tasks screen ("12+ months out", "6 to 9 months out", ...).
- * Uses the checklist offset when there is one, otherwise due date vs. wedding date.
- * Empty groups are left out; tasks with no date go last under "No date".
+ * Marks a task done and records what was chosen. The name and link go on a vendor linked to the task,
+ * the cost on the task's budget expense (added once, then updated). Couple and planner only.
  */
-export function groupTasksByTimeframe(
-  tasks: Task[],
-  weddingDate: string | null,
-): { label: string; tasks: Task[] }[] {
-  const groups = new Map<string, Task[]>();
-  const order: string[] = [...TIMEFRAMES.map((t) => t.label), "No date"];
-  for (const task of tasks) {
-    const months = monthsBefore(task, weddingDate);
-    const label =
-      months === null
-        ? "No date"
-        : (TIMEFRAMES.find((t) => months >= t.minMonths)?.label ??
-          "Final week");
-    groups.set(label, [...(groups.get(label) ?? []), task]);
+export async function finishTaskWithDetails(
+  db: Db,
+  taskId: string,
+  details: TaskDetails,
+): Promise<Task> {
+  const task = await getTask(db, taskId);
+  const category = budgetCategoryFor(task);
+
+  let vendorId = task.vendor_id;
+  if (details.name || details.link) {
+    const website = details.link ?? null;
+    if (vendorId) {
+      unwrap(
+        await db
+          .from("vendors")
+          .update(details.name ? { name: details.name, website } : { website })
+          .eq("id", vendorId),
+      );
+    } else {
+      vendorId = unwrap<{ id: string }>(
+        await db
+          .from("vendors")
+          .insert({
+            name: details.name ?? task.title,
+            website,
+            wedding_id: task.wedding_id,
+            type: category,
+            status: "booked",
+          })
+          .select("id")
+          .single(),
+      ).id;
+    }
   }
-  return order
-    .filter((l) => groups.has(l))
-    .map((label) => ({ label, tasks: groups.get(label)! }));
+
+  if (details.cost !== undefined) {
+    const description = details.name ?? task.title;
+    const existing = unwrap<{ id: string } | null>(
+      await db
+        .from("budget_items")
+        .select("id")
+        .eq("task_id", task.id)
+        .maybeSingle(),
+    );
+    if (existing) {
+      unwrap(
+        await db
+          .from("budget_items")
+          .update({ actual: details.cost, description, vendor_id: vendorId })
+          .eq("id", existing.id),
+      );
+    } else {
+      unwrap(
+        await db.from("budget_items").insert({
+          wedding_id: task.wedding_id,
+          task_id: task.id,
+          vendor_id: vendorId,
+          category,
+          description,
+          estimated: details.cost,
+          actual: details.cost,
+        }),
+      );
+    }
+  }
+
+  return updateTask(db, task.id, {
+    status: PLANNED_STATUSES.includes(task.status) ? task.status : "done",
+    vendor_id: vendorId,
+    notes: details.notes === undefined ? task.notes : details.notes,
+  });
 }

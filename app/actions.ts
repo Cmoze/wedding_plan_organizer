@@ -31,6 +31,7 @@ import { createClient } from "@/lib/db/supabase/server";
 import {
   createTask,
   deleteTask,
+  finishTaskWithDetails,
   updateTaskStatus,
   type TaskStatus,
 } from "@/lib/db/tasks";
@@ -271,6 +272,31 @@ export async function addTaskAction(form: FormData) {
     category: text(form, "category") ?? null,
   });
   refresh();
+}
+
+/** "Done" with what was chosen, its cost and a link; the cost goes into the budget. */
+export async function finishTaskAction(
+  _prev: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const db = await signedInDb();
+  const costText = text(form, "cost");
+  const cost = money(form, "cost");
+  if (costText !== undefined && cost === undefined)
+    return { error: "Enter the cost as a number, like 4500." };
+  const link = text(form, "link");
+  try {
+    await finishTaskWithDetails(db, required(form, "taskId"), {
+      name: text(form, "name"),
+      cost,
+      link: link && !/^https?:\/\//i.test(link) ? `https://${link}` : link,
+      notes: text(form, "notes") ?? null,
+    });
+  } catch (e) {
+    return { error: friendly(e) };
+  }
+  refresh();
+  return { message: "Saved" };
 }
 
 export async function deleteTaskAction(form: FormData) {

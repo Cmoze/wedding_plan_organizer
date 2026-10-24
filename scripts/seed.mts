@@ -257,6 +257,7 @@ async function seed() {
       category: "Planning",
       due_date: dateFromToday(20),
       assignee_id: memberId("helper"),
+      sort_order: 100,
     }),
     "custom task",
   );

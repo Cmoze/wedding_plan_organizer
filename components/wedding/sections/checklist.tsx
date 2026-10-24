@@ -1,12 +1,13 @@
-import { Check, Trash2 } from "lucide-react";
+import { Check, ExternalLink, Trash2 } from "lucide-react";
 import Link from "next/link";
 import {
   addTaskAction,
   deleteTaskAction,
   setTaskStatusAction,
 } from "@/app/actions";
+import { TaskDetailsForm } from "@/components/wedding/client-forms";
 import { memberName, type WeddingContext } from "@/components/wedding/context";
-import { formatDate } from "@/components/wedding/format";
+import { formatDate, formatMoney } from "@/components/wedding/format";
 import {
   Badge,
   Card,
@@ -17,13 +18,16 @@ import {
   primaryButtonClass,
   quietButtonClass,
 } from "@/components/wedding/ui";
+import { getBudgetItems, type BudgetItem } from "@/lib/db/budget";
 import {
   OPEN_STATUSES,
   PLANNED_STATUSES,
   getTasks,
-  groupTasksByTimeframe,
+  hasChosenDueDate,
+  sortTasksInPlanOrder,
   type Task,
 } from "@/lib/db/tasks";
+import { getVendors, type Vendor } from "@/lib/db/vendors";
 
 const FILTERS = [
   { id: "open", label: "To do" },
@@ -45,7 +49,11 @@ export async function ChecklistSection({
   ctx: WeddingContext;
   show?: string;
 }) {
-  const tasks = await getTasks(ctx.db, ctx.wedding.id);
+  const [tasks, vendorList, budgetItems] = await Promise.all([
+    getTasks(ctx.db, ctx.wedding.id),
+    getVendors(ctx.db, ctx.wedding.id),
+    getBudgetItems(ctx.db, ctx.wedding.id),
+  ]);
   const filter = FILTERS.find((f) => f.id === show)?.id ?? "open";
   const visible = tasks.filter((t) =>
     filter === "all"
@@ -57,7 +65,14 @@ export async function ChecklistSection({
   const finished = tasks.filter((t) =>
     PLANNED_STATUSES.includes(t.status),
   ).length;
-  const groups = groupTasksByTimeframe(visible, ctx.wedding.wedding_date);
+  const ordered = sortTasksInPlanOrder(visible);
+  const nextUpId = sortTasksInPlanOrder(tasks).find((t) =>
+    OPEN_STATUSES.includes(t.status),
+  )?.id;
+  const vendors = new Map(vendorList.map((v) => [v.id, v]));
+  const costs = new Map(
+    budgetItems.flatMap((b) => (b.task_id ? [[b.task_id, b]] : [])),
+  );
 
   return (
     <div className="mt-10 space-y-6">
@@ -124,7 +139,7 @@ export async function ChecklistSection({
         </Card>
       )}
 
-      {groups.length === 0 ? (
+      {ordered.length === 0 ? (
         <EmptyState
           title={
             filter === "open"
@@ -133,25 +148,53 @@ export async function ChecklistSection({
           }
         />
       ) : (
-        groups.map((group) => (
-          <Card key={group.label}>
-            <CardTitle>{group.label}</CardTitle>
-            <ul className="mt-3 divide-y divide-[#eceee8]">
-              {group.tasks.map((task) => (
-                <TaskRow key={task.id} task={task} ctx={ctx} />
-              ))}
-            </ul>
-          </Card>
-        ))
+        <Card>
+          <CardTitle>
+            {filter === "planned" ? "Done and booked" : "In order of priority"}
+          </CardTitle>
+          {filter !== "planned" && (
+            <p className="mt-1 text-base text-[#52635a]">
+              The big decisions come first. Work down the list at your own pace.
+            </p>
+          )}
+          <ul className="mt-3 divide-y divide-[#eceee8]">
+            {ordered.map((task) => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                ctx={ctx}
+                nextUp={task.id === nextUpId}
+                vendor={
+                  task.vendor_id ? vendors.get(task.vendor_id) : undefined
+                }
+                cost={costs.get(task.id)}
+              />
+            ))}
+          </ul>
+        </Card>
       )}
     </div>
   );
 }
 
-function TaskRow({ task, ctx }: { task: Task; ctx: WeddingContext }) {
+function TaskRow({
+  task,
+  ctx,
+  nextUp,
+  vendor,
+  cost,
+}: {
+  task: Task;
+  ctx: WeddingContext;
+  nextUp: boolean;
+  vendor?: Vendor;
+  cost?: BudgetItem;
+}) {
   const finished = PLANNED_STATUSES.includes(task.status);
-  const overdue =
-    !finished && task.due_date !== null && task.due_date < ctx.today;
+  const dueDate = hasChosenDueDate(task) ? task.due_date : null;
+  const overdue = !finished && dueDate !== null && dueDate < ctx.today;
+  const amount = cost ? Number(cost.actual ?? cost.estimated) : undefined;
+  const hasDetails = Boolean(vendor || cost || task.notes);
   const canUpdate = ctx.canEdit || task.assignee_id === ctx.me.id;
   const assignee = memberName(ctx, task.assignee_id);
 
@@ -191,7 +234,8 @@ function TaskRow({ task, ctx }: { task: Task; ctx: WeddingContext }) {
           {task.title}
         </p>
         <p className="mt-0.5 flex flex-wrap items-center gap-2 text-base text-[#52635a]">
-          {task.due_date && <span>Due {formatDate(task.due_date)}</span>}
+          {nextUp && <Badge tone="info">Next up</Badge>}
+          {dueDate && <span>Due {formatDate(dueDate)}</span>}
           {overdue && <Badge tone="warn">Overdue</Badge>}
           {task.status !== "todo" && (
             <Badge tone={finished ? "good" : "info"}>
@@ -201,16 +245,27 @@ function TaskRow({ task, ctx }: { task: Task; ctx: WeddingContext }) {
           {task.category && <Badge>{task.category}</Badge>}
           {assignee && <span>· {assignee}</span>}
         </p>
+        {hasDetails && (
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-base text-[#2d4a3f]">
+            {vendor && <span className="font-semibold">{vendor.name}</span>}
+            {amount !== undefined && <span>· {formatMoney(amount)}</span>}
+            {vendor?.website && (
+              <a
+                href={vendor.website}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 font-semibold text-[#315b4b] underline underline-offset-4"
+              >
+                · Website
+                <ExternalLink className="h-4 w-4" aria-hidden="true" />
+              </a>
+            )}
+            {task.notes && (
+              <span className="text-[#52635a]">· {task.notes}</span>
+            )}
+          </p>
+        )}
       </div>
-      {canUpdate && !finished && (
-        <form action={setTaskStatusAction}>
-          <input type="hidden" name="taskId" value={task.id} />
-          <input type="hidden" name="status" value="booked" />
-          <button type="submit" className={quietButtonClass}>
-            Mark booked
-          </button>
-        </form>
-      )}
       {ctx.canEdit && (
         <form action={deleteTaskAction}>
           <input type="hidden" name="taskId" value={task.id} />
@@ -222,6 +277,27 @@ function TaskRow({ task, ctx }: { task: Task; ctx: WeddingContext }) {
             <Trash2 className="h-5 w-5" aria-hidden="true" />
           </button>
         </form>
+      )}
+      {ctx.canEdit && (
+        <details className="basis-full pl-15">
+          <summary className="inline-flex min-h-11 cursor-pointer items-center text-base font-semibold text-[#315b4b] underline underline-offset-4">
+            {finished
+              ? hasDetails
+                ? "Edit details"
+                : "Add details"
+              : "Done? Add what you chose"}
+          </summary>
+          <TaskDetailsForm
+            taskId={task.id}
+            submitLabel={finished ? "Save details" : "Save and mark done"}
+            defaults={{
+              name: vendor?.name,
+              cost: amount,
+              link: vendor?.website ?? undefined,
+              notes: task.notes ?? undefined,
+            }}
+          />
+        </details>
       )}
     </li>
   );

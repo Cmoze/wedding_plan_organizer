@@ -65,6 +65,7 @@ export type Database = {
           estimated: number;
           id: string;
           paid: number;
+          task_id: string | null;
           updated_at: string;
           vendor_id: string | null;
           wedding_id: string;
@@ -78,6 +79,7 @@ export type Database = {
           estimated?: number;
           id?: string;
           paid?: number;
+          task_id?: string | null;
           updated_at?: string;
           vendor_id?: string | null;
           wedding_id: string;
@@ -91,11 +93,19 @@ export type Database = {
           estimated?: number;
           id?: string;
           paid?: number;
+          task_id?: string | null;
           updated_at?: string;
           vendor_id?: string | null;
           wedding_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "budget_items_task_id_wedding_id_fkey";
+            columns: ["task_id", "wedding_id"];
+            isOneToOne: false;
+            referencedRelation: "tasks";
+            referencedColumns: ["id", "wedding_id"];
+          },
           {
             foreignKeyName: "budget_items_vendor_id_wedding_id_fkey";
             columns: ["vendor_id", "wedding_id"];

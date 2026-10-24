@@ -64,6 +64,7 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 **Days 2–4: Core screens**
 - [ ] **Home dashboard**: countdown, "my tasks this week", overdue items, budget summary, "already booked" list, recent activity
 - [ ] **Tasks**: list grouped by timeframe (12 months out, 6 months out…), filter by assignee/status, add/edit form, assign to a member, check off
+  - Changed (Caleb's call): no timeframe groups, since every couple's timeline differs. One list in checklist order, biggest decisions first, with "Next up" on the first open task; new tasks go to the end. Only due dates people type in are shown. Finishing a task can record what was chosen, its cost and a link (`finishTaskWithDetails`): the name/link become a booked vendor and the cost a budget expense.
 - [ ] **Calendar**: month view plus "upcoming" list view; shows task due dates, payment due dates and events; tap to open the item
 - [ ] **Budget**: category totals, line items (estimated / actual / paid / due date), budget-vs-spent bar, link to a vendor
 - [ ] **Guests**: households with address, guests inside each, RSVP status, side, meal choice; search and filters; counts (invited / attending)

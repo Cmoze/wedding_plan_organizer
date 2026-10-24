@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { describeActivity } from "@/lib/db/activity";
 import { summarizeBudget } from "@/lib/db/budget";
 import { mergeCalendarItems } from "@/lib/db/calendar";
-import { groupTasksByTimeframe, type Task } from "@/lib/db/tasks";
+import { budgetCategoryFor, sortTasksInPlanOrder } from "@/lib/db/tasks";
 
 describe("summarizeBudget", () => {
   it("uses actual cost when known, else the estimate, and totals by category", () => {
@@ -73,29 +73,41 @@ describe("mergeCalendarItems", () => {
   });
 });
 
-describe("groupTasksByTimeframe", () => {
-  const task = (
-    id: string,
-    months_before: number | null,
-    due_date: string | null = null,
-  ) => ({ id, months_before, due_date }) as Task;
-
-  it("groups by checklist offset, falling back to due date vs. wedding date", () => {
-    const groups = groupTasksByTimeframe(
-      [
-        task("a", 12),
-        task("b", 0.5),
-        task("c", null, "2027-04-01"),
-        task("d", null),
-      ],
-      "2027-06-01",
-    );
-    expect(groups.map((g) => [g.label, g.tasks.map((t) => t.id)])).toEqual([
-      ["12+ months out", ["a"]],
-      ["1 to 3 months out", ["c"]],
-      ["Final month", ["b"]],
-      ["No date", ["d"]],
+describe("sortTasksInPlanOrder", () => {
+  it("follows the checklist order, then the order tasks were added", () => {
+    const sorted = sortTasksInPlanOrder([
+      { id: "c", sort_order: 42, created_at: "2026-10-02T00:00:00Z" },
+      { id: "b", sort_order: 5, created_at: "2026-10-01T00:00:00Z" },
+      { id: "d", sort_order: 42, created_at: "2026-10-03T00:00:00Z" },
+      { id: "a", sort_order: 1, created_at: "2026-10-01T00:00:00Z" },
     ]);
+    expect(sorted.map((t) => t.id)).toEqual(["a", "b", "c", "d"]);
+  });
+});
+
+describe("budgetCategoryFor", () => {
+  it("files a task's cost under a budget category", () => {
+    expect(
+      budgetCategoryFor({
+        title: "Tour and book the reception venue",
+        category: "Venue",
+      }),
+    ).toBe("Venue");
+    expect(
+      budgetCategoryFor({
+        title: "Book the photographer",
+        category: "Vendors",
+      }),
+    ).toBe("Photography");
+    expect(
+      budgetCategoryFor({
+        title: "Order the wedding cake",
+        category: "Vendors",
+      }),
+    ).toBe("Catering");
+    expect(
+      budgetCategoryFor({ title: "Plan the rehearsal dinner", category: null }),
+    ).toBe("Other");
   });
 });
 

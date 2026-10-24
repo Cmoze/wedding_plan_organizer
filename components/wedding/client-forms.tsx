@@ -1,7 +1,12 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
-import { addEventAction, addIdeaItemAction } from "@/app/actions";
+import { useActionState, useRef, useState, useTransition } from "react";
+import {
+  addEventAction,
+  addIdeaItemAction,
+  finishTaskAction,
+  type FormState,
+} from "@/app/actions";
 import {
   Field,
   FormMessage,
@@ -182,6 +187,65 @@ export function IdeaItemForm({
         >
           {pending ? "Saving..." : "Add idea"}
         </button>
+      </div>
+    </form>
+  );
+}
+
+export function TaskDetailsForm({
+  taskId,
+  submitLabel,
+  defaults,
+}: {
+  taskId: string;
+  submitLabel: string;
+  defaults: { name?: string; cost?: number; link?: string; notes?: string };
+}) {
+  const [state, action, pending] = useActionState<FormState, FormData>(
+    finishTaskAction,
+    {},
+  );
+  return (
+    <form action={action} className="mt-3 grid gap-4 sm:grid-cols-2">
+      <input type="hidden" name="taskId" value={taskId} />
+      <Field label="What did you choose?" hint="A venue, a vendor, a store...">
+        <input
+          name="name"
+          defaultValue={defaults.name}
+          className={inputClass}
+          placeholder="The Grand Barn"
+        />
+      </Field>
+      <Field label="Cost ($)" hint="Added to your budget.">
+        <input
+          name="cost"
+          inputMode="decimal"
+          defaultValue={defaults.cost}
+          className={inputClass}
+          placeholder="4500"
+        />
+      </Field>
+      <Field label="Website or link">
+        <input
+          name="link"
+          defaultValue={defaults.link}
+          className={inputClass}
+          placeholder="grandbarn.com"
+        />
+      </Field>
+      <Field label="Notes">
+        <input
+          name="notes"
+          defaultValue={defaults.notes}
+          className={inputClass}
+          placeholder="Deposit due in March"
+        />
+      </Field>
+      <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+        <button type="submit" disabled={pending} className={primaryButtonClass}>
+          {pending ? "Saving..." : submitLabel}
+        </button>
+        <FormMessage error={state.error} />
       </div>
     </form>
   );
