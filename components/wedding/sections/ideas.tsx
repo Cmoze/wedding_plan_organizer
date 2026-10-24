@@ -70,37 +70,31 @@ export async function IdeasSection({
         </ul>
       )}
 
-      {ctx.canEdit && (
-        <Card>
-          <CardTitle>Start a board</CardTitle>
-          <form
-            action={addIdeaBoardAction}
-            className="mt-4 grid gap-4 sm:grid-cols-[1fr_1fr_auto]"
-          >
-            <input type="hidden" name="weddingId" value={ctx.wedding.id} />
-            <Field label="Board name">
-              <input
-                name="title"
-                required
-                className={inputClass}
-                placeholder="Table settings"
-              />
-            </Field>
-            <Field label="Category">
-              <input
-                name="category"
-                className={inputClass}
-                placeholder="Decor"
-              />
-            </Field>
-            <div className="flex items-end">
-              <button type="submit" className={primaryButtonClass}>
-                Create board
-              </button>
-            </div>
-          </form>
-        </Card>
-      )}
+      <Card>
+        <CardTitle>Start a board</CardTitle>
+        <form
+          action={addIdeaBoardAction}
+          className="mt-4 grid gap-4 sm:grid-cols-[1fr_1fr_auto]"
+        >
+          <input type="hidden" name="weddingId" value={ctx.wedding.id} />
+          <Field label="Board name">
+            <input
+              name="title"
+              required
+              className={inputClass}
+              placeholder="Table settings"
+            />
+          </Field>
+          <Field label="Category">
+            <input name="category" className={inputClass} placeholder="Decor" />
+          </Field>
+          <div className="flex items-end">
+            <button type="submit" className={primaryButtonClass}>
+              Create board
+            </button>
+          </div>
+        </form>
+      </Card>
     </div>
   );
 }
@@ -128,12 +122,10 @@ async function BoardView({
       </Link>
       <h2 className="text-3xl font-semibold">{board.title}</h2>
 
-      {ctx.canEdit && (
-        <Card>
-          <CardTitle>Add an idea</CardTitle>
-          <IdeaItemForm weddingId={ctx.wedding.id} boardId={board.id} />
-        </Card>
-      )}
+      <Card>
+        <CardTitle>Add an idea</CardTitle>
+        <IdeaItemForm weddingId={ctx.wedding.id} boardId={board.id} />
+      </Card>
 
       {items.length === 0 ? (
         <EmptyState title="This board is empty">
@@ -223,7 +215,7 @@ function IdeaCard({
             <MessageCircle className="h-5 w-5" aria-hidden="true" />{" "}
             {comments.length}
           </span>
-          {ctx.canEdit && (
+          {(ctx.canEdit || item.created_by === ctx.me.user_id) && (
             <form action={deleteIdeaItemAction} className="ml-auto">
               <input type="hidden" name="itemId" value={item.id} />
               <button

@@ -38,7 +38,7 @@ Every table except `checklist_templates` has `id uuid`, `wedding_id`, `created_a
 |---|---|
 | `weddings` | `partner1_name`, `partner2_name`, `wedding_date`, `budget_total`, `guest_count_estimate`, `email_slug` (unique; inbox address is `<email_slug>@<INBOUND_EMAIL_DOMAIN>`) |
 | `members` | `user_id`, `role` (`couple` / `planner` / `helper`), `display_name`. One row per person per wedding |
-| `invites` | `token` (uuid, goes in the link), `role`, `expires_at` (default 14 days). Reusable until it expires or is deleted |
+| `invites` | `token` (uuid, goes in the link), `role`, `email` (only this account can accept; null = anyone with the link), `expires_at` (default 14 days), `accepted_at` / `accepted_by`. Used once |
 | `tasks` | `title`, `notes`, `category`, `due_date`, `months_before`, `status` (`todo` / `in_progress` / `done` / `booked`), `assignee_id` (a member), `vendor_id`, `completed_at`, `template_id` |
 | `events` | `title`, `description`, `starts_at`, `ends_at`, `all_day`, `location` |
 | `vendors` | `name`, `type`, `contact_name`, `phone`, `email`, `website`, `status` (`considering` / `contacted` / `booked` / `declined`), `notes` |
@@ -68,12 +68,14 @@ Design decisions this follows (from `docs/PLAN.md`):
 | Add / edit / delete anything | yes | yes | no | no |
 | Update tasks assigned to them | yes | yes | status and notes only | no |
 | Comment and react | yes | yes | yes | no |
+| Add idea boards, ideas and photos; edit/delete their own | yes | yes | yes | no |
 | Create invites | yes | yes | no | no |
 | Change member roles, remove members, delete the wedding | yes | no | no | no |
 
 - Creating a wedding: `create_wedding()` makes the wedding, adds the creator as `couple` and copies the checklist template
   into `tasks`, with due dates counted back from the wedding date.
-- Joining: `get_invite()` shows who invited you (works before logging in); `accept_invite()` adds you as a member.
+- Joining: `get_invite()` shows who invited you (works before logging in); `accept_invite()` adds you as a member,
+  after checking the invite's email matches yours and nobody has used it yet.
 - `emails` are inserted by Carter's webhook with the service-role key (bypasses RLS). Members can read them,
   couple/planner can link them to items or mark them read.
 
@@ -81,7 +83,7 @@ Design decisions this follows (from `docs/PLAN.md`):
 
 | Bucket | Path | Read | Write |
 |---|---|---|---|
-| `idea-photos` | `<wedding_id>/<file>` | members | couple / planner |
+| `idea-photos` | `<wedding_id>/<file>` | members | members upload; uploader or couple / planner replace and delete |
 | `email-attachments` | `<wedding_id>/<file>` | members | service role only (webhook) |
 
 ## Realtime

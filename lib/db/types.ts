@@ -546,8 +546,11 @@ export type Database = {
       };
       invites: {
         Row: {
+          accepted_at: string | null;
+          accepted_by: string | null;
           created_at: string;
           created_by: string | null;
+          email: string | null;
           expires_at: string;
           id: string;
           role: Database["public"]["Enums"]["member_role"];
@@ -556,8 +559,11 @@ export type Database = {
           wedding_id: string;
         };
         Insert: {
+          accepted_at?: string | null;
+          accepted_by?: string | null;
           created_at?: string;
           created_by?: string | null;
+          email?: string | null;
           expires_at?: string;
           id?: string;
           role?: Database["public"]["Enums"]["member_role"];
@@ -566,8 +572,11 @@ export type Database = {
           wedding_id: string;
         };
         Update: {
+          accepted_at?: string | null;
+          accepted_by?: string | null;
           created_at?: string;
           created_by?: string | null;
+          email?: string | null;
           expires_at?: string;
           id?: string;
           role?: Database["public"]["Enums"]["member_role"];
@@ -921,6 +930,8 @@ export type Database = {
       get_invite: {
         Args: { _token: string };
         Returns: {
+          accepted: boolean;
+          email: string;
           expired: boolean;
           partner1_name: string;
           partner2_name: string;

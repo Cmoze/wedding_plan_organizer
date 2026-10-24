@@ -15,13 +15,32 @@ import {
   primaryButtonClass,
 } from "@/components/wedding/ui";
 
-export function LoginForm() {
+/** Keeps an invite token across login and sign-up so the user lands back on the invite. */
+const withInvite = (path: string, invite?: string) =>
+  invite ? `${path}?invite=${invite}` : path;
+
+function InviteNote({ joining }: { joining?: string }) {
+  if (!joining) return null;
+  return (
+    <p className="rounded-xl bg-[#e3efe6] px-4 py-3 text-base text-[#24553f]">
+      You&apos;re joining <strong>{joining}</strong>&apos;s wedding. Use the
+      email address the invite was sent to.
+    </p>
+  );
+}
+
+export function LoginForm({
+  invite,
+  joining,
+}: { invite?: string; joining?: string } = {}) {
   const [state, action, pending] = useActionState<FormState, FormData>(
     signInAction,
     {},
   );
   return (
     <form action={action} className="space-y-5">
+      <InviteNote joining={joining} />
+      {invite && <input type="hidden" name="invite" value={invite} />}
       <Field label="Email">
         <input
           name="email"
@@ -51,7 +70,7 @@ export function LoginForm() {
       <p className="text-center text-base text-[#52635a]">
         New here?{" "}
         <Link
-          href="/signup"
+          href={withInvite("/signup", invite)}
           className="font-bold text-[#315b4b] underline underline-offset-4"
         >
           Create an account
@@ -61,13 +80,19 @@ export function LoginForm() {
   );
 }
 
-export function SignUpForm() {
+export function SignUpForm({
+  invite,
+  joining,
+  email,
+}: { invite?: string; joining?: string; email?: string } = {}) {
   const [state, action, pending] = useActionState<FormState, FormData>(
     signUpAction,
     {},
   );
   return (
     <form action={action} className="space-y-5">
+      <InviteNote joining={joining} />
+      {invite && <input type="hidden" name="invite" value={invite} />}
       <Field label="Your name" hint="How others in the wedding will see you.">
         <input name="displayName" autoComplete="name" className={inputClass} />
       </Field>
@@ -76,6 +101,7 @@ export function SignUpForm() {
           name="email"
           type="email"
           autoComplete="email"
+          defaultValue={email}
           required
           className={inputClass}
         />
@@ -101,7 +127,7 @@ export function SignUpForm() {
       <p className="text-center text-base text-[#52635a]">
         Already have an account?{" "}
         <Link
-          href="/login"
+          href={withInvite("/login", invite)}
           className="font-bold text-[#315b4b] underline underline-offset-4"
         >
           Log in

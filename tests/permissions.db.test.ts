@@ -11,7 +11,10 @@ import { getEmails } from "@/lib/db/emails";
 import { getGuestList } from "@/lib/db/guests";
 import {
   IDEA_PHOTOS_BUCKET,
+  createIdeaItem,
+  deleteIdeaItem,
   getIdeaBoards,
+  getIdeaItems,
   uploadIdeaPhoto,
 } from "@/lib/db/ideas";
 import {
@@ -19,6 +22,7 @@ import {
   createInvite,
   deleteInvite,
   getInvitePreview,
+  listInvites,
 } from "@/lib/db/invites";
 import type { Db } from "@/lib/db/shared";
 import { createTask, deleteTask, getTasks, updateTask } from "@/lib/db/tasks";
@@ -163,11 +167,29 @@ describe.skipIf(!process.env.RUN_DB_TESTS)(
         await deleteComment(helper, comment.id);
       });
 
-      it("can't upload idea photos", async () => {
+      it("can add ideas and photos, and delete their own but not others'", async () => {
+        const [board] = await getIdeaBoards(helper, weddingId);
         const file = new File(["x"], "pic.png", { type: "image/png" });
-        await expect(
-          uploadIdeaPhoto(helper, weddingId, file),
-        ).rejects.toThrow();
+        const path = await uploadIdeaPhoto(helper, weddingId, file);
+        const mine = await createIdeaItem(helper, weddingId, {
+          board_id: board.id,
+          photo_path: path,
+          caption: "Helper idea",
+        });
+        await deleteIdeaItem(helper, mine.id);
+        const { error } = await helper.storage
+          .from(IDEA_PHOTOS_BUCKET)
+          .remove([path]);
+        expect(error).toBeNull();
+
+        const theirs = await createIdeaItem(couple, weddingId, {
+          board_id: board.id,
+          caption: "Couple idea",
+        });
+        await deleteIdeaItem(helper, theirs.id);
+        const items = await getIdeaItems(couple, board.id);
+        expect(items.some((i) => i.id === theirs.id)).toBe(true);
+        await deleteIdeaItem(couple, theirs.id);
       });
     });
 
@@ -241,6 +263,42 @@ describe.skipIf(!process.env.RUN_DB_TESTS)(
         await deleteInvite(couple, invite.id);
       });
 
+      it("only lets the invited email accept, and only once", async () => {
+        const invite = await createInvite(couple, weddingId, "helper", {
+          email: ` ${OUTSIDER.toUpperCase()} `,
+        });
+        expect(invite.email).toBe(OUTSIDER);
+        expect(await getInvitePreview(newClient(), invite.token)).toMatchObject(
+          { email: OUTSIDER, accepted: false },
+        );
+
+        const forHelper = await createInvite(couple, weddingId, "planner", {
+          email: "someone-else@demo.wedding",
+        });
+        await expect(acceptInvite(outsider, forHelper.token)).rejects.toThrow(
+          /sent to someone-else@demo.wedding/,
+        );
+        await deleteInvite(couple, forHelper.id);
+
+        expect(await acceptInvite(outsider, invite.token)).toBe(weddingId);
+        expect(await acceptInvite(outsider, invite.token)).toBe(weddingId);
+        expect(await getInvitePreview(newClient(), invite.token)).toMatchObject(
+          { accepted: true },
+        );
+        await expect(acceptInvite(helper, invite.token)).rejects.toThrow(
+          /already been used/,
+        );
+        expect(
+          (await listInvites(couple, weddingId)).some(
+            (i) => i.id === invite.id,
+          ),
+        ).toBe(false);
+
+        const me = (await getMyMembership(outsider, weddingId))!;
+        await removeMember(couple, me.id);
+        await deleteInvite(couple, invite.id);
+      });
+
       it("rejects unknown and expired invites", async () => {
         expect(
           await getInvitePreview(newClient(), crypto.randomUUID()),
@@ -248,7 +306,9 @@ describe.skipIf(!process.env.RUN_DB_TESTS)(
         await expect(
           acceptInvite(outsider, crypto.randomUUID()),
         ).rejects.toThrow(/not valid/);
-        const expired = await createInvite(couple, weddingId, "helper", -1);
+        const expired = await createInvite(couple, weddingId, "helper", {
+          expiresInDays: -1,
+        });
         await expect(acceptInvite(outsider, expired.token)).rejects.toThrow(
           /expired/,
         );

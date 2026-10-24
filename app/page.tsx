@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense, type ReactNode } from "react";
@@ -9,6 +10,8 @@ import { CalendarSection } from "@/components/wedding/sections/calendar";
 import { ChecklistSection } from "@/components/wedding/sections/checklist";
 import { IdeasSection } from "@/components/wedding/sections/ideas";
 import { InboxSection } from "@/components/wedding/sections/inbox";
+import { TeamSection } from "@/components/wedding/sections/team";
+import { ACTIVE_WEDDING_COOKIE } from "@/lib/active-wedding";
 import { getCurrentUser } from "@/lib/db/auth";
 import { toDateString } from "@/lib/db/shared";
 import { createClient } from "@/lib/db/supabase/server";
@@ -22,6 +25,7 @@ const sections = [
   "guests",
   "ideas",
   "inbox",
+  "team",
 ] as const;
 
 type Section = (typeof sections)[number];
@@ -54,7 +58,9 @@ async function SectionWorkspace({
   const db = await createClient();
   const user = await getCurrentUser(db);
   if (!user) redirect("/login");
-  const [wedding] = await getMyWeddings(db);
+  const weddings = await getMyWeddings(db);
+  const activeId = (await cookies()).get(ACTIVE_WEDDING_COOKIE)?.value;
+  const wedding = weddings.find((w) => w.id === activeId) ?? weddings[0];
   if (!wedding) redirect("/new-wedding");
   const members = await getMembers(db, wedding.id);
   const me = members.find((m) => m.user_id === user.id)!;
@@ -74,6 +80,7 @@ async function SectionWorkspace({
     budget: <BudgetSection ctx={ctx} />,
     ideas: <IdeasSection ctx={ctx} boardId={param("board")} />,
     inbox: <InboxSection ctx={ctx} emailId={param("email")} />,
+    team: <TeamSection ctx={ctx} weddings={weddings} />,
   };
 
   return (

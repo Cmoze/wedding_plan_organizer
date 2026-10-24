@@ -1,7 +1,9 @@
 "use server";
 
 import { refresh, revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { ACTIVE_WEDDING_COOKIE } from "@/lib/active-wedding";
 import { getCurrentUser, signIn, signOut, signUp } from "@/lib/db/auth";
 import {
   createBudgetItem,
@@ -18,6 +20,12 @@ import {
   deleteIdeaItem,
   removeReaction,
 } from "@/lib/db/ideas";
+import {
+  acceptInvite,
+  createInvite,
+  deleteInvite,
+  type Invite,
+} from "@/lib/db/invites";
 import { DbError } from "@/lib/db/shared";
 import { createClient } from "@/lib/db/supabase/server";
 import {
@@ -26,7 +34,12 @@ import {
   updateTaskStatus,
   type TaskStatus,
 } from "@/lib/db/tasks";
-import { createWedding } from "@/lib/db/weddings";
+import {
+  createWedding,
+  removeMember,
+  updateMember,
+  type MemberRole,
+} from "@/lib/db/weddings";
 
 // Every action runs as the signed-in user, so RLS decides what they may change.
 
@@ -69,6 +82,23 @@ const friendly = (e: unknown) =>
 /** Pages the browser cached for the previous user (or before a wedding existed) must not be reused. */
 const forgetCachedPages = () => revalidatePath("/", "layout");
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** The invite page to return to after logging in or signing up, if the form came from one. */
+const invitePath = (form: FormData) => {
+  const token = text(form, "invite");
+  return token && UUID.test(token) ? `/invite/${token}` : null;
+};
+
+async function rememberWedding(weddingId: string) {
+  (await cookies()).set(ACTIVE_WEDDING_COOKIE, weddingId, {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 365,
+  });
+}
+
 // account ---------------------------------------------------------------------
 
 export async function signInAction(
@@ -84,7 +114,7 @@ export async function signInAction(
     return { error: friendly(e) };
   }
   forgetCachedPages();
-  redirect("/");
+  redirect(invitePath(form) ?? "/");
 }
 
 export async function signUpAction(
@@ -114,13 +144,15 @@ export async function signUpAction(
     };
   }
   forgetCachedPages();
-  redirect("/new-wedding");
+  redirect(invitePath(form) ?? "/new-wedding");
 }
 
-export async function signOutAction() {
+/** With an `invite` field, comes back to that invite's login page (for "wrong account" on the invite page). */
+export async function signOutAction(form?: FormData) {
   await signOut(await createClient());
   forgetCachedPages();
-  redirect("/login");
+  const invite = form ? invitePath(form) : null;
+  redirect(invite ? `/login?invite=${invite.split("/").pop()}` : "/login");
 }
 
 export async function createWeddingAction(
@@ -143,6 +175,80 @@ export async function createWeddingAction(
     return { error: friendly(e) };
   }
   return { redirectTo: "/?section=tasks" };
+}
+
+/** Opens another wedding the user belongs to. */
+export async function switchWeddingAction(form: FormData) {
+  await signedInDb();
+  await rememberWedding(required(form, "weddingId"));
+  forgetCachedPages();
+  redirect("/?section=home");
+}
+
+// team ------------------------------------------------------------------------
+
+export type InviteFormState = FormState & {
+  invite?: Pick<Invite, "token" | "email" | "role" | "expires_at">;
+};
+
+export async function createInviteAction(
+  _prev: InviteFormState,
+  form: FormData,
+): Promise<InviteFormState> {
+  const db = await signedInDb();
+  const email = text(form, "email");
+  if (!email) return { error: "Enter the email address to invite." };
+  try {
+    const invite = await createInvite(
+      db,
+      required(form, "weddingId"),
+      (text(form, "role") as MemberRole | undefined) ?? "helper",
+      { email },
+    );
+    refresh();
+    return { invite };
+  } catch (e) {
+    return { error: friendly(e) };
+  }
+}
+
+export async function deleteInviteAction(form: FormData) {
+  const db = await signedInDb();
+  await deleteInvite(db, required(form, "inviteId"));
+  refresh();
+}
+
+export async function updateMemberRoleAction(form: FormData) {
+  const db = await signedInDb();
+  await updateMember(db, required(form, "memberId"), {
+    role: required(form, "role") as MemberRole,
+  });
+  refresh();
+}
+
+export async function removeMemberAction(form: FormData) {
+  const db = await signedInDb();
+  await removeMember(db, required(form, "memberId"));
+  refresh();
+}
+
+export async function acceptInviteAction(
+  _prev: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const db = await signedInDb();
+  try {
+    const weddingId = await acceptInvite(
+      db,
+      required(form, "invite"),
+      text(form, "displayName"),
+    );
+    await rememberWedding(weddingId);
+  } catch (e) {
+    return { error: friendly(e) };
+  }
+  forgetCachedPages();
+  return { redirectTo: "/?section=ideas" };
 }
 
 // checklist -------------------------------------------------------------------

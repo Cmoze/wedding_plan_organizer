@@ -14,7 +14,10 @@ export async function proxy(request: NextRequest) {
 
   let target: string | null = null;
   if (!userId && !matches(pathname, PUBLIC_PATHS)) target = "/login";
-  if (userId && matches(pathname, AUTH_PAGES)) target = "/";
+  if (userId && matches(pathname, AUTH_PAGES)) {
+    const invite = request.nextUrl.searchParams.get("invite");
+    target = invite ? `/invite/${encodeURIComponent(invite)}` : "/";
+  }
   if (!target) return response;
 
   // Carry over the refreshed session cookies and no-cache headers, or the user gets signed out.

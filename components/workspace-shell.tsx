@@ -8,6 +8,7 @@ import {
   Inbox,
   LogOut,
   Menu,
+  UserPlus,
   UsersRound,
   Wallet,
 } from "lucide-react";
@@ -21,6 +22,7 @@ const sections = [
   { id: "guests", label: "Guests", icon: UsersRound },
   { id: "ideas", label: "Ideas", icon: Heart },
   { id: "inbox", label: "Inbox", icon: Inbox },
+  { id: "team", label: "Team", icon: UserPlus },
 ] as const;
 
 type SectionId = (typeof sections)[number]["id"];
@@ -54,6 +56,11 @@ const sectionCopy: Record<SectionId, { title: string; description: string }> = {
   inbox: {
     title: "Wedding inbox",
     description: "Keep vendor emails close to the plans they belong to.",
+  },
+  team: {
+    title: "Your wedding team",
+    description:
+      "Invite family and friends by email so they can add ideas and help with the plan.",
   },
 };
 
@@ -243,10 +250,10 @@ function HomeWelcome() {
           </p>
         </div>
         <Link
-          href="/?section=ideas"
+          href="/?section=team"
           className="mt-6 inline-flex min-h-12 items-center font-bold text-[#315b4b] underline decoration-[#9db4a3] decoration-2 underline-offset-4 hover:text-[#203f33] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#426c5a]"
         >
-          Explore the workspace
+          Invite your people
         </Link>
       </div>
     </section>
@@ -284,6 +291,7 @@ function SectionWelcome({ section }: { section: SectionId }) {
     guests: "Your guest list will start here",
     ideas: "Your inspiration will have a home here",
     inbox: "Your wedding emails will be here",
+    team: "Your wedding team will be here",
   };
 
   return (

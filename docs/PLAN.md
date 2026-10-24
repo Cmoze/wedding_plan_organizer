@@ -70,7 +70,8 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 
 **Days 4–5: Collaboration screens and wiring**
 - [ ] **Ideas boards**: category grid → board → photo grid → photo detail with comments and 👍
-- [ ] **Members/invite screen**: list members and roles, "invite" button that copies a link
+- [x] **Members/invite screen**: list members and roles, "invite" button that copies a link
+  - "Team" section (`components/wedding/sections/team.tsx`): invite by email + role, which opens the inviter's own email app with the message and link filled in (plus "Copy link"); pending invites with resend/cancel; the couple can change roles and remove people. Join page at `/invite/<token>`. Automatic sending (Resend) can replace the mailto once a domain is verified.
 - [ ] **Activity feed** component (used on Home)
 - [ ] Swap mock data for B's real Supabase queries, screen by screen
 - [ ] Show/hide edit buttons based on the user's role
@@ -119,6 +120,7 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
   - `createWedding()` in `lib/db/weddings.ts`.
 - [x] Invite flow: create token → open link → sign up/log in → join with that role
   - `createInvite`, `inviteUrl` (links to `/invite/<token>`; A builds that page), `getInvitePreview`, `acceptInvite` in `lib/db/invites.ts`.
+  - Invites are tied to an email: only that account can accept, and only once (`accepted_at` / `accepted_by`). Helpers can add idea boards, ideas and photos, and delete their own.
 - [x] Storage bucket for idea photos, with access rules matching table permissions
   - `idea-photos` (plus `email-attachments` for C's webhook). `uploadIdeaPhoto`, `getIdeaPhotoUrls` in `lib/db/ideas.ts`.
 
