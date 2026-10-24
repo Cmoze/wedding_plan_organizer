@@ -47,6 +47,12 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 ## Role A (Kai): Frontend / UI
 *Owns: `app/` pages, `components/`, layout, styling, the overall user experience.*
 
+> **Notes for Kai (from Carter, 2026-10-23). Read these, then delete this box once handled.**
+> - Carter added the Inbox section in your area: `components/wedding/sections/inbox.tsx` and
+>   `components/wedding/inbox-client.tsx` (wired into `app/page.tsx`). Restyle or restructure freely.
+> - Bug in the shell: at phone width (375px) the log-out button in the top bar runs off the right edge
+>   of the screen (`components/workspace-shell.tsx`).
+
 **Days 1–2: App shell and design basics**
 - [x] Set up Next.js (App Router) + TypeScript + Tailwind + shadcn/ui (coordinate with C, who sets up the repo)
   - Done by C. `app/` and `components/` already exist with create-next-app / shadcn starter files (`app/page.tsx`, `app/layout.tsx`, `components/ui/button.tsx`). They're placeholders: replace them freely.
