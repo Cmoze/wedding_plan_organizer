@@ -196,10 +196,13 @@ export function TaskDetailsForm({
   taskId,
   submitLabel,
   defaults,
+  totalBudget = false,
 }: {
   taskId: string;
   submitLabel: string;
   defaults: { name?: string; cost?: number; link?: string; notes?: string };
+  /** For "Set the overall budget": asks only for the total. */
+  totalBudget?: boolean;
 }) {
   const [state, action, pending] = useActionState<FormState, FormData>(
     finishTaskAction,
@@ -208,31 +211,45 @@ export function TaskDetailsForm({
   return (
     <form action={action} className="mt-3 grid gap-4 sm:grid-cols-2">
       <input type="hidden" name="taskId" value={taskId} />
-      <Field label="What did you choose?" hint="A venue, a vendor, a store...">
-        <input
-          name="name"
-          defaultValue={defaults.name}
-          className={inputClass}
-          placeholder="The Grand Barn"
-        />
-      </Field>
-      <Field label="Cost ($)" hint="Added to your budget.">
+      {!totalBudget && (
+        <Field
+          label="What did you choose?"
+          hint="A venue, a vendor, a store..."
+        >
+          <input
+            name="name"
+            defaultValue={defaults.name}
+            className={inputClass}
+            placeholder="The Grand Barn"
+          />
+        </Field>
+      )}
+      <Field
+        label={totalBudget ? "Total budget ($)" : "Cost ($)"}
+        hint={
+          totalBudget
+            ? "Your spending is measured against this."
+            : "Added to your budget."
+        }
+      >
         <input
           name="cost"
           inputMode="decimal"
           defaultValue={defaults.cost}
           className={inputClass}
-          placeholder="4500"
+          placeholder={totalBudget ? "30000" : "4500"}
         />
       </Field>
-      <Field label="Website or link">
-        <input
-          name="link"
-          defaultValue={defaults.link}
-          className={inputClass}
-          placeholder="grandbarn.com"
-        />
-      </Field>
+      {!totalBudget && (
+        <Field label="Website or link">
+          <input
+            name="link"
+            defaultValue={defaults.link}
+            className={inputClass}
+            placeholder="grandbarn.com"
+          />
+        </Field>
+      )}
       <Field label="Notes">
         <input
           name="notes"

@@ -164,11 +164,15 @@ export function budgetCategoryFor(task: Pick<Task, "title" | "category">) {
   );
 }
 
+/** "Set the overall budget": its amount is the wedding's total budget, not an expense. */
+export const setsTheBudget = (task: Pick<Task, "title">) =>
+  /\bset\b.*\bbudget\b/i.test(task.title);
+
 export type TaskDetails = {
   /** What was chosen: the venue, the photographer, the store. Saved as a booked vendor. */
   name?: string;
   link?: string;
-  /** Saved as the task's expense in the budget. */
+  /** Saved as the task's expense in the budget, or as the total budget for "Set the overall budget". */
   cost?: number;
   /** Replaces the task's notes; leave out to keep them, null to clear them. */
   notes?: string | null;
@@ -184,6 +188,21 @@ export async function finishTaskWithDetails(
   details: TaskDetails,
 ): Promise<Task> {
   const task = await getTask(db, taskId);
+  if (setsTheBudget(task)) {
+    if (details.cost !== undefined) {
+      unwrap(
+        await db
+          .from("weddings")
+          .update({ budget_total: details.cost })
+          .eq("id", task.wedding_id),
+      );
+    }
+    unwrap(await db.from("budget_items").delete().eq("task_id", task.id));
+    return updateTask(db, task.id, {
+      status: PLANNED_STATUSES.includes(task.status) ? task.status : "done",
+      notes: details.notes === undefined ? task.notes : details.notes,
+    });
+  }
   const category = budgetCategoryFor(task);
 
   let vendorId = task.vendor_id;

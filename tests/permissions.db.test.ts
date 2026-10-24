@@ -44,6 +44,7 @@ import {
   getWedding,
   removeMember,
   updateMember,
+  updateWedding,
 } from "@/lib/db/weddings";
 import type { Database } from "@/lib/db/types";
 
@@ -244,6 +245,26 @@ describe.skipIf(!process.env.RUN_DB_TESTS)(
         await deleteBudgetItem(planner, items[0].id);
         await deleteTask(planner, task.id);
         await deleteVendor(planner, done.vendor_id!);
+      });
+
+      it("saves 'Set the overall budget' as the total budget, not an expense", async () => {
+        const before = (await getWedding(planner, weddingId)).budget_total;
+        const task = await createTask(planner, weddingId, {
+          title: "Set the overall budget",
+        });
+        const done = await finishTaskWithDetails(planner, task.id, {
+          cost: 31000,
+        });
+        expect(done.status).toBe("done");
+        expect((await getWedding(planner, weddingId)).budget_total).toBe(31000);
+        expect(
+          (await getBudgetItems(planner, weddingId)).filter(
+            (b) => b.task_id === task.id,
+          ),
+        ).toEqual([]);
+
+        await updateWedding(planner, weddingId, { budget_total: before });
+        await deleteTask(planner, task.id);
       });
 
       it("can invite helpers but not the couple, and can't change roles", async () => {

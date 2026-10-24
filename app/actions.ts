@@ -283,7 +283,7 @@ export async function finishTaskAction(
   const costText = text(form, "cost");
   const cost = money(form, "cost");
   if (costText !== undefined && cost === undefined)
-    return { error: "Enter the cost as a number, like 4500." };
+    return { error: "Enter the amount as a number, like 4500." };
   const link = text(form, "link");
   try {
     await finishTaskWithDetails(db, required(form, "taskId"), {

@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 import { describeActivity } from "@/lib/db/activity";
 import { summarizeBudget } from "@/lib/db/budget";
 import { mergeCalendarItems } from "@/lib/db/calendar";
-import { budgetCategoryFor, sortTasksInPlanOrder } from "@/lib/db/tasks";
+import {
+  budgetCategoryFor,
+  setsTheBudget,
+  sortTasksInPlanOrder,
+} from "@/lib/db/tasks";
 
 describe("summarizeBudget", () => {
   it("uses actual cost when known, else the estimate, and totals by category", () => {
@@ -108,6 +112,16 @@ describe("budgetCategoryFor", () => {
     expect(
       budgetCategoryFor({ title: "Plan the rehearsal dinner", category: null }),
     ).toBe("Other");
+  });
+});
+
+describe("setsTheBudget", () => {
+  it("spots the task whose amount is the total budget", () => {
+    expect(setsTheBudget({ title: "Set the overall budget" })).toBe(true);
+    expect(
+      setsTheBudget({ title: "Prepare final vendor payments and tips" }),
+    ).toBe(false);
+    expect(setsTheBudget({ title: "Book the photographer" })).toBe(false);
   });
 });
 

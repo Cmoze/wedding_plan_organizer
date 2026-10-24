@@ -24,6 +24,7 @@ import {
   PLANNED_STATUSES,
   getTasks,
   hasChosenDueDate,
+  setsTheBudget,
   sortTasksInPlanOrder,
   type Task,
 } from "@/lib/db/tasks";
@@ -193,8 +194,17 @@ function TaskRow({
   const finished = PLANNED_STATUSES.includes(task.status);
   const dueDate = hasChosenDueDate(task) ? task.due_date : null;
   const overdue = !finished && dueDate !== null && dueDate < ctx.today;
-  const amount = cost ? Number(cost.actual ?? cost.estimated) : undefined;
-  const hasDetails = Boolean(vendor || cost || task.notes);
+  const totalBudget = setsTheBudget(task);
+  const budgetTotal =
+    totalBudget && ctx.wedding.budget_total !== null
+      ? Number(ctx.wedding.budget_total)
+      : undefined;
+  const amount = totalBudget
+    ? budgetTotal
+    : cost
+      ? Number(cost.actual ?? cost.estimated)
+      : undefined;
+  const hasDetails = Boolean(vendor || amount !== undefined || task.notes);
   const canUpdate = ctx.canEdit || task.assignee_id === ctx.me.id;
   const assignee = memberName(ctx, task.assignee_id);
 
@@ -248,7 +258,13 @@ function TaskRow({
         {hasDetails && (
           <p className="mt-1 flex flex-wrap items-center gap-x-2 text-base text-[#2d4a3f]">
             {vendor && <span className="font-semibold">{vendor.name}</span>}
-            {amount !== undefined && <span>· {formatMoney(amount)}</span>}
+            {amount !== undefined && (
+              <span>
+                {totalBudget
+                  ? `Total budget ${formatMoney(amount)}`
+                  : `· ${formatMoney(amount)}`}
+              </span>
+            )}
             {vendor?.website && (
               <a
                 href={vendor.website}
@@ -285,10 +301,13 @@ function TaskRow({
               ? hasDetails
                 ? "Edit details"
                 : "Add details"
-              : "Done? Add what you chose"}
+              : totalBudget
+                ? "Done? Add your total budget"
+                : "Done? Add what you chose"}
           </summary>
           <TaskDetailsForm
             taskId={task.id}
+            totalBudget={totalBudget}
             submitLabel={finished ? "Save details" : "Save and mark done"}
             defaults={{
               name: vendor?.name,
