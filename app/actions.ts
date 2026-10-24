@@ -13,6 +13,7 @@ import {
 import { addComment } from "@/lib/db/comments";
 import { deleteEmail } from "@/lib/db/emails";
 import { createEvent, deleteEvent } from "@/lib/db/events";
+import { addGuest, removeGuest, updateGuest } from "@/lib/db/guests";
 import {
   addReaction,
   createIdeaBoard,
@@ -330,6 +331,45 @@ export async function markBudgetItemPaidAction(form: FormData) {
 export async function deleteBudgetItemAction(form: FormData) {
   const db = await signedInDb();
   await deleteBudgetItem(db, required(form, "itemId"));
+  refresh();
+}
+
+// guests ----------------------------------------------------------------------
+
+const GUEST_SIDES = ["partner1", "partner2", "both"] as const;
+const RSVPS = ["pending", "attending", "declined"] as const;
+
+export async function addGuestAction(form: FormData) {
+  const db = await signedInDb();
+  const householdId = text(form, "householdId");
+  const side = GUEST_SIDES.find((s) => s === text(form, "side"));
+  await addGuest(
+    db,
+    required(form, "weddingId"),
+    {
+      first_name: required(form, "firstName"),
+      last_name: text(form, "lastName") ?? null,
+      email: text(form, "email") ?? null,
+      phone: text(form, "phone") ?? null,
+      plus_one_allowed: form.get("plusOne") === "on",
+      is_child: form.get("child") === "on",
+    },
+    householdId ? { id: householdId } : { side },
+  );
+  refresh();
+}
+
+export async function setGuestRsvpAction(form: FormData) {
+  const db = await signedInDb();
+  const rsvp = RSVPS.find((r) => r === text(form, "rsvp"));
+  if (!rsvp) throw new DbError("Unknown RSVP");
+  await updateGuest(db, required(form, "guestId"), { rsvp });
+  refresh();
+}
+
+export async function removeGuestAction(form: FormData) {
+  const db = await signedInDb();
+  await removeGuest(db, required(form, "guestId"));
   refresh();
 }
 

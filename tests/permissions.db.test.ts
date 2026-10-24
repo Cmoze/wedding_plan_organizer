@@ -12,7 +12,7 @@ import {
 import { getCalendarItems } from "@/lib/db/calendar";
 import { addComment, deleteComment } from "@/lib/db/comments";
 import { getEmails } from "@/lib/db/emails";
-import { getGuestList } from "@/lib/db/guests";
+import { addGuest, getGuestList, removeGuest } from "@/lib/db/guests";
 import {
   IDEA_PHOTOS_BUCKET,
   createIdeaItem,
@@ -245,6 +245,33 @@ describe.skipIf(!process.env.RUN_DB_TESTS)(
         await deleteBudgetItem(planner, items[0].id);
         await deleteTask(planner, task.id);
         await deleteVendor(planner, done.vendor_id!);
+      });
+
+      it("adds guests, sharing an invitation, and removes the empty invitation", async () => {
+        const alex = await addGuest(planner, weddingId, {
+          first_name: "Alex",
+          last_name: "Testguest",
+        });
+        const sam = await addGuest(
+          planner,
+          weddingId,
+          { first_name: "Sam", last_name: "Testguest" },
+          { id: alex.household_id },
+        );
+        const household = () =>
+          getGuestList(planner, weddingId).then((list) =>
+            list.find((h) => h.id === alex.household_id),
+          );
+        expect((await household())?.name).toBe("Alex & Sam Testguest");
+        expect((await household())?.guests).toHaveLength(2);
+
+        await removeGuest(planner, alex.id);
+        expect(await household()).toMatchObject({
+          name: "Sam Testguest",
+          guests: [{ id: sam.id }],
+        });
+        await removeGuest(planner, sam.id);
+        expect(await household()).toBeUndefined();
       });
 
       it("saves 'Set the overall budget' as the total budget, not an expense", async () => {

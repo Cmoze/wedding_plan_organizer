@@ -68,6 +68,7 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 - [ ] **Calendar**: month view plus "upcoming" list view; shows task due dates, payment due dates and events; tap to open the item
 - [ ] **Budget**: category totals, line items (estimated / actual / paid / due date), budget-vs-spent bar, link to a vendor
 - [ ] **Guests**: households with address, guests inside each, RSVP status, side, meal choice; search and filters; counts (invited / attending)
+  - Done: counts, add a guest (own invitation or with someone already listed), side, plus-one, child, RSVP buttons, remove. Still to do: addresses, meal choice, search/filters, CSV upload screen.
 
 **Days 4–5: Collaboration screens and wiring**
 - [ ] **Ideas boards**: category grid → board → photo grid → photo detail with comments and 👍

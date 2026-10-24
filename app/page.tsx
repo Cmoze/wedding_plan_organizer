@@ -8,6 +8,7 @@ import { weddingTitle } from "@/components/wedding/format";
 import { BudgetSection } from "@/components/wedding/sections/budget";
 import { CalendarSection } from "@/components/wedding/sections/calendar";
 import { ChecklistSection } from "@/components/wedding/sections/checklist";
+import { GuestsSection } from "@/components/wedding/sections/guests";
 import { IdeasSection } from "@/components/wedding/sections/ideas";
 import { InboxSection } from "@/components/wedding/sections/inbox";
 import { TeamSection } from "@/components/wedding/sections/team";
@@ -78,6 +79,7 @@ async function SectionWorkspace({
     tasks: <ChecklistSection ctx={ctx} show={param("show")} />,
     calendar: <CalendarSection ctx={ctx} month={param("month")} />,
     budget: <BudgetSection ctx={ctx} />,
+    guests: <GuestsSection ctx={ctx} />,
     ideas: <IdeasSection ctx={ctx} boardId={param("board")} />,
     inbox: <InboxSection ctx={ctx} emailId={param("email")} />,
     team: <TeamSection ctx={ctx} weddings={weddings} />,

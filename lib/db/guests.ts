@@ -1,4 +1,4 @@
-import type { ImportedHousehold } from "@/lib/db/guest-csv";
+import { envelopeName, type ImportedHousehold } from "@/lib/db/guest-csv";
 import {
   unwrap,
   type Db,
@@ -75,6 +75,72 @@ export async function createGuest(
       .select()
       .single(),
   );
+}
+
+/**
+ * Adds one person. Without `householdId` they get their own invitation (household) named after them.
+ * Joining a household whose name was made from its guests ("Alex Smith") renames it ("Alex & Sam Smith");
+ * a name someone typed in is kept.
+ */
+export async function addGuest(
+  db: Db,
+  weddingId: string,
+  guest: Omit<NewRow<"guests">, "household_id">,
+  household: { id: string } | { side?: Household["side"] } = {},
+): Promise<Guest> {
+  let householdId: string;
+  if ("id" in household) {
+    householdId = household.id;
+    const current = unwrap<{
+      name: string;
+      guests: Pick<Guest, "first_name" | "last_name">[];
+    }>(
+      await db
+        .from("households")
+        .select("name, guests(first_name, last_name, created_at)")
+        .eq("id", householdId)
+        .order("created_at", { referencedTable: "guests" })
+        .single(),
+    );
+    if (current.name === envelopeName(current.guests)) {
+      await updateHousehold(db, householdId, {
+        name: envelopeName([...current.guests, guest]),
+      });
+    }
+  } else {
+    householdId = (
+      await createHousehold(db, weddingId, {
+        name: envelopeName([guest]),
+        side: household.side,
+      })
+    ).id;
+  }
+  return createGuest(db, weddingId, { ...guest, household_id: householdId });
+}
+
+/** Removes one person, and their invitation too if nobody else is on it. Renames it like `addGuest`. */
+export async function removeGuest(db: Db, guestId: string): Promise<void> {
+  const guest = unwrap<{
+    households: {
+      id: string;
+      name: string;
+      guests: Pick<Guest, "id" | "first_name" | "last_name">[];
+    };
+  }>(
+    await db
+      .from("guests")
+      .select("households!inner(id, name, guests(id, first_name, last_name))")
+      .eq("id", guestId)
+      .order("created_at", { referencedTable: "households.guests" })
+      .single(),
+  );
+  const household = guest.households;
+  const others = household.guests.filter((g) => g.id !== guestId);
+  if (others.length === 0) return deleteHousehold(db, household.id);
+  await deleteGuest(db, guestId);
+  if (household.name === envelopeName(household.guests)) {
+    await updateHousehold(db, household.id, { name: envelopeName(others) });
+  }
 }
 
 export async function updateGuest(
