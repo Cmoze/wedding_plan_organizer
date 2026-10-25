@@ -2,6 +2,9 @@
 
 The shared week plan. Check items off (`- [x]`) as you finish them and push, so everyone can see progress.
 
+> **Note for everyone (from Carter, 2026-10-25). Delete this box once you've all seen it.**
+> - Run `npm install` after you pull: the RSVP QR code added a new package (`qrcode`). Then restart `npm run dev`.
+
 ## The idea
 One shared **wedding workspace** that the couple, parents and wedding party all join. Built for the parent
 who keeps plans on paper, loses details, and has information spread across texts, emails and notebooks.
