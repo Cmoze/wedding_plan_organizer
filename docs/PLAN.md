@@ -50,11 +50,17 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 ## Role A (Kai): Frontend / UI
 *Owns: `app/` pages, `components/`, layout, styling, the overall user experience.*
 
-> **Notes for Kai (from Carter, 2026-10-23). Read these, then delete this box once handled.**
+> **Notes for Kai (from Carter, updated 2026-10-25). Read these, then delete this box once handled.**
 > - Carter added the Inbox section in your area: `components/wedding/sections/inbox.tsx` and
 >   `components/wedding/inbox-client.tsx` (wired into `app/page.tsx`). Restyle or restructure freely.
-> - Bug in the shell: at phone width (375px) the log-out button in the top bar runs off the right edge
->   of the screen (`components/workspace-shell.tsx`).
+> - Carter also added Piper's chat, `components/wedding/assistant-chat.tsx`, mounted by one line in
+>   `app/page.tsx`, and moved the RSVP QR card to the bottom of the Guests page. Restyle freely.
+> - Still a bug at phone width (375px): the account pill in the top bar is cut off and the log-out
+>   button can't be seen (`components/workspace-shell.tsx`).
+> - The big wedding title on Home breaks in the middle of words ("Jordan / 's", "Weddi / ng") at
+>   phone width and in narrow windows.
+> - Run `npm run build` before pushing a new page: `/find-event` passed `npm run dev` but broke the
+>   Vercel build (request data has to be read inside `<Suspense>`). Fixed in `acf43cc`.
 
 **Days 1–2: App shell and design basics**
 - [x] Set up Next.js (App Router) + TypeScript + Tailwind + shadcn/ui (coordinate with C, who sets up the repo)
@@ -180,12 +186,16 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
   - Live and tested end to end (2026-10-23): Gmail → `maya-jordan@jorauthook.resend.app` → Resend webhook (200) → row in `emails`. Resend webhook registered for `email.received`.
 - [x] Inbox screen (pair with A): list, read view, "link to vendor/task/budget item" action
   - `components/wedding/sections/inbox.tsx` (`/?section=inbox`, `&email=<id>` for one email). Emails get linked when an AI suggestion is accepted; there's no manual "link to existing item" picker yet.
+  - Emails with an HTML version show it (logos, layout) in a sandboxed frame; plain text is cleaned of image placeholders and tracking links (`lib/email/display.ts`).
 - [x] Forwarding instructions shown in the app ("Forward any vendor email to smith-jones@…")
 - [ ] **Stretch:** sending/replying (needs a domain plus SPF/DKIM setup; only if time allows)
 
 **Days 4–6: AI helper (Claude API)**
 - [x] Server-only `lib/ai/` wrapper; the API key is never sent to the browser
 - [x] **Email → actions** (`POST /api/ai/email-actions`; UI is the "Add this to your plan" card on each inbox email): pull out dates, amounts, vendor names and to-dos from an incoming email; show "Add $500 deposit due Nov 3 to budget + calendar?" with accept/dismiss
+- [x] **Ask your inbox** (`POST /api/ai/inbox-summary`; card at the top of the Inbox list): sums up the newest emails, answers an optional question and suggests several actions at once
+- [x] **Piper the Planner** (`POST /api/ai/assistant`; "Ask Piper" chat on every workspace page): looks things up across the plan and offers changes (tasks, costs, events, vendors, gifts, guests, RSVPs, thank-you cards) as "Yes, do it" buttons. Helpers can ask but aren't offered changes. The AI is called Piper everywhere in the app.
+  - Not yet tried: tapping "Yes, do it" against real data. Try one on something harmless before the demo.
 - [x] **Personalized checklist** (`POST /api/ai/checklist`; "Tailor my checklist" card on the Tasks screen, which is also where a new wedding lands): tweak the template based on date, guest count and budget
 - [ ] **"What should we do this week?"** (API done: `GET /api/ai/weekly-summary`; UI pending with A) summary on the dashboard, built from overdue and upcoming tasks
 - [ ] **Stretch:** photo of a handwritten list → guests or tasks, with a preview before saving
@@ -195,7 +205,7 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 **Days 6–7: Registry and demo readiness**
 - [x] Registry section: saved links (Amazon, Target, Zola) with store name and notes
   - `components/wedding/sections/registry.tsx` (`/?section=registry`, "Registry" in the nav). Couple/planner add and remove links; helpers only view. Links are checked to be http(s) (`webLink` in `components/wedding/format.ts`).
-- [ ] Gift tracking + thank-you cards (Registry section; 🎁 badge on guest-list households). UI done; Caleb's `gifts` table is live (2026-10-25).
+- [x] Gift tracking + thank-you cards (Registry section; 🎁 badge on guest-list households), on Caleb's `gifts` table. Forwarded registry emails become gift suggestions.
 - [ ] Production deploy works end to end with seeded data
 - [ ] Prepare the demo email ahead of time so the "email → calendar" moment works reliably
 
