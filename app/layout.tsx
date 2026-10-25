@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Wedding Plan Organizer",
+  // Matches the "Together / Wedding planning" brand in the app; a page can set its own title
+  // ("RSVP") and it shows as "RSVP · Together".
+  title: {
+    default: "Together · Wedding planning",
+    template: "%s · Together",
+  },
   description:
     "Plan your wedding together with shared tasks, dates, guests, and budget details.",
 };
