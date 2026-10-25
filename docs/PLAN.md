@@ -174,7 +174,7 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 - [x] Fill in `scripts/check.sh`: Prettier check, ESLint, `tsc --noEmit`, Vitest
 - [x] `.env.example` with every variable name (Supabase URL/keys, email provider key, Anthropic key); real values only in `.env` and Vercel settings
 - [x] Connect Vercel to the repo: automatic deploys from `main`, preview URLs, environment variables set
-  - Connected: https://wedding-plan-organizer.vercel.app (project `cmoze/wedding-plan-organizer`). All env vars set for production and preview (secrets are Vercel "Secret" type, so not in development; use your own `.env` locally).
+  - Connected: https://togetherwedding.vercel.app (project `cmoze/wedding-plan-organizer`). The old https://wedding-plan-organizer.vercel.app still works and is where the Resend inbound webhook points; keep it. All env vars set for production and preview (secrets are Vercel "Secret" type, so not in development; use your own `.env` locally).
 - [x] Update `AGENTS.md`: commands, folder layout, conventions
 
 **Days 2–4: Wedding email inbox**
