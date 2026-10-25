@@ -47,13 +47,13 @@ export function CouplePhoto({
     run(() => setCouplePhoto(createClient(), weddingId, file));
   };
 
-  const circle =
-    "relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full sm:h-32 sm:w-32 lg:h-36 lg:w-36";
+  const frame =
+    "relative flex aspect-[4/3] w-40 shrink-0 items-center justify-center overflow-hidden rounded-2xl min-[480px]:w-52 sm:w-64 sm:rounded-3xl lg:w-96";
 
   return (
     <div className="flex shrink-0 flex-col items-center gap-2">
       {photoUrl ? (
-        <div className={`${circle} ring-4 ring-white/30`}>
+        <div className={`${frame} shadow-lg ring-1 ring-white/25`}>
           {/* Signed URL from private storage; next/image would need the Supabase host configured. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -68,7 +68,7 @@ export function CouplePhoto({
           type="button"
           onClick={() => input.current?.click()}
           disabled={pending}
-          className={`${circle} flex-col gap-1 border-2 border-dashed border-white/45 text-sm font-semibold text-[#f3e8ec] hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white`}
+          className={`${frame} flex-col gap-1 border-2 border-dashed border-white/45 text-sm font-semibold text-[#f3e8ec] hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white`}
         >
           <Camera className="h-6 w-6" aria-hidden="true" />
           Add photo

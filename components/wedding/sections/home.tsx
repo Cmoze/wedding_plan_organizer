@@ -85,31 +85,30 @@ export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
       <section className="relative overflow-hidden rounded-[2rem] bg-[#6f1d37] px-6 py-8 text-white shadow-[0_20px_50px_-28px_rgba(80,20,43,0.55)] sm:px-9 sm:py-10 lg:px-12">
         <span className="pointer-events-none absolute -top-28 right-[-4rem] h-72 w-72 rounded-full border border-white/10 sm:right-10" />
         <span className="pointer-events-none absolute -top-16 right-[-1rem] h-52 w-52 rounded-full border border-white/10 sm:right-20" />
-        <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
-          <div className="flex flex-wrap items-center gap-5 sm:gap-7">
-            <CouplePhoto
-              weddingId={wedding.id}
-              photoUrl={photoUrl}
-              names={weddingTitle(wedding)}
-              canEdit={ctx.canEdit}
-            />
-            <div className="min-w-0">
-              <h1 className="font-heading max-w-3xl text-4xl leading-tight tracking-[-0.035em] sm:text-5xl lg:text-6xl">
-                {weddingHeading(wedding)}
-              </h1>
-              <p className="mt-3 text-base text-[#f3e8ec] sm:text-lg">
-                {wedding.wedding_date
-                  ? formatDate(wedding.wedding_date)
-                  : "Choose your wedding date when you’re ready"}
-              </p>
-            </div>
+        <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-5 sm:gap-8">
+          <div className="min-w-0">
+            <h1 className="font-heading max-w-3xl text-4xl leading-tight tracking-[-0.035em] break-words sm:text-5xl lg:text-6xl">
+              {weddingHeading(wedding)}
+            </h1>
+            <p className="mt-3 text-base text-[#f3e8ec] sm:text-lg">
+              {wedding.wedding_date
+                ? formatDate(wedding.wedding_date)
+                : "Choose your wedding date when you’re ready"}
+            </p>
+            <Link
+              href="/?section=tasks"
+              className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/35 px-5 text-sm font-bold text-white transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Open checklist{" "}
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
           </div>
-          <Link
-            href="/?section=tasks"
-            className="inline-flex min-h-12 items-center justify-center gap-2 self-start rounded-full border border-white/35 px-5 text-sm font-bold text-white transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white lg:self-end"
-          >
-            Open checklist <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
+          <CouplePhoto
+            weddingId={wedding.id}
+            photoUrl={photoUrl}
+            names={weddingTitle(wedding)}
+            canEdit={ctx.canEdit}
+          />
         </div>
         <div className="relative mt-8 grid grid-cols-2 items-end gap-x-6 gap-y-5 border-t border-white/20 pt-6 sm:mt-10 sm:flex sm:flex-wrap sm:gap-x-8 lg:gap-x-12">
           <div>
