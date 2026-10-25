@@ -5,6 +5,7 @@ import {
   setGuestRsvpAction,
 } from "@/app/actions";
 import type { WeddingContext } from "@/components/wedding/context";
+import { RsvpQr } from "@/components/wedding/rsvp-qr";
 import {
   Badge,
   Card,
@@ -53,6 +54,17 @@ export async function GuestsSection({ ctx }: { ctx: WeddingContext }) {
         <Stat label="No reply yet" value={counts.pending} />
         <Stat label="Not coming" value={counts.declined} />
       </div>
+
+      {ctx.canEdit && (
+        <Card>
+          <CardTitle>RSVP QR code</CardTitle>
+          <p className="mt-1 text-base text-[#52635a]">
+            Print this on your invitations. Guests scan it, find their name and
+            answer for everyone on their invitation. Their replies show up here.
+          </p>
+          <RsvpQr weddingId={ctx.wedding.id} />
+        </Card>
+      )}
 
       {ctx.canEdit && (
         <Card>
@@ -209,6 +221,9 @@ function GuestRow({ guest, ctx }: { guest: Guest; ctx: WeddingContext }) {
         </p>
         {contact && (
           <p className="text-sm break-all text-[#66756c]">{contact}</p>
+        )}
+        {guest.rsvp === "attending" && guest.meal_choice && (
+          <p className="text-sm text-[#66756c]">Meal: {guest.meal_choice}</p>
         )}
       </div>
       {ctx.canEdit ? (

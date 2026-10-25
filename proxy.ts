@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/db/supabase/proxy";
 
 // API routes answer 401 themselves instead of redirecting.
-const PUBLIC_PATHS = ["/login", "/signup", "/invite", "/api"];
+const PUBLIC_PATHS = ["/login", "/signup", "/invite", "/rsvp", "/api"];
 const AUTH_PAGES = ["/login", "/signup"];
 
 const matches = (pathname: string, paths: string[]) =>
