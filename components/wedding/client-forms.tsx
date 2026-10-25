@@ -3,11 +3,15 @@
 import { Check, Loader2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import {
+  createContext,
   useActionState,
+  useContext,
+  useEffect,
   useRef,
   useState,
   useTransition,
   type ChangeEvent,
+  type ReactNode,
 } from "react";
 import {
   addEventAction,
@@ -16,7 +20,9 @@ import {
   addIdeaBoardAction,
   addIdeaItemAction,
   addRegistryLinkAction,
+  addTaskAction,
   deleteIdeaBoardAction,
+  deleteTaskAction,
   finishTaskAction,
   updateMemberRoleAction,
   type FormState,
@@ -611,6 +617,141 @@ export function IdeaBoardForm({ weddingId }: { weddingId: string }) {
           </Link>
         </p>
       )}
+    </form>
+  );
+}
+
+export function TaskForm({ weddingId }: { weddingId: string }) {
+  const [state, action, pending] = useActionState<FormState, FormData>(
+    async (prev, form) =>
+      (await Promise.all([addTaskAction(prev, form), atLeast(600)]))[0],
+    {},
+  );
+  return (
+    <form action={action} className="mt-4 space-y-4">
+      <input type="hidden" name="weddingId" value={weddingId} />
+      <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto]">
+        <Field label="What needs doing?">
+          <input
+            name="title"
+            required
+            className={inputClass}
+            placeholder="Order favors"
+          />
+        </Field>
+        <Field label="Due date">
+          <input name="dueDate" type="date" className={inputClass} />
+        </Field>
+        <div className="flex items-end">
+          <button
+            type="submit"
+            disabled={pending}
+            className={`${primaryButtonClass} gap-2`}
+          >
+            {pending && (
+              <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+            )}
+            {pending ? "Adding..." : "Add task"}
+          </button>
+        </div>
+      </div>
+      {!pending && state.error && <FormMessage error={state.error} />}
+      {!pending && state.message && <SuccessMessage text={state.message} />}
+    </form>
+  );
+}
+
+function SuccessMessage({ text }: { text: string }) {
+  return (
+    <p
+      role="status"
+      className="flex items-center gap-1.5 rounded-xl bg-[#e3efe6] px-4 py-3 text-base font-semibold text-[#24553f]"
+    >
+      <Check className="h-5 w-5 shrink-0" aria-hidden="true" />
+      {text}
+    </p>
+  );
+}
+
+type Notice = { text: string; error?: boolean };
+
+const NoticeContext = createContext<(notice: Notice) => void>(() => {});
+
+/** Shows short notices at the bottom of the screen, for actions whose row disappears (like deleting). */
+export function NoticeProvider({ children }: { children: ReactNode }) {
+  const [notice, setNotice] = useState<Notice & { key: number }>();
+  useEffect(() => {
+    if (!notice) return;
+    const timer = setTimeout(() => setNotice(undefined), 4000);
+    return () => clearTimeout(timer);
+  }, [notice]);
+  return (
+    <NoticeContext value={(n) => setNotice({ ...n, key: Date.now() })}>
+      {children}
+      <div
+        role="status"
+        aria-live="polite"
+        className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4"
+      >
+        {notice && (
+          <p
+            key={notice.key}
+            className={`pointer-events-auto flex items-center gap-2 rounded-xl px-5 py-3 text-base font-semibold shadow-lg ${
+              notice.error
+                ? "bg-[#fbeae5] text-[#8e3f1e]"
+                : "bg-[#24553f] text-white"
+            }`}
+          >
+            {!notice.error && (
+              <Check className="h-5 w-5 shrink-0" aria-hidden="true" />
+            )}
+            {notice.text}
+          </p>
+        )}
+      </div>
+    </NoticeContext>
+  );
+}
+
+export function DeleteTaskButton({
+  taskId,
+  title,
+}: {
+  taskId: string;
+  title: string;
+}) {
+  const [pending, startTransition] = useTransition();
+  const notify = useContext(NoticeContext);
+  return (
+    <form
+      action={(form) => {
+        if (!window.confirm(`Delete "${title}"? This can't be undone.`)) return;
+        startTransition(async () => {
+          const [result] = await Promise.all([
+            deleteTaskAction(form),
+            atLeast(600),
+          ]);
+          notify(
+            result.error
+              ? { text: result.error, error: true }
+              : { text: `Deleted "${title}".` },
+          );
+        });
+      }}
+    >
+      <input type="hidden" name="taskId" value={taskId} />
+      <button
+        type="submit"
+        disabled={pending}
+        aria-label={`Delete "${title}"`}
+        className={quietButtonClass}
+      >
+        {pending ? (
+          <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+        ) : (
+          <Trash2 className="h-5 w-5" aria-hidden="true" />
+        )}
+      </button>
     </form>
   );
 }

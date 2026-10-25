@@ -286,14 +286,24 @@ export async function setTaskStatusAction(form: FormData) {
   refresh();
 }
 
-export async function addTaskAction(form: FormData) {
+export async function addTaskAction(
+  _prev: FormState,
+  form: FormData,
+): Promise<FormState> {
   const db = await signedInDb();
-  await createTask(db, required(form, "weddingId"), {
-    title: required(form, "title"),
-    due_date: text(form, "dueDate") ?? null,
-    category: text(form, "category") ?? null,
-  });
-  refresh();
+  const title = text(form, "title");
+  if (!title) return { error: "Say what needs doing." };
+  try {
+    const task = await createTask(db, required(form, "weddingId"), {
+      title,
+      due_date: text(form, "dueDate") ?? null,
+      category: text(form, "category") ?? null,
+    });
+    refresh();
+    return { message: `"${task.title}" is on your list.`, id: task.id };
+  } catch (e) {
+    return { error: friendly(e) };
+  }
 }
 
 /** "Done" with what was chosen, its cost and a link; the cost goes into the budget. */
@@ -321,10 +331,15 @@ export async function finishTaskAction(
   return { message: "Saved" };
 }
 
-export async function deleteTaskAction(form: FormData) {
+export async function deleteTaskAction(form: FormData): Promise<FormState> {
   const db = await signedInDb();
-  await deleteTask(db, required(form, "taskId"));
-  refresh();
+  try {
+    await deleteTask(db, required(form, "taskId"));
+    refresh();
+    return { message: "Task deleted." };
+  } catch (e) {
+    return { error: friendly(e) };
+  }
 }
 
 // budget ----------------------------------------------------------------------

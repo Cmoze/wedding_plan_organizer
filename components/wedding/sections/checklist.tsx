@@ -1,24 +1,16 @@
-import { Check, ExternalLink, Trash2 } from "lucide-react";
+import { Check, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import {
-  addTaskAction,
-  deleteTaskAction,
-  setTaskStatusAction,
-} from "@/app/actions";
+import { setTaskStatusAction } from "@/app/actions";
 import { ChecklistSuggestions } from "@/components/wedding/checklist-suggestions";
-import { TaskDetailsForm } from "@/components/wedding/client-forms";
+import {
+  DeleteTaskButton,
+  NoticeProvider,
+  TaskDetailsForm,
+  TaskForm,
+} from "@/components/wedding/client-forms";
 import { memberName, type WeddingContext } from "@/components/wedding/context";
 import { formatDate, formatMoney } from "@/components/wedding/format";
-import {
-  Badge,
-  Card,
-  CardTitle,
-  EmptyState,
-  Field,
-  inputClass,
-  primaryButtonClass,
-  quietButtonClass,
-} from "@/components/wedding/ui";
+import { Badge, Card, CardTitle, EmptyState } from "@/components/wedding/ui";
 import { getBudgetItems, type BudgetItem } from "@/lib/db/budget";
 import {
   OPEN_STATUSES,
@@ -82,116 +74,98 @@ export async function ChecklistSection({
   );
 
   return (
-    <div className="mt-10 space-y-6">
-      <Card>
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-base text-[#695b60]">Progress</p>
-            <p className="text-3xl font-semibold">
-              {finished} of {tasks.length} done or booked
-            </p>
-          </div>
-          <nav aria-label="Filter tasks" className="flex flex-wrap gap-2">
-            {FILTERS.map((f) => (
-              <Link
-                key={f.id}
-                href={`/?section=tasks&show=${f.id}`}
-                aria-current={f.id === filter ? "page" : undefined}
-                className={`inline-flex min-h-11 items-center rounded-full px-4 text-base font-semibold ${
-                  f.id === filter
-                    ? "bg-[#6f1d37] text-white"
-                    : "border border-[#ddcbd1] text-[#6f1d37] hover:bg-[#fbf3f5]"
-                }`}
-              >
-                {f.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-        <div className="mt-4 h-3 overflow-hidden rounded-full bg-[#f4e7eb]">
-          <div
-            className="h-full rounded-full bg-[#6f1d37]"
-            style={{
-              width: `${tasks.length ? (finished / tasks.length) * 100 : 0}%`,
-            }}
-          />
-        </div>
-      </Card>
-
-      {ctx.canEdit && (
-        <ChecklistSuggestions
-          weddingId={ctx.wedding.id}
-          fresh={finished === 0}
-        />
-      )}
-
-      {ctx.canEdit && (
+    <NoticeProvider>
+      <div className="mt-10 space-y-6">
         <Card>
-          <CardTitle>Add a task</CardTitle>
-          <form
-            action={addTaskAction}
-            className="mt-4 grid gap-4 sm:grid-cols-[1fr_auto_auto]"
-          >
-            <input type="hidden" name="weddingId" value={ctx.wedding.id} />
-            <Field label="What needs doing?">
-              <input
-                name="title"
-                required
-                className={inputClass}
-                placeholder="Order favors"
-              />
-            </Field>
-            <Field label="Due date">
-              <input name="dueDate" type="date" className={inputClass} />
-            </Field>
-            <div className="flex items-end">
-              <button type="submit" className={primaryButtonClass}>
-                Add task
-              </button>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-base text-[#695b60]">Progress</p>
+              <p className="text-3xl font-semibold">
+                {finished} of {tasks.length} done or booked
+              </p>
             </div>
-          </form>
+            <nav aria-label="Filter tasks" className="flex flex-wrap gap-2">
+              {FILTERS.map((f) => (
+                <Link
+                  key={f.id}
+                  href={`/?section=tasks&show=${f.id}`}
+                  aria-current={f.id === filter ? "page" : undefined}
+                  className={`inline-flex min-h-11 items-center rounded-full px-4 text-base font-semibold ${
+                    f.id === filter
+                      ? "bg-[#6f1d37] text-white"
+                      : "border border-[#ddcbd1] text-[#6f1d37] hover:bg-[#fbf3f5]"
+                  }`}
+                >
+                  {f.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div className="mt-4 h-3 overflow-hidden rounded-full bg-[#f4e7eb]">
+            <div
+              className="h-full rounded-full bg-[#6f1d37]"
+              style={{
+                width: `${tasks.length ? (finished / tasks.length) * 100 : 0}%`,
+              }}
+            />
+          </div>
         </Card>
-      )}
 
-      {ordered.length === 0 ? (
-        <EmptyState
-          title={
-            filter === "open"
-              ? "Nothing left to do. Nice work!"
-              : "No tasks here yet."
-          }
-        />
-      ) : (
-        <Card>
-          <CardTitle>
-            {filter === "planned"
-              ? "Done and booked"
-              : filter === "overdue"
-                ? "Past-due tasks"
-                : "In order of priority"}
-          </CardTitle>
-          {filter !== "planned" && (
-            <p className="mt-1 text-base text-[#695b60]">
-              The big decisions come first. Work down the list at your own pace.
-            </p>
-          )}
-          <ul className="mt-3 divide-y divide-[#f0e8ea]">
-            {ordered.map((task) => (
-              <TaskRow
-                key={task.id}
-                task={task}
-                ctx={ctx}
-                nextUp={task.id === nextUpId}
-                vendor={
-                  task.vendor_id ? vendors.get(task.vendor_id) : undefined
-                }
-                cost={costs.get(task.id)}
-              />
-            ))}
-          </ul>
-        </Card>
-      )}
-    </div>
+        {ctx.canEdit && (
+          <ChecklistSuggestions
+            weddingId={ctx.wedding.id}
+            fresh={finished === 0}
+          />
+        )}
+
+        {ctx.canEdit && (
+          <Card>
+            <CardTitle>Add a task</CardTitle>
+            <TaskForm weddingId={ctx.wedding.id} />
+          </Card>
+        )}
+
+        {ordered.length === 0 ? (
+          <EmptyState
+            title={
+              filter === "open"
+                ? "Nothing left to do. Nice work!"
+                : "No tasks here yet."
+            }
+          />
+        ) : (
+          <Card>
+            <CardTitle>
+              {filter === "planned"
+                ? "Done and booked"
+                : filter === "overdue"
+                  ? "Past-due tasks"
+                  : "In order of priority"}
+            </CardTitle>
+            {filter !== "planned" && (
+              <p className="mt-1 text-base text-[#695b60]">
+                The big decisions come first. Work down the list at your own
+                pace.
+              </p>
+            )}
+            <ul className="mt-3 divide-y divide-[#f0e8ea]">
+              {ordered.map((task) => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  ctx={ctx}
+                  nextUp={task.id === nextUpId}
+                  vendor={
+                    task.vendor_id ? vendors.get(task.vendor_id) : undefined
+                  }
+                  cost={costs.get(task.id)}
+                />
+              ))}
+            </ul>
+          </Card>
+        )}
+      </div>
+    </NoticeProvider>
   );
 }
 
@@ -300,18 +274,7 @@ function TaskRow({
           </p>
         )}
       </div>
-      {ctx.canEdit && (
-        <form action={deleteTaskAction}>
-          <input type="hidden" name="taskId" value={task.id} />
-          <button
-            type="submit"
-            aria-label={`Delete "${task.title}"`}
-            className={quietButtonClass}
-          >
-            <Trash2 className="h-5 w-5" aria-hidden="true" />
-          </button>
-        </form>
-      )}
+      {ctx.canEdit && <DeleteTaskButton taskId={task.id} title={task.title} />}
       {ctx.canEdit && (
         <details className="basis-full pl-15">
           <summary className="inline-flex min-h-11 cursor-pointer items-center text-base font-semibold text-[#6f1d37] underline underline-offset-4">
