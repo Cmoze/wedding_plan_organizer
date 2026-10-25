@@ -6,6 +6,7 @@ import {
   CircleAlert,
   Clock3,
   Heart,
+  Users,
   Wallet,
 } from "lucide-react";
 import { describeActivity, getActivity } from "@/lib/db/activity";
@@ -16,6 +17,7 @@ import {
   formatMoney,
   parseDate,
   weddingTitle,
+  weddingHeading,
 } from "@/components/wedding/format";
 import {
   getAlreadyPlanned,
@@ -26,6 +28,7 @@ import {
 import type { WeddingContext } from "@/components/wedding/context";
 import { CouplePhoto } from "@/components/wedding/couple-photo";
 import { getCouplePhotoUrl } from "@/lib/db/weddings";
+import { countGuests, getGuestList } from "@/lib/db/guests";
 
 export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
   const { wedding, db, today } = ctx;
@@ -37,6 +40,7 @@ export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
     weekTasks,
     plannedTasks,
     photoUrl,
+    households,
   ] = await Promise.all([
     getOverdueTasks(db, wedding.id, today),
     getCalendarItems(db, wedding.id, {
@@ -52,7 +56,10 @@ export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
     }),
     getAlreadyPlanned(db, wedding.id),
     getCouplePhotoUrl(db, wedding),
+    getGuestList(db, wedding.id),
   ]);
+  const guestCounts = countGuests(households);
+  const respondedCount = guestCounts.attending + guestCounts.declined;
   const upcoming = calendarItems.filter((item) => !item.done).slice(0, 5);
   const myWeekTasks = weekTasks.filter(
     (task) => task.assignee_id === ctx.me.id,
@@ -87,11 +94,8 @@ export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
               canEdit={ctx.canEdit}
             />
             <div className="min-w-0">
-              <p className="text-sm font-bold tracking-[0.16em] text-[#f0dce3] uppercase">
-                Your wedding workspace
-              </p>
-              <h1 className="font-heading mt-3 max-w-3xl text-4xl leading-tight tracking-[-0.04em] sm:text-5xl lg:text-6xl">
-                {weddingTitle(wedding)}
+              <h1 className="font-heading max-w-3xl text-4xl leading-tight tracking-[-0.035em] sm:text-5xl lg:text-6xl">
+                {weddingHeading(wedding)}
               </h1>
               <p className="mt-3 text-base text-[#f3e8ec] sm:text-lg">
                 {wedding.wedding_date
@@ -107,7 +111,7 @@ export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
             Open checklist <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
-        <div className="relative mt-8 flex flex-wrap items-end gap-x-8 gap-y-5 border-t border-white/20 pt-6 sm:mt-10 sm:gap-x-12">
+        <div className="relative mt-8 grid grid-cols-2 items-end gap-x-6 gap-y-5 border-t border-white/20 pt-6 sm:mt-10 sm:flex sm:flex-wrap sm:gap-x-8 lg:gap-x-12">
           <div>
             <p className="font-heading text-5xl leading-none sm:text-6xl">
               {daysToGo === null ? "—" : Math.max(daysToGo, 0)}
@@ -138,6 +142,20 @@ export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
               plans coming up
             </p>
           </div>
+          <div className="hidden h-14 w-px bg-white/20 sm:block" />
+          <Link
+            href="/?section=guests"
+            className="group rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+            aria-label={`${respondedCount} of ${guestCounts.invited} invited guests have responded. Open guest list.`}
+          >
+            <p className="font-heading flex items-center gap-2 text-3xl leading-tight sm:text-4xl">
+              <Users className="h-5 w-5 text-[#f0dce3]" aria-hidden="true" />
+              {respondedCount} / {guestCounts.invited}
+            </p>
+            <p className="mt-2 text-sm font-medium text-[#f0dce3] group-hover:underline">
+              RSVP&apos;d / invited
+            </p>
+          </Link>
         </div>
       </section>
 

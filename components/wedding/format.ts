@@ -35,6 +35,14 @@ export const weddingTitle = (w: {
 }) =>
   w.partner2_name ? `${w.partner1_name} & ${w.partner2_name}` : w.partner1_name;
 
+export const weddingHeading = (w: {
+  partner1_name: string;
+  partner2_name: string | null;
+}) =>
+  w.partner2_name
+    ? `${w.partner1_name} and ${w.partner2_name}’s Wedding`
+    : `${w.partner1_name}’s Wedding`;
+
 /** Turns what someone typed ("zola.com/registry/us") into a safe http(s) link, or null if it isn't one. */
 export function webLink(input: string): string | null {
   const value = input.trim();
