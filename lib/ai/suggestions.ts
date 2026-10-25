@@ -2,9 +2,12 @@ import { z } from "zod";
 import { createBudgetItem } from "@/lib/db/budget";
 import { linkEmail } from "@/lib/db/emails";
 import { createEvent } from "@/lib/db/events";
+import { createGift } from "@/lib/db/gifts";
+import { getGuestList } from "@/lib/db/guests";
+import { getRegistryLinks } from "@/lib/db/registry";
 import type { Db } from "@/lib/db/shared";
 import { createTask, deleteTask, updateTask } from "@/lib/db/tasks";
-import { createVendor, getVendors, type Vendor } from "@/lib/db/vendors";
+import { createVendor, getVendors } from "@/lib/db/vendors";
 
 /**
  * What the AI suggests, and how an accepted suggestion is saved.
@@ -64,6 +67,24 @@ export const EmailSuggestionSchema = z.discriminatedUnion("kind", [
     email: z.string().nullable(),
     phone: z.string().nullable(),
   }),
+  z.object({
+    kind: z.literal("gift"),
+    label,
+    reason,
+    giver_name: z
+      .string()
+      .describe("Who sent the gift, as the email names them"),
+    household_name: z
+      .string()
+      .nullable()
+      .describe("The matching guest-list household, copied exactly, or null"),
+    description: z.string().describe("What the gift is, e.g. Stand mixer"),
+    store_name: z
+      .string()
+      .nullable()
+      .describe("The registry store it was bought from, or null"),
+    received_on: date.nullable(),
+  }),
 ]);
 export type EmailSuggestion = z.infer<typeof EmailSuggestionSchema>;
 
@@ -101,15 +122,16 @@ export function cleanDate(value: string | null): string | null {
   return Number.isNaN(Date.parse(value)) ? null : value;
 }
 
-export function findVendorByName(
-  vendors: Pick<Vendor, "id" | "name">[],
+/** Best match by name (vendor, household, registry store): exact first, then one name containing the other. */
+export function findByName<T extends { name: string }>(
+  rows: T[],
   name: string | null,
-): Pick<Vendor, "id" | "name"> | null {
+): T | null {
   if (!name) return null;
   const wanted = normalize(name);
   return (
-    vendors.find((v) => normalize(v.name) === wanted) ??
-    vendors.find(
+    rows.find((v) => normalize(v.name) === wanted) ??
+    rows.find(
       (v) =>
         normalize(v.name).includes(wanted) ||
         wanted.includes(normalize(v.name)),
@@ -138,7 +160,7 @@ export async function applyEmailSuggestion(
 ): Promise<{ kind: EmailSuggestion["kind"]; id: string }> {
   switch (suggestion.kind) {
     case "budget_item": {
-      const vendor = findVendorByName(
+      const vendor = findByName(
         await getVendors(db, weddingId),
         suggestion.vendor_name,
       );
@@ -187,6 +209,25 @@ export async function applyEmailSuggestion(
       });
       if (emailId) await linkEmail(db, emailId, { vendorId: vendor.id });
       return { kind: "vendor", id: vendor.id };
+    }
+    case "gift": {
+      const [households, registries] = await Promise.all([
+        getGuestList(db, weddingId),
+        getRegistryLinks(db, weddingId),
+      ]);
+      const household = findByName(households, suggestion.household_name);
+      const registry = findByName(
+        registries.map((r) => ({ id: r.id, name: r.store_name })),
+        suggestion.store_name,
+      );
+      const gift = await createGift(db, weddingId, {
+        giver_name: suggestion.giver_name,
+        description: suggestion.description,
+        household_id: household?.id ?? null,
+        registry_link_id: registry?.id ?? null,
+        received_on: cleanDate(suggestion.received_on),
+      });
+      return { kind: "gift", id: gift.id };
     }
   }
 }

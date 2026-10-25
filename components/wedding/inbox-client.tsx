@@ -61,6 +61,7 @@ const KIND_LABEL: Record<EmailSuggestion["kind"], string> = {
   task: "Checklist",
   event: "Calendar",
   vendor: "Vendor",
+  gift: "Gift",
 };
 
 /**
@@ -149,8 +150,8 @@ export function EmailSuggestions({
         Add this to your plan
       </CardTitle>
       <p className="mt-2 text-base text-[#52635a]">
-        The helper reads the email and suggests costs, dates, to-dos and
-        vendors. Nothing is saved until you say yes.
+        The helper reads the email and suggests costs, dates, to-dos, vendors
+        and gifts. Nothing is saved until you say yes.
       </p>
 
       <div className="mt-4 space-y-3">

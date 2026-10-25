@@ -14,7 +14,7 @@ const { cleanChecklistSuggestions } = await import("@/lib/ai/checklist");
 const { fallbackWeeklySummary, getWeeklySummary } =
   await import("@/lib/ai/weekly-summary");
 const { takeRateLimit } = await import("@/lib/ai/rate-limit");
-const { cleanDate, findVendorByName } = await import("@/lib/ai/suggestions");
+const { cleanDate, findByName } = await import("@/lib/ai/suggestions");
 
 beforeEach(() => {
   generateStructured.mockReset();
@@ -42,6 +42,16 @@ const context = {
   vendors: [{ name: "Willow Creek Barn", type: "Venue" }],
   budgetItems: [],
   openTasks: [{ title: "Book florist", due_date: "2026-11-01" }],
+  households: [
+    {
+      name: "The Millers",
+      guests: [
+        { first_name: "Sue", last_name: "Miller" },
+        { first_name: "Tom", last_name: null },
+      ],
+    },
+  ],
+  registries: [{ store_name: "Zola" }],
 };
 
 describe("email → actions", () => {
@@ -90,6 +100,34 @@ describe("email → actions", () => {
     ]);
     expect(cleaned).toHaveLength(1);
     expect(cleaned[0]).toMatchObject({ kind: "budget_item", due_date: null });
+  });
+
+  it("lists households and registries so gifts can be matched", () => {
+    const prompt = buildEmailPrompt(email, context);
+    expect(prompt).toContain("The Millers (Sue Miller, Tom)");
+    expect(prompt).toMatch(/Registries:\n- Zola/);
+  });
+
+  it("keeps gifts with a giver and an item, cleaning the date", () => {
+    const base = {
+      kind: "gift" as const,
+      label: "?",
+      reason: "r",
+      household_name: "The Millers",
+      store_name: "Zola",
+    };
+    const cleaned = cleanEmailSuggestions([
+      {
+        ...base,
+        giver_name: "Sue Miller",
+        description: "Stand mixer",
+        received_on: "yesterday",
+      },
+      { ...base, giver_name: " ", description: "Towels", received_on: null },
+    ]);
+    expect(cleaned).toEqual([
+      expect.objectContaining({ giver_name: "Sue Miller", received_on: null }),
+    ]);
   });
 
   it("passes AI errors through so the route can show them", async () => {
@@ -238,10 +276,10 @@ describe("helpers", () => {
       { id: "1", name: "Bloom & Vine Florals" },
       { id: "2", name: "Willow Creek Barn" },
     ];
-    expect(findVendorByName(vendors, "bloom and vine")?.id).toBe("1");
-    expect(findVendorByName(vendors, "Willow Creek Barn")?.id).toBe("2");
-    expect(findVendorByName(vendors, "Lens Studio")).toBeNull();
-    expect(findVendorByName(vendors, null)).toBeNull();
+    expect(findByName(vendors, "bloom and vine")?.id).toBe("1");
+    expect(findByName(vendors, "Willow Creek Barn")?.id).toBe("2");
+    expect(findByName(vendors, "Lens Studio")).toBeNull();
+    expect(findByName(vendors, null)).toBeNull();
   });
 
   it("only accepts real YYYY-MM-DD dates", () => {

@@ -21,11 +21,17 @@ export type EmailActionsContext = {
     "category" | "description" | "estimated" | "due_date"
   >[];
   openTasks: Pick<Task, "title" | "due_date">[];
+  /** Guest-list households with their guests' names, so a gift can be matched to who sent it. */
+  households: {
+    name: string;
+    guests: { first_name: string; last_name: string | null }[];
+  }[];
+  registries: { store_name: string }[];
 };
 
 const MAX_EMAIL_CHARS = 20_000;
 
-const SYSTEM = `You help a family plan a wedding. You read one email that was sent or forwarded to the wedding's inbox and suggest concrete actions to add to their planner: budget items (costs, deposits, balances due), tasks (things someone needs to do), calendar events (appointments, tastings, fittings) and new vendors.
+const SYSTEM = `You help a family plan a wedding. You read one email that was sent or forwarded to the wedding's inbox and suggest concrete actions to add to their planner: budget items (costs, deposits, balances due), tasks (things someone needs to do), calendar events (appointments, tastings, fittings), new vendors and gifts the couple received.
 
 How to suggest:
 - Only suggest what the email actually states or clearly asks for. Never invent amounts, dates or names. It's fine to return no suggestions for newsletters, receipts with nothing due, or chit-chat.
@@ -33,6 +39,7 @@ How to suggest:
 - For money: one budget item per payment that is due (e.g. a deposit and a final balance are two items, each with its due date). If only a total quote is given with no schedule, suggest one item for the total. Don't suggest a budget item that already exists in the planner.
 - Suggest a vendor only if the sender (or a business named in the email) isn't already in the vendor list.
 - Don't duplicate open tasks that are already in the planner.
+- Gifts: when the email says someone bought or sent the couple a gift (registry purchase notices from stores like Amazon, Zola or Target, or a guest writing that a gift is on its way), suggest one gift per item, e.g. "Record a stand mixer from Sue Miller?". Set household_name to the guest-list household that person belongs to, copied exactly, or null if you can't tell. Set store_name to the matching registry store if it's in the list. A gift is not a cost to the couple, so never suggest a budget item for it.
 - Write labels as short, friendly yes/no questions with the key facts, e.g. "Add $500 Bloom & Vine deposit due Nov 3 to the budget?". Use plain words; the readers are not technical.
 - At most 6 suggestions, most important first.
 
@@ -85,6 +92,12 @@ ${list(context.budgetItems.map((b) => `${b.category}: ${b.description} $${b.esti
 Open tasks already in the planner:
 ${list(context.openTasks.map((t) => (t.due_date ? `${t.title} (due ${t.due_date})` : t.title)))}
 
+Guest-list households (guests in brackets):
+${list(context.households.map((h) => (h.guests.length ? `${h.name} (${h.guests.map((g) => [g.first_name, g.last_name].filter(Boolean).join(" ")).join(", ")})` : h.name)))}
+
+Registries:
+${list(context.registries.map((r) => r.store_name))}
+
 <email>
 From: ${email.from_name ? `${email.from_name} <${email.from_address}>` : email.from_address}
 Received: ${email.received_at.slice(0, 10)}
@@ -106,13 +119,17 @@ export function cleanEmailSuggestions(
           : null;
       if (s.kind === "task") return { ...s, due_date: cleanDate(s.due_date) };
       if (s.kind === "event") return cleanDate(s.date) ? s : null;
+      if (s.kind === "gift")
+        return s.giver_name.trim() && s.description.trim()
+          ? { ...s, received_on: cleanDate(s.received_on) }
+          : null;
       return s.name.trim() ? s : null;
     })
     .filter((s): s is EmailSuggestion => s !== null)
     .slice(0, 6);
 }
 
-/** "Email → suggested actions": reads one inbox email and proposes budget items, tasks, events and vendors. */
+/** "Email → suggested actions": reads one inbox email and proposes budget items, tasks, events, vendors and gifts. */
 export async function suggestEmailActions(
   email: Parameters<typeof buildEmailPrompt>[0],
   context: EmailActionsContext,

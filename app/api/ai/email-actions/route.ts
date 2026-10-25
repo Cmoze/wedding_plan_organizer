@@ -5,6 +5,8 @@ import { aiErrorResponse, checkAiAccess, jsonError } from "@/lib/ai/http";
 import { getCurrentUser } from "@/lib/db/auth";
 import { getBudgetItems } from "@/lib/db/budget";
 import { getEmail } from "@/lib/db/emails";
+import { getGuestList } from "@/lib/db/guests";
+import { getRegistryLinks } from "@/lib/db/registry";
 import { toDateString } from "@/lib/db/shared";
 import { createClient } from "@/lib/db/supabase/server";
 import { getTasks, OPEN_STATUSES } from "@/lib/db/tasks";
@@ -34,18 +36,23 @@ export async function POST(request: Request) {
     return jsonError(503, "The AI helper isn't set up yet", "unavailable");
 
   try {
-    const [wedding, vendors, budgetItems, openTasks] = await Promise.all([
-      getWedding(db, email.wedding_id),
-      getVendors(db, email.wedding_id),
-      getBudgetItems(db, email.wedding_id),
-      getTasks(db, email.wedding_id, { status: OPEN_STATUSES }),
-    ]);
+    const [wedding, vendors, budgetItems, openTasks, households, registries] =
+      await Promise.all([
+        getWedding(db, email.wedding_id),
+        getVendors(db, email.wedding_id),
+        getBudgetItems(db, email.wedding_id),
+        getTasks(db, email.wedding_id, { status: OPEN_STATUSES }),
+        getGuestList(db, email.wedding_id),
+        getRegistryLinks(db, email.wedding_id),
+      ]);
     const suggestions = await suggestEmailActions(email, {
       today: toDateString(new Date()),
       wedding,
       vendors,
       budgetItems,
       openTasks,
+      households,
+      registries,
     });
     return Response.json({ suggestions });
   } catch (error) {
