@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, Heart, Search } from "lucide-react";
+import { Suspense } from "react";
 import { AuthLayout } from "@/components/wedding/auth-layout";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -20,21 +21,37 @@ function readInviteToken(value: string) {
   }
 }
 
-export default async function FindEventPage({
+const TITLE = "Find your wedding";
+const DESCRIPTION =
+  "Paste the invitation link or code your couple shared with you.";
+
+// searchParams is request data, so it's read inside <Suspense> (required for the production build).
+export default function FindEventPage({
   searchParams,
 }: {
   searchParams: SearchParams;
 }) {
+  return (
+    <Suspense
+      fallback={
+        <AuthLayout title={TITLE} description={DESCRIPTION}>
+          {null}
+        </AuthLayout>
+      }
+    >
+      <FindEvent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function FindEvent({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const raw = typeof params.invite === "string" ? params.invite : "";
   const token = raw ? readInviteToken(raw) : null;
   if (token) redirect(`/invite/${token}`);
 
   return (
-    <AuthLayout
-      title="Find your wedding"
-      description="Paste the invitation link or code your couple shared with you."
-    >
+    <AuthLayout title={TITLE} description={DESCRIPTION}>
       <form action="/find-event" className="space-y-5">
         <label
           className="block text-sm font-bold text-[#492734]"
