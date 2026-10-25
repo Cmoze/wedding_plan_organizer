@@ -1,9 +1,16 @@
 "use client";
 
-import { useActionState, useRef, useState, useTransition } from "react";
+import {
+  useActionState,
+  useRef,
+  useState,
+  useTransition,
+  type ChangeEvent,
+} from "react";
 import {
   addEventAction,
   addIdeaItemAction,
+  addRegistryLinkAction,
   finishTaskAction,
   type FormState,
 } from "@/app/actions";
@@ -263,6 +270,85 @@ export function TaskDetailsForm({
           {pending ? "Saving..." : submitLabel}
         </button>
         <FormMessage error={state.error} />
+      </div>
+    </form>
+  );
+}
+
+const popularStores = [
+  "Amazon",
+  "Target",
+  "Zola",
+  "The Knot",
+  "Crate & Barrel",
+  "Williams Sonoma",
+  "Pottery Barn",
+  "Bed Bath & Beyond",
+  "Honeyfund",
+];
+
+/** Keeps what was typed when saving fails; clears it after a save. */
+export function RegistryLinkForm({ weddingId }: { weddingId: string }) {
+  const empty = { storeName: "", url: "", notes: "" };
+  const [values, setValues] = useState(empty);
+  const [state, action, pending] = useActionState<FormState, FormData>(
+    async (prev, form) => {
+      const result = await addRegistryLinkAction(prev, form);
+      if (!result.error) setValues(empty);
+      return result;
+    },
+    {},
+  );
+  const field =
+    (key: keyof typeof empty) => (e: ChangeEvent<HTMLInputElement>) =>
+      setValues((v) => ({ ...v, [key]: e.target.value }));
+
+  return (
+    <form action={action} className="mt-4 grid gap-4 sm:grid-cols-2">
+      <input type="hidden" name="weddingId" value={weddingId} />
+      <Field label="Store" hint="Pick one or type your own.">
+        <input
+          name="storeName"
+          required
+          list="registry-stores"
+          value={values.storeName}
+          onChange={field("storeName")}
+          className={inputClass}
+          placeholder="Zola"
+        />
+        <datalist id="registry-stores">
+          {popularStores.map((s) => (
+            <option key={s} value={s} />
+          ))}
+        </datalist>
+      </Field>
+      <Field label="Registry link" hint="Copy it from the store's website.">
+        <input
+          name="url"
+          required
+          inputMode="url"
+          value={values.url}
+          onChange={field("url")}
+          className={inputClass}
+          placeholder="zola.com/registry/..."
+        />
+      </Field>
+      <div className="sm:col-span-2">
+        <Field label="Notes (optional)">
+          <input
+            name="notes"
+            value={values.notes}
+            onChange={field("notes")}
+            className={inputClass}
+            placeholder="Kitchen things and the honeymoon fund"
+          />
+        </Field>
+      </div>
+      <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+        <button type="submit" disabled={pending} className={primaryButtonClass}>
+          {pending ? "Saving..." : "Add registry"}
+        </button>
+        <FormMessage error={state.error} message={state.message} />
       </div>
     </form>
   );

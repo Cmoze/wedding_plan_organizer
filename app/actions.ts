@@ -3,6 +3,7 @@
 import { refresh, revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { webLink } from "@/components/wedding/format";
 import { ACTIVE_WEDDING_COOKIE } from "@/lib/active-wedding";
 import { getCurrentUser, signIn, signOut, signUp } from "@/lib/db/auth";
 import {
@@ -27,6 +28,7 @@ import {
   deleteInvite,
   type Invite,
 } from "@/lib/db/invites";
+import { createRegistryLink, deleteRegistryLink } from "@/lib/db/registry";
 import { DbError } from "@/lib/db/shared";
 import { createClient } from "@/lib/db/supabase/server";
 import {
@@ -449,6 +451,37 @@ export async function addIdeaCommentAction(form: FormData) {
     { ideaItemId: required(form, "itemId") },
     required(form, "body"),
   );
+  refresh();
+}
+
+// registry --------------------------------------------------------------------
+
+export async function addRegistryLinkAction(
+  _prev: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const db = await signedInDb();
+  const storeName = text(form, "storeName");
+  if (!storeName) return { error: "Enter the store name." };
+  const url = webLink(text(form, "url") ?? "");
+  if (!url)
+    return { error: "Paste the registry's web address, like zola.com/..." };
+  try {
+    await createRegistryLink(db, required(form, "weddingId"), {
+      store_name: storeName,
+      url,
+      notes: text(form, "notes") ?? null,
+    });
+  } catch (e) {
+    return { error: friendly(e) };
+  }
+  refresh();
+  return { message: `Added ${storeName}` };
+}
+
+export async function deleteRegistryLinkAction(form: FormData) {
+  const db = await signedInDb();
+  await deleteRegistryLink(db, required(form, "linkId"));
   refresh();
 }
 

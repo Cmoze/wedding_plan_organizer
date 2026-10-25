@@ -181,7 +181,8 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
   - 20 calls / 10 min per user (in-memory, `lib/ai/rate-limit.ts`); routes return 503 `unavailable` / 429 `rate_limited`, weekly summary falls back to a plain summary.
 
 **Days 6–7: Registry and demo readiness**
-- [ ] Registry section: saved links (Amazon, Target, Zola) with store name and notes
+- [x] Registry section: saved links (Amazon, Target, Zola) with store name and notes
+  - `components/wedding/sections/registry.tsx` (`/?section=registry`, "Registry" in the nav). Couple/planner add and remove links; helpers only view. Links are checked to be http(s) (`webLink` in `components/wedding/format.ts`).
 - [ ] Production deploy works end to end with seeded data
 - [ ] Prepare the demo email ahead of time so the "email → calendar" moment works reliably
 

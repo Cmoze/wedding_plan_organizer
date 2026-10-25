@@ -11,6 +11,7 @@ import { ChecklistSection } from "@/components/wedding/sections/checklist";
 import { GuestsSection } from "@/components/wedding/sections/guests";
 import { IdeasSection } from "@/components/wedding/sections/ideas";
 import { InboxSection } from "@/components/wedding/sections/inbox";
+import { RegistrySection } from "@/components/wedding/sections/registry";
 import { TeamSection } from "@/components/wedding/sections/team";
 import { ACTIVE_WEDDING_COOKIE } from "@/lib/active-wedding";
 import { getCurrentUser } from "@/lib/db/auth";
@@ -26,6 +27,7 @@ const sections = [
   "guests",
   "ideas",
   "inbox",
+  "registry",
   "team",
 ] as const;
 
@@ -82,6 +84,7 @@ async function SectionWorkspace({
     guests: <GuestsSection ctx={ctx} />,
     ideas: <IdeasSection ctx={ctx} boardId={param("board")} />,
     inbox: <InboxSection ctx={ctx} emailId={param("email")} />,
+    registry: <RegistrySection ctx={ctx} />,
     team: <TeamSection ctx={ctx} weddings={weddings} />,
   };
 

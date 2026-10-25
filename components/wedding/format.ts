@@ -34,3 +34,19 @@ export const weddingTitle = (w: {
   partner2_name: string | null;
 }) =>
   w.partner2_name ? `${w.partner1_name} & ${w.partner2_name}` : w.partner1_name;
+
+/** Turns what someone typed ("zola.com/registry/us") into a safe http(s) link, or null if it isn't one. */
+export function webLink(input: string): string | null {
+  const value = input.trim();
+  const withScheme = /^[a-z][a-z\d+.-]*:/i.test(value)
+    ? value
+    : `https://${value}`;
+  try {
+    const url = new URL(withScheme);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    if (!url.hostname.includes(".")) return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}

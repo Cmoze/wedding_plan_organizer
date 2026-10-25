@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import {
   CalendarDays,
   CheckSquare,
+  Gift,
   Heart,
   Home,
   Inbox,
@@ -22,6 +23,7 @@ const sections = [
   { id: "guests", label: "Guests", icon: UsersRound },
   { id: "ideas", label: "Ideas", icon: Heart },
   { id: "inbox", label: "Inbox", icon: Inbox },
+  { id: "registry", label: "Registry", icon: Gift },
   { id: "team", label: "Team", icon: UserPlus },
 ] as const;
 
@@ -56,6 +58,11 @@ const sectionCopy: Record<SectionId, { title: string; description: string }> = {
   inbox: {
     title: "Wedding inbox",
     description: "Keep vendor emails close to the plans they belong to.",
+  },
+  registry: {
+    title: "Gift registry",
+    description:
+      "Keep every registry link in one place, ready to share with guests.",
   },
   team: {
     title: "Your wedding team",
@@ -291,6 +298,7 @@ function SectionWelcome({ section }: { section: SectionId }) {
     guests: "Your guest list will start here",
     ideas: "Your inspiration will have a home here",
     inbox: "Your wedding emails will be here",
+    registry: "Your registry links will be here",
     team: "Your wedding team will be here",
   };
 
