@@ -86,9 +86,9 @@ export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
       <section className="relative overflow-hidden rounded-[2rem] bg-[#6f1d37] px-6 py-8 text-white shadow-[0_20px_50px_-28px_rgba(80,20,43,0.55)] sm:px-9 sm:py-10 lg:px-12">
         <span className="pointer-events-none absolute -top-28 right-[-4rem] h-72 w-72 rounded-full border border-white/10 sm:right-10" />
         <span className="pointer-events-none absolute -top-16 right-[-1rem] h-52 w-52 rounded-full border border-white/10 sm:right-20" />
-        <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-5 sm:gap-8">
+        <div className="relative grid grid-cols-1 items-center gap-5 sm:gap-8 md:grid-cols-[minmax(0,1fr)_auto]">
           <div className="min-w-0">
-            <h1 className="font-heading max-w-3xl text-4xl leading-tight tracking-[-0.035em] break-words sm:text-5xl lg:text-6xl">
+            <h1 className="font-heading max-w-3xl text-[clamp(1.5rem,8vw,2.25rem)] leading-tight tracking-[-0.025em] break-normal hyphens-none md:text-5xl lg:text-6xl">
               {weddingHeading(wedding)}
             </h1>
             <p className="mt-3 text-base text-[#f3e8ec] sm:text-lg">

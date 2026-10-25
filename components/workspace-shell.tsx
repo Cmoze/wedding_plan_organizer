@@ -114,8 +114,8 @@ export function WorkspaceShell({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="flex min-h-20 items-center justify-between border-b border-[#eadfe2] bg-[#fffdfb] px-5 sm:px-8 lg:px-10">
-            <div className="flex items-center gap-3 lg:hidden">
+          <header className="flex min-h-20 items-center justify-between gap-2 border-b border-[#eadfe2] bg-[#fffdfb] px-3 sm:px-8 lg:px-10">
+            <div className="flex min-w-0 items-center gap-2 lg:hidden">
               <details className="group relative">
                 <summary
                   aria-label="Open workspace navigation"
@@ -133,17 +133,17 @@ export function WorkspaceShell({
             <p className="hidden text-sm font-medium text-[#806c74] lg:block">
               A little progress, shared by everyone.
             </p>
-            <div className="flex items-center gap-2">
-              <div className="flex min-h-12 items-center gap-3 rounded-full border border-[#eadfe2] bg-white px-4 py-1.5 text-sm font-semibold">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f4e7eb] text-xs font-bold text-[#6f1d37]">
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+              <div className="flex min-h-12 min-w-0 shrink items-center gap-2 rounded-full border border-[#eadfe2] bg-white px-2.5 py-1.5 text-sm font-semibold sm:gap-3 sm:px-4">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f4e7eb] text-xs font-bold text-[#6f1d37]">
                   {(account?.userName || "W").charAt(0).toUpperCase()}
                 </span>
-                <span className="flex flex-col leading-tight">
-                  <span className="max-w-[min(38vw,280px)] truncate text-[#492734]">
+                <span className="flex min-w-0 flex-col leading-tight">
+                  <span className="max-w-[22vw] truncate text-[#492734] sm:max-w-[min(38vw,280px)]">
                     {account?.weddingTitle ?? "Wedding team"}
                   </span>
                   {account?.weddingDate && (
-                    <span className="text-xs font-normal text-[#806c74]">
+                    <span className="hidden text-xs font-normal text-[#806c74] sm:block">
                       {new Date(
                         `${account.weddingDate}T12:00:00`,
                       ).toLocaleDateString("en-US", {
@@ -165,7 +165,7 @@ export function WorkspaceShell({
                   <button
                     type="submit"
                     aria-label="Log out"
-                    className="flex h-12 w-12 items-center justify-center rounded-full border border-[#eadfe2] bg-white text-[#6f1d37] hover:bg-[#fbf3f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8c3c58]"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#eadfe2] bg-white text-[#6f1d37] hover:bg-[#fbf3f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8c3c58] sm:h-12 sm:w-12"
                   >
                     <LogOut className="h-5 w-5" aria-hidden="true" />
                   </button>
@@ -210,10 +210,12 @@ function Brand({ compact = false }: { compact?: boolean }) {
       href="/?section=home"
       className={`flex items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#8c3c58] ${compact ? "mb-4 px-2 py-2" : "px-3"}`}
     >
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#6f1d37] text-white">
+      <span
+        className={`flex shrink-0 items-center justify-center rounded-2xl bg-[#6f1d37] text-white ${compact ? "h-10 w-10 sm:h-11 sm:w-11" : "h-11 w-11"}`}
+      >
         <Heart className="h-5 w-5 fill-current" aria-hidden="true" />
       </span>
-      <span>
+      <span className={compact ? "hidden sm:block" : undefined}>
         <span className="block text-base leading-5 font-bold">Together</span>
         <span className="block text-sm leading-5 text-[#806c74]">
           Wedding planning

@@ -2,6 +2,7 @@ import { Check, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { setTaskStatusAction } from "@/app/actions";
 import { ChecklistSuggestions } from "@/components/wedding/checklist-suggestions";
+import { EditTaskForm } from "@/components/wedding/edit-forms";
 import {
   DeleteTaskButton,
   NoticeProvider,
@@ -277,6 +278,16 @@ function TaskRow({
           </p>
         )}
       </div>
+      {ctx.canEdit && (
+        <details className="basis-full">
+          <summary className="inline-flex min-h-11 cursor-pointer list-none items-center rounded-lg border border-[#ddcbd1] px-3 text-base font-semibold text-[#6f1d37] hover:bg-[#fbf3f5]">
+            Edit task
+          </summary>
+          <div className="basis-full rounded-2xl bg-[#fffaf8] p-4 sm:p-5">
+            <EditTaskForm task={task} members={ctx.members} />
+          </div>
+        </details>
+      )}
       {ctx.canEdit && <DeleteTaskButton taskId={task.id} title={task.title} />}
       {ctx.canEdit && (
         <details className="basis-full pl-15">

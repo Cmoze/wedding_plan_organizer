@@ -50,18 +50,6 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 ## Role A (Kai): Frontend / UI
 *Owns: `app/` pages, `components/`, layout, styling, the overall user experience.*
 
-> **Notes for Kai (from Carter, updated 2026-10-25). Read these, then delete this box once handled.**
-> - Carter added the Inbox section in your area: `components/wedding/sections/inbox.tsx` and
->   `components/wedding/inbox-client.tsx` (wired into `app/page.tsx`). Restyle or restructure freely.
-> - Carter also added Piper's chat, `components/wedding/assistant-chat.tsx`, mounted by one line in
->   `app/page.tsx`, and moved the RSVP QR card to the bottom of the Guests page. Restyle freely.
-> - Still a bug at phone width (375px): the account pill in the top bar is cut off and the log-out
->   button can't be seen (`components/workspace-shell.tsx`).
-> - The big wedding title on Home breaks in the middle of words ("Jordan / 's", "Weddi / ng") at
->   phone width and in narrow windows.
-> - Run `npm run build` before pushing a new page: `/find-event` passed `npm run dev` but broke the
->   Vercel build (request data has to be read inside `<Suspense>`). Fixed in `acf43cc`.
-
 **Days 1–2: App shell and design basics**
 - [x] Set up Next.js (App Router) + TypeScript + Tailwind + shadcn/ui (coordinate with C, who sets up the repo)
   - Done by C. `app/` and `components/` already exist with create-next-app / shadcn starter files (`app/page.tsx`, `app/layout.tsx`, `components/ui/button.tsx`). They're placeholders: replace them freely.

@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Fragment } from "react";
 import { deleteEventAction } from "@/app/actions";
+import { EditCalendarEventForm } from "@/components/wedding/edit-forms";
 import { EventForm, LocalTime } from "@/components/wedding/client-forms";
 import type { WeddingContext } from "@/components/wedding/context";
 import {
@@ -336,6 +337,16 @@ function ItemList({
               >
                 {kind.open}
               </Link>
+            )}
+            {item.kind === "event" && ctx.canEdit && (
+              <details className="basis-full">
+                <summary className="inline-flex min-h-11 cursor-pointer list-none items-center rounded-lg border border-[#ddcbd1] px-3 text-base font-semibold text-[#6f1d37] hover:bg-[#fbf3f5]">
+                  Edit event
+                </summary>
+                <div className="rounded-2xl bg-[#fffaf8] p-4 sm:p-5">
+                  <EditCalendarEventForm event={item} />
+                </div>
+              </details>
             )}
             {item.kind === "event" && ctx.canEdit && (
               <form action={deleteEventAction}>

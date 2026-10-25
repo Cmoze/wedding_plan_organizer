@@ -13,7 +13,7 @@ import {
 } from "@/lib/db/budget";
 import { addComment } from "@/lib/db/comments";
 import { deleteEmail } from "@/lib/db/emails";
-import { createEvent, deleteEvent } from "@/lib/db/events";
+import { createEvent, deleteEvent, updateEvent } from "@/lib/db/events";
 import { createGift, deleteGift, setThankYouSent } from "@/lib/db/gifts";
 import {
   addGuest,
@@ -340,6 +340,28 @@ export async function setTaskDueDateAction(form: FormData) {
   refresh();
 }
 
+export async function updateTaskAction(
+  _prev: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const db = await signedInDb();
+  const title = text(form, "title");
+  if (!title) return { error: "Add a task name." };
+  try {
+    await updateTask(db, required(form, "taskId"), {
+      title,
+      category: text(form, "category") ?? null,
+      due_date: text(form, "dueDate") ?? null,
+      notes: text(form, "notes") ?? null,
+      assignee_id: text(form, "assigneeId") ?? null,
+    });
+    refresh();
+    return { message: "Task updated." };
+  } catch (e) {
+    return { error: friendly(e) };
+  }
+}
+
 export async function deleteTaskAction(form: FormData): Promise<FormState> {
   const db = await signedInDb();
   try {
@@ -371,6 +393,39 @@ export async function markBudgetItemPaidAction(form: FormData) {
     paid: money(form, "amount") ?? 0,
   });
   refresh();
+}
+
+export async function updateBudgetItemAction(
+  _prev: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const db = await signedInDb();
+  const estimated = money(form, "estimated");
+  const actualText = text(form, "actual");
+  const actual = money(form, "actual");
+  const paidText = text(form, "paid");
+  const paid = money(form, "paid");
+  if (!text(form, "category")) return { error: "Add a category." };
+  if (estimated === undefined)
+    return { error: "Enter the estimate as a number." };
+  if (actualText !== undefined && actual === undefined)
+    return { error: "Enter the actual cost as a number." };
+  if (paidText !== undefined && paid === undefined)
+    return { error: "Enter the amount paid as a number." };
+  try {
+    await updateBudgetItem(db, required(form, "itemId"), {
+      category: required(form, "category"),
+      description: text(form, "description") ?? "",
+      estimated,
+      actual: actual ?? null,
+      paid: paid ?? 0,
+      due_date: text(form, "dueDate") ?? null,
+    });
+    refresh();
+    return { message: "Budget item updated." };
+  } catch (e) {
+    return { error: friendly(e) };
+  }
 }
 
 export async function deleteBudgetItemAction(form: FormData) {
@@ -455,6 +510,29 @@ export async function addEventAction(input: {
     all_day: input.allDay,
   });
   refresh();
+}
+
+export async function updateEventAction(input: {
+  eventId: string;
+  title: string;
+  startsAt: string;
+  location?: string;
+  allDay: boolean;
+}): Promise<FormState> {
+  const db = await signedInDb();
+  if (!input.title.trim()) return { error: "Add an event name." };
+  try {
+    await updateEvent(db, input.eventId, {
+      title: input.title.trim(),
+      starts_at: input.startsAt,
+      location: input.location?.trim() || null,
+      all_day: input.allDay,
+    });
+    refresh();
+    return { message: "Calendar event updated." };
+  } catch (e) {
+    return { error: friendly(e) };
+  }
 }
 
 export async function deleteEventAction(form: FormData) {

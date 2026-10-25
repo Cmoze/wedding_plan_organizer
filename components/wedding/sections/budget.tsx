@@ -17,6 +17,7 @@ import {
   quietButtonClass,
   secondaryButtonClass,
 } from "@/components/wedding/ui";
+import { EditBudgetItemForm } from "@/components/wedding/edit-forms";
 import {
   getBudgetItems,
   summarizeBudget,
@@ -234,6 +235,16 @@ function BudgetRow({ item, ctx }: { item: BudgetItem; ctx: WeddingContext }) {
             Mark paid
           </button>
         </form>
+      )}
+      {ctx.canEdit && (
+        <details className="basis-full">
+          <summary className="inline-flex min-h-11 cursor-pointer list-none items-center rounded-lg border border-[#ddcbd1] px-3 text-base font-semibold text-[#6f1d37] hover:bg-[#fbf3f5]">
+            Edit expense
+          </summary>
+          <div className="rounded-2xl bg-[#fffaf8] p-4 sm:p-5">
+            <EditBudgetItemForm item={item} />
+          </div>
+        </details>
       )}
       {ctx.canEdit && (
         <form action={deleteBudgetItemAction}>
