@@ -1,9 +1,6 @@
 import { Trash2 } from "lucide-react";
-import {
-  addGuestAction,
-  removeGuestAction,
-  setGuestRsvpAction,
-} from "@/app/actions";
+import { removeGuestAction, setGuestRsvpAction } from "@/app/actions";
+import { GuestForm } from "@/components/wedding/client-forms";
 import type { WeddingContext } from "@/components/wedding/context";
 import { RsvpQr } from "@/components/wedding/rsvp-qr";
 import {
@@ -11,9 +8,6 @@ import {
   Card,
   CardTitle,
   EmptyState,
-  Field,
-  inputClass,
-  primaryButtonClass,
   quietButtonClass,
 } from "@/components/wedding/ui";
 import { getGifts, thankYouCards, type ThankYouCard } from "@/lib/db/gifts";
@@ -72,76 +66,11 @@ export async function GuestsSection({ ctx }: { ctx: WeddingContext }) {
           <p className="mt-1 text-base text-[#52635a]">
             Add each person. Couples and families can share one invitation.
           </p>
-          <form
-            action={addGuestAction}
-            className="mt-4 grid gap-4 sm:grid-cols-2"
-          >
-            <input type="hidden" name="weddingId" value={ctx.wedding.id} />
-            <Field label="First name">
-              <input
-                name="firstName"
-                required
-                autoComplete="off"
-                className={inputClass}
-                placeholder="Maya"
-              />
-            </Field>
-            <Field label="Last name">
-              <input
-                name="lastName"
-                autoComplete="off"
-                className={inputClass}
-                placeholder="Lopez"
-              />
-            </Field>
-            <Field label="Email" hint="Optional.">
-              <input
-                name="email"
-                type="email"
-                autoComplete="off"
-                className={inputClass}
-              />
-            </Field>
-            <Field label="Phone" hint="Optional.">
-              <input
-                name="phone"
-                type="tel"
-                autoComplete="off"
-                className={inputClass}
-              />
-            </Field>
-            <Field
-              label="Invitation"
-              hint="Pick someone already on the list to send them one invitation together."
-            >
-              <select name="householdId" defaultValue="" className={inputClass}>
-                <option value="">Their own invitation</option>
-                {households.map((h) => (
-                  <option key={h.id} value={h.id}>
-                    With {h.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Whose side?" hint="Only used for a new invitation.">
-              <select name="side" defaultValue="both" className={inputClass}>
-                {(["partner1", "partner2", "both"] as const).map((s) => (
-                  <option key={s} value={s}>
-                    {sideLabel[s]}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <div className="flex flex-wrap gap-6 sm:col-span-2">
-              <Checkbox name="plusOne" label="Can bring a plus-one" />
-              <Checkbox name="child" label="Child" />
-            </div>
-            <div className="sm:col-span-2">
-              <button type="submit" className={primaryButtonClass}>
-                Add guest
-              </button>
-            </div>
-          </form>
+          <GuestForm
+            weddingId={ctx.wedding.id}
+            households={households.map(({ id, name }) => ({ id, name }))}
+            sideLabel={sideLabel}
+          />
         </Card>
       )}
 
@@ -285,14 +214,5 @@ function Stat({ label, value }: { label: string; value: number }) {
       <p className="text-base text-[#52635a]">{label}</p>
       <p className="mt-1 text-2xl font-semibold">{value}</p>
     </div>
-  );
-}
-
-function Checkbox({ name, label }: { name: string; label: string }) {
-  return (
-    <label className="flex min-h-11 items-center gap-2 text-base font-semibold text-[#2d4a3f]">
-      <input type="checkbox" name={name} className="h-5 w-5 accent-[#315b4b]" />
-      {label}
-    </label>
   );
 }

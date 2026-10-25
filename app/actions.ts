@@ -360,24 +360,36 @@ export async function deleteBudgetItemAction(form: FormData) {
 const GUEST_SIDES = ["partner1", "partner2", "both"] as const;
 const RSVPS = ["pending", "attending", "declined"] as const;
 
-export async function addGuestAction(form: FormData) {
+export async function addGuestAction(
+  _prev: FormState,
+  form: FormData,
+): Promise<FormState> {
   const db = await signedInDb();
+  const firstName = text(form, "firstName");
+  if (!firstName) return { error: "Add the guest's first name." };
+  const lastName = text(form, "lastName") ?? null;
   const householdId = text(form, "householdId");
   const side = GUEST_SIDES.find((s) => s === text(form, "side"));
-  await addGuest(
-    db,
-    required(form, "weddingId"),
-    {
-      first_name: required(form, "firstName"),
-      last_name: text(form, "lastName") ?? null,
-      email: text(form, "email") ?? null,
-      phone: text(form, "phone") ?? null,
-      plus_one_allowed: form.get("plusOne") === "on",
-      is_child: form.get("child") === "on",
-    },
-    householdId ? { id: householdId } : { side },
-  );
-  refresh();
+  try {
+    const guest = await addGuest(
+      db,
+      required(form, "weddingId"),
+      {
+        first_name: firstName,
+        last_name: lastName,
+        email: text(form, "email") ?? null,
+        phone: text(form, "phone") ?? null,
+        plus_one_allowed: form.get("plusOne") === "on",
+        is_child: form.get("child") === "on",
+      },
+      householdId ? { id: householdId } : { side },
+    );
+    refresh();
+    const name = [firstName, lastName].filter(Boolean).join(" ");
+    return { message: `${name} is on the guest list.`, id: guest.id };
+  } catch (e) {
+    return { error: friendly(e) };
+  }
 }
 
 export async function setGuestRsvpAction(form: FormData) {

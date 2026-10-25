@@ -12,6 +12,7 @@ import {
 import {
   addEventAction,
   addGiftAction,
+  addGuestAction,
   addIdeaBoardAction,
   addIdeaItemAction,
   addRegistryLinkAction,
@@ -598,6 +599,119 @@ export function IdeaBoardForm({ weddingId }: { weddingId: string }) {
         </p>
       )}
     </form>
+  );
+}
+
+type GuestSide = "partner1" | "partner2" | "both";
+
+export function GuestForm({
+  weddingId,
+  households,
+  sideLabel,
+}: {
+  weddingId: string;
+  households: { id: string; name: string }[];
+  sideLabel: Record<GuestSide, string>;
+}) {
+  const [state, action, pending] = useActionState<FormState, FormData>(
+    async (prev, form) =>
+      (await Promise.all([addGuestAction(prev, form), atLeast(600)]))[0],
+    {},
+  );
+  return (
+    <form action={action} className="mt-4 grid gap-4 sm:grid-cols-2">
+      <input type="hidden" name="weddingId" value={weddingId} />
+      <Field label="First name">
+        <input
+          name="firstName"
+          required
+          autoComplete="off"
+          className={inputClass}
+          placeholder="Maya"
+        />
+      </Field>
+      <Field label="Last name">
+        <input
+          name="lastName"
+          autoComplete="off"
+          className={inputClass}
+          placeholder="Lopez"
+        />
+      </Field>
+      <Field label="Email" hint="Optional.">
+        <input
+          name="email"
+          type="email"
+          autoComplete="off"
+          className={inputClass}
+        />
+      </Field>
+      <Field label="Phone" hint="Optional.">
+        <input
+          name="phone"
+          type="tel"
+          autoComplete="off"
+          className={inputClass}
+        />
+      </Field>
+      <Field
+        label="Invitation"
+        hint="Pick someone already on the list to send them one invitation together."
+      >
+        <select name="householdId" defaultValue="" className={inputClass}>
+          <option value="">Their own invitation</option>
+          {households.map((h) => (
+            <option key={h.id} value={h.id}>
+              With {h.name}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <Field label="Whose side?" hint="Only used for a new invitation.">
+        <select name="side" defaultValue="both" className={inputClass}>
+          {(["partner1", "partner2", "both"] as const).map((s) => (
+            <option key={s} value={s}>
+              {sideLabel[s]}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <div className="flex flex-wrap gap-6 sm:col-span-2">
+        <Checkbox name="plusOne" label="Can bring a plus-one" />
+        <Checkbox name="child" label="Child" />
+      </div>
+      <div className="space-y-4 sm:col-span-2">
+        <button
+          type="submit"
+          disabled={pending}
+          className={`${primaryButtonClass} gap-2`}
+        >
+          {pending && (
+            <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+          )}
+          {pending ? "Adding..." : "Add guest"}
+        </button>
+        {!pending && state.error && <FormMessage error={state.error} />}
+        {!pending && state.message && (
+          <p
+            role="status"
+            className="flex items-center gap-1.5 rounded-xl bg-[#e3efe6] px-4 py-3 text-base font-semibold text-[#24553f]"
+          >
+            <Check className="h-5 w-5" aria-hidden="true" />
+            {state.message}
+          </p>
+        )}
+      </div>
+    </form>
+  );
+}
+
+function Checkbox({ name, label }: { name: string; label: string }) {
+  return (
+    <label className="flex min-h-11 items-center gap-2 text-base font-semibold text-[#2d4a3f]">
+      <input type="checkbox" name={name} className="h-5 w-5 accent-[#315b4b]" />
+      {label}
+    </label>
   );
 }
 
