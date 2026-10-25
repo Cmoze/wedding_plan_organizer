@@ -2,7 +2,16 @@ import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/db/supabase/proxy";
 
 // API routes answer 401 themselves instead of redirecting.
-const PUBLIC_PATHS = ["/login", "/signup", "/invite", "/rsvp", "/api"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/signup",
+  "/invite",
+  "/rsvp",
+  "/find-event",
+  "/api",
+];
+// "/" shows the landing page when signed out; only the exact path, not everything under it.
+const PUBLIC_EXACT = ["/"];
 const AUTH_PAGES = ["/login", "/signup"];
 
 const matches = (pathname: string, paths: string[]) =>
@@ -13,7 +22,12 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   let target: string | null = null;
-  if (!userId && !matches(pathname, PUBLIC_PATHS)) target = "/login";
+  if (
+    !userId &&
+    !PUBLIC_EXACT.includes(pathname) &&
+    !matches(pathname, PUBLIC_PATHS)
+  )
+    target = "/login";
   if (userId && matches(pathname, AUTH_PAGES)) {
     const invite = request.nextUrl.searchParams.get("invite");
     target = invite ? `/invite/${encodeURIComponent(invite)}` : "/";
