@@ -147,10 +147,11 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
   - Run `npm run db:seed -- --reset` right before the demo.
 
 **Requested by Carter (2026-10-25)**
-- [ ] `gifts` table for gift tracking and thank-you cards. The Registry screens are built and waiting on it; details in
+- [x] `gifts` table for gift tracking and thank-you cards. The Registry screens are built and waiting on it; details in
   GitHub issue #2 and at the top of `lib/db/gifts.ts`. Columns: `household_id` (nullable),
   `giver_name`, `description`, `registry_link_id` (nullable), `received_on`, `thank_you_sent_at`, `notes`. Same access as
   `registry_links`. Then `npm run db:types` and remove the `TODO(B)` in `lib/db/gifts.ts`.
+  - Live on the dev project (migration `20261025193500_gifts.sql`), types regenerated, fallback removed. The seed adds 4 demo gifts.
 
 ---
 
@@ -189,7 +190,7 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 **Days 6–7: Registry and demo readiness**
 - [x] Registry section: saved links (Amazon, Target, Zola) with store name and notes
   - `components/wedding/sections/registry.tsx` (`/?section=registry`, "Registry" in the nav). Couple/planner add and remove links; helpers only view. Links are checked to be http(s) (`webLink` in `components/wedding/format.ts`).
-- [ ] Gift tracking + thank-you cards (Registry section; 🎁 badge on guest-list households). UI done; waiting on Caleb's `gifts` table.
+- [ ] Gift tracking + thank-you cards (Registry section; 🎁 badge on guest-list households). UI done; Caleb's `gifts` table is live (2026-10-25).
 - [ ] Production deploy works end to end with seeded data
 - [ ] Prepare the demo email ahead of time so the "email → calendar" moment works reliably
 

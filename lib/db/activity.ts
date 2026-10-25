@@ -13,6 +13,7 @@ const ENTITY_LABELS: Record<string, string> = {
   idea_items: "idea",
   comments: "comment",
   registry_links: "registry link",
+  gifts: "gift",
 };
 
 /** Recent activity, newest first, with the actor's display name. */

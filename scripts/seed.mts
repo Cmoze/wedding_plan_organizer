@@ -433,6 +433,7 @@ async function seed() {
     guests: [string, string, string, boolean?][];
     [field: string]: unknown;
   }[];
+  const householdIds = new Map<string, string>();
   for (const { guests, ...household } of households) {
     const h = check(
       await couple
@@ -442,6 +443,7 @@ async function seed() {
         .single(),
       `household ${household.name}`,
     );
+    householdIds.set(household.name, h.id);
     check(
       await couple.from("guests").insert(
         guests.map(([first_name, last_name, rsvp, is_child]) => ({
@@ -529,20 +531,60 @@ async function seed() {
     "helper updates own task",
   );
 
+  const [amazon, target] = check(
+    await couple
+      .from("registry_links")
+      .insert([
+        {
+          wedding_id: w,
+          store_name: "Amazon",
+          url: "https://www.amazon.com/wedding",
+        },
+        {
+          wedding_id: w,
+          store_name: "Target",
+          url: "https://www.target.com/gift-registry",
+        },
+      ])
+      .select("id"),
+    "registry",
+  );
+
   check(
-    await couple.from("registry_links").insert([
+    await couple.from("gifts").insert([
       {
         wedding_id: w,
-        store_name: "Amazon",
-        url: "https://www.amazon.com/wedding",
+        household_id: householdIds.get("Grandma Rose Carter"),
+        giver_name: "Grandma Rose Carter",
+        description: "Hand-stitched quilt",
+        received_on: dateFromToday(-20),
+        thank_you_sent_at: new Date(Date.now() - 10 * day).toISOString(),
       },
       {
         wedding_id: w,
-        store_name: "Target",
-        url: "https://www.target.com/gift-registry",
+        household_id: householdIds.get("The Nguyen Family"),
+        giver_name: "The Nguyen Family",
+        description: "Stand mixer",
+        registry_link_id: amazon.id,
+        received_on: dateFromToday(-8),
+      },
+      {
+        wedding_id: w,
+        household_id: householdIds.get("The Nguyen Family"),
+        giver_name: "The Nguyen Family",
+        description: "Set of wine glasses",
+        registry_link_id: target.id,
+        received_on: dateFromToday(-8),
+      },
+      {
+        wedding_id: w,
+        giver_name: "Maya's coworkers",
+        description: "Restaurant gift card",
+        received_on: dateFromToday(-3),
+        notes: "Card signed by the whole design team",
       },
     ]),
-    "registry",
+    "gifts",
   );
 
   check(

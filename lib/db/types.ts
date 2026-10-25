@@ -343,6 +343,70 @@ export type Database = {
           },
         ];
       };
+      gifts: {
+        Row: {
+          created_at: string;
+          description: string;
+          giver_name: string;
+          household_id: string | null;
+          id: string;
+          notes: string | null;
+          received_on: string | null;
+          registry_link_id: string | null;
+          thank_you_sent_at: string | null;
+          updated_at: string;
+          wedding_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          description: string;
+          giver_name: string;
+          household_id?: string | null;
+          id?: string;
+          notes?: string | null;
+          received_on?: string | null;
+          registry_link_id?: string | null;
+          thank_you_sent_at?: string | null;
+          updated_at?: string;
+          wedding_id: string;
+        };
+        Update: {
+          created_at?: string;
+          description?: string;
+          giver_name?: string;
+          household_id?: string | null;
+          id?: string;
+          notes?: string | null;
+          received_on?: string | null;
+          registry_link_id?: string | null;
+          thank_you_sent_at?: string | null;
+          updated_at?: string;
+          wedding_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "gifts_household_id_wedding_id_fkey";
+            columns: ["household_id", "wedding_id"];
+            isOneToOne: false;
+            referencedRelation: "households";
+            referencedColumns: ["id", "wedding_id"];
+          },
+          {
+            foreignKeyName: "gifts_registry_link_id_wedding_id_fkey";
+            columns: ["registry_link_id", "wedding_id"];
+            isOneToOne: false;
+            referencedRelation: "registry_links";
+            referencedColumns: ["id", "wedding_id"];
+          },
+          {
+            foreignKeyName: "gifts_wedding_id_fkey";
+            columns: ["wedding_id"];
+            isOneToOne: false;
+            referencedRelation: "weddings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       guests: {
         Row: {
           created_at: string;

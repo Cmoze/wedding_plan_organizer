@@ -26,6 +26,9 @@ erDiagram
   weddings ||--o{ emails : receives
   weddings ||--o{ activity : logs
   weddings ||--o{ registry_links : has
+  weddings ||--o{ gifts : received
+  households ||--o{ gifts : gave
+  registry_links ||--o{ gifts : "bought from"
   members ||--o{ tasks : "assigned to"
   vendors ||--o{ tasks : "linked to"
   vendors ||--o{ budget_items : "linked to"
@@ -52,6 +55,7 @@ Every table except `checklist_templates` has `id uuid`, `wedding_id`, `created_a
 | `emails` | `from_address`, `from_name`, `to_address`, `subject`, `body_text`, `body_html`, `received_at`, `provider_message_id`, `attachments` (json list of storage paths), `is_read`, links to a task / vendor / budget item |
 | `activity` | `actor_id`, `action` (`created` / `updated` / `completed` / `deleted`), `entity_type`, `entity_id`, `summary`. Written by database triggers |
 | `registry_links` | `store_name`, `url`, `notes` |
+| `gifts` | `giver_name`, `description`, `household_id` (who it's from, if on the guest list), `registry_link_id`, `received_on`, `thank_you_sent_at` (null = card still to send), `notes` |
 | `checklist_templates` | `title`, `category`, `months_before`, `sort_order`. Shared by all weddings, read-only |
 
 Design decisions this follows (from `docs/PLAN.md`):

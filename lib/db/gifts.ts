@@ -1,99 +1,59 @@
-import { DbError, unwrap, type Db, type Tables } from "@/lib/db/shared";
+import { unwrap, type Db, type Tables } from "@/lib/db/shared";
 
-// TODO(B): the `gifts` table doesn't exist yet (proposal in docs/PLAN.md, Role B). These run the real
-// queries through an untyped client: until the migration lands, reads return nothing and writes fail
-// with a friendly message. After `npm run db:types`, replace `Gift` with `Tables<"gifts">` and drop `gifts()`.
-
-/** A gift someone gave the couple, and whether their thank-you card has gone out. */
-export type Gift = {
-  id: string;
-  wedding_id: string;
-  /** Who it's from, when they're on the guest list; the card goes to this address. */
-  household_id: string | null;
-  /** Shown on the card list; the household name when it came from the guest list. */
-  giver_name: string;
-  description: string;
-  /** Which registry it was bought from, if any. */
-  registry_link_id: string | null;
-  /** `YYYY-MM-DD` */
-  received_on: string | null;
-  thank_you_sent_at: string | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-};
+/**
+ * A gift someone gave the couple, and whether their thank-you card has gone out.
+ * `household_id` is who it's from when they're on the guest list (the card goes to that address);
+ * `giver_name` is the household name in that case. `received_on` is `YYYY-MM-DD`.
+ */
+export type Gift = Tables<"gifts">;
 
 export type NewGift = Pick<Gift, "giver_name" | "description"> &
   Partial<
     Pick<Gift, "household_id" | "registry_link_id" | "received_on" | "notes">
   >;
 
-const NOT_SET_UP = "Gift tracking isn't switched on yet. Ask Caleb to add it.";
-
-const isMissingTable = (e: unknown) =>
-  e instanceof DbError && (e.code === "PGRST205" || e.code === "42P01");
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const gifts = (db: Db) => (db as any).from("gifts");
-
-async function write<T>(run: () => Promise<T>): Promise<T> {
-  try {
-    return await run();
-  } catch (e) {
-    throw isMissingTable(e) ? new DbError(NOT_SET_UP) : e;
-  }
-}
-
-/** Newest first. Empty until the gifts table exists. */
+/** Newest first. */
 export async function getGifts(db: Db, weddingId: string): Promise<Gift[]> {
-  try {
-    return unwrap<Gift[]>(
-      await gifts(db)
-        .select("*")
-        .eq("wedding_id", weddingId)
-        .order("received_on", { ascending: false, nullsFirst: false })
-        .order("created_at", { ascending: false }),
-    );
-  } catch (e) {
-    if (isMissingTable(e)) return [];
-    throw e;
-  }
+  return unwrap(
+    await db
+      .from("gifts")
+      .select("*")
+      .eq("wedding_id", weddingId)
+      .order("received_on", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false }),
+  );
 }
 
-export function createGift(
+export async function createGift(
   db: Db,
   weddingId: string,
   input: NewGift,
 ): Promise<Gift> {
-  return write(async () =>
-    unwrap<Gift>(
-      await gifts(db)
-        .insert({ ...input, wedding_id: weddingId })
-        .select()
-        .single(),
-    ),
+  return unwrap(
+    await db
+      .from("gifts")
+      .insert({ ...input, wedding_id: weddingId })
+      .select()
+      .single(),
   );
 }
 
 /** Marks every gift in `giftIds` as thanked (or not), so one card can cover several gifts. */
-export function setThankYouSent(
+export async function setThankYouSent(
   db: Db,
   giftIds: string[],
   sent: boolean,
 ): Promise<void> {
-  return write(async () => {
-    unwrap(
-      await gifts(db)
-        .update({ thank_you_sent_at: sent ? new Date().toISOString() : null })
-        .in("id", giftIds),
-    );
-  });
+  unwrap(
+    await db
+      .from("gifts")
+      .update({ thank_you_sent_at: sent ? new Date().toISOString() : null })
+      .in("id", giftIds),
+  );
 }
 
-export function deleteGift(db: Db, giftId: string): Promise<void> {
-  return write(async () => {
-    unwrap(await gifts(db).delete().eq("id", giftId));
-  });
+export async function deleteGift(db: Db, giftId: string): Promise<void> {
+  unwrap(await db.from("gifts").delete().eq("id", giftId));
 }
 
 type Household = Pick<
