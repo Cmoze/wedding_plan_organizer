@@ -61,11 +61,13 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
   - Done by C. `app/` and `components/` already exist with create-next-app / shadcn starter files (`app/page.tsx`, `app/layout.tsx`, `components/ui/button.tsx`). They're placeholders: replace them freely.
 - [x] App shell: navigation with Home, Tasks, Calendar, Budget, Guests, Ideas, Inbox; works on phones (bottom tab bar or hamburger menu)
 - [x] Design basics for parents: large base font (≥16–18px), high contrast, big tap targets, plain labels
-- [ ] Auth screens: sign up, log in, "create your wedding" (names, date, rough budget, guest count)
+- [x] Auth screens: sign up, log in, "create your wedding" (names, date, rough budget, guest count)
+  - Auth flow is linked from the public welcome page. Guests can find an event by opening or pasting an invitation link/code.
 - [ ] Mock data file shaped exactly like B's schema, so screens can be built before the database is ready
 
 **Days 2–4: Core screens**
-- [ ] **Home dashboard**: countdown, "my tasks this week", overdue items, budget summary, "already booked" list, recent activity
+- [x] **Home dashboard**: countdown, "my tasks this week", overdue items, budget summary, "already booked" list, recent activity
+  - Built in `components/wedding/sections/home.tsx` with live wedding, task, calendar, budget, and activity data.
 - [ ] **Tasks**: list grouped by timeframe (12 months out, 6 months out…), filter by assignee/status, add/edit form, assign to a member, check off
   - Changed (Caleb's call): no timeframe groups, since every couple's timeline differs. One list in checklist order, biggest decisions first, with "Next up" on the first open task; new tasks go to the end. Only due dates people type in are shown. Finishing a task can record what was chosen, its cost and a link (`finishTaskWithDetails`): the name/link become a booked vendor and the cost a budget expense.
 - [ ] **Calendar**: month view plus "upcoming" list view; shows task due dates, payment due dates and events; tap to open the item
@@ -77,7 +79,7 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 - [ ] **Ideas boards**: category grid → board → photo grid → photo detail with comments and 👍
 - [x] **Members/invite screen**: list members and roles, "invite" button that copies a link
   - "Team" section (`components/wedding/sections/team.tsx`): invite by email + role, which opens the inviter's own email app with the message and link filled in (plus "Copy link"); pending invites with resend/cancel; the couple can change roles and remove people. Join page at `/invite/<token>`. Automatic sending (Resend) can replace the mailto once a domain is verified.
-- [ ] **Activity feed** component (used on Home)
+- [x] **Activity feed** component (used on Home)
 - [ ] Swap mock data for B's real Supabase queries, screen by screen
 - [ ] Show/hide edit buttons based on the user's role
 

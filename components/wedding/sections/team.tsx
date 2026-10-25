@@ -41,7 +41,7 @@ export async function TeamSection({
       {ctx.canEdit ? (
         <Card>
           <CardTitle>Invite someone</CardTitle>
-          <p className="mt-1 text-base text-[#52635a]">
+          <p className="mt-1 text-base text-[#695b60]">
             Add their email and we&apos;ll write the invite for you. Your email
             app opens with the message and link ready to send.
           </p>
@@ -55,7 +55,7 @@ export async function TeamSection({
       ) : (
         <Card>
           <CardTitle>Want to bring someone in?</CardTitle>
-          <p className="mt-1 text-base text-[#52635a]">
+          <p className="mt-1 text-base text-[#695b60]">
             Ask {title} or a planner to send them an invite.
           </p>
         </Card>
@@ -64,7 +64,7 @@ export async function TeamSection({
       {ctx.canEdit && invites.length > 0 && (
         <Card>
           <CardTitle>Waiting to join</CardTitle>
-          <ul className="mt-4 divide-y divide-[#eceee8]">
+          <ul className="mt-4 divide-y divide-[#f0e8ea]">
             {invites.map((invite) => {
               const expired = invite.expires_at < now;
               return (
@@ -73,10 +73,10 @@ export async function TeamSection({
                   className="flex flex-col gap-3 py-4 lg:flex-row lg:items-center lg:justify-between"
                 >
                   <div>
-                    <p className="text-lg font-semibold break-all text-[#20352f]">
+                    <p className="text-lg font-semibold break-all text-[#35151f]">
                       {invite.email ?? "Anyone with the link"}
                     </p>
-                    <p className="mt-1 flex flex-wrap items-center gap-2 text-base text-[#66756c]">
+                    <p className="mt-1 flex flex-wrap items-center gap-2 text-base text-[#806c74]">
                       <Badge>{ROLE_INFO[invite.role].label}</Badge>
                       {expired ? (
                         <Badge tone="warn">Expired</Badge>
@@ -116,7 +116,7 @@ export async function TeamSection({
 
       <Card>
         <CardTitle>Who&apos;s planning</CardTitle>
-        <ul className="mt-4 divide-y divide-[#eceee8]">
+        <ul className="mt-4 divide-y divide-[#f0e8ea]">
           {ctx.members.map((m) => {
             const isMe = m.id === ctx.me.id;
             return (
@@ -125,15 +125,15 @@ export async function TeamSection({
                 className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
-                  <p className="text-lg font-semibold text-[#20352f]">
+                  <p className="text-lg font-semibold text-[#35151f]">
                     {m.display_name || "Unnamed"}
                     {isMe && (
-                      <span className="ml-2 text-base font-normal text-[#66756c]">
+                      <span className="ml-2 text-base font-normal text-[#806c74]">
                         (you)
                       </span>
                     )}
                   </p>
-                  <p className="mt-1 text-base text-[#66756c]">
+                  <p className="mt-1 text-base text-[#806c74]">
                     {ROLE_INFO[m.role].description}
                   </p>
                 </div>
@@ -169,14 +169,14 @@ export async function TeamSection({
       {weddings.length > 1 && (
         <Card>
           <CardTitle>Your weddings</CardTitle>
-          <p className="mt-1 text-base text-[#52635a]">
+          <p className="mt-1 text-base text-[#695b60]">
             You&apos;re on more than one wedding team. Switch between them here.
           </p>
           <ul className="mt-4 space-y-2">
             {weddings.map((w) => (
               <li key={w.id}>
                 {w.id === ctx.wedding.id ? (
-                  <p className="flex min-h-12 items-center gap-2 text-lg font-semibold text-[#20352f]">
+                  <p className="flex min-h-12 items-center gap-2 text-lg font-semibold text-[#35151f]">
                     {weddingTitle(w)} <Badge tone="good">Open now</Badge>
                   </p>
                 ) : (

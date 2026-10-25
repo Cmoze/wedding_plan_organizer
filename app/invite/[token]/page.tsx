@@ -99,7 +99,7 @@ async function Invite({ params }: { params: Params }) {
       >
         <div className="space-y-3">
           {preview.email && (
-            <p className="text-base text-[#52635a]">
+            <p className="text-base text-[#695b60]">
               This invite is for <strong>{preview.email}</strong>. Use that
               email to sign up or log in.
             </p>

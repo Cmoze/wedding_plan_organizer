@@ -9,6 +9,7 @@ import {
   Inbox,
   LogOut,
   Menu,
+  MoreHorizontal,
   UserPlus,
   UsersRound,
   Wallet,
@@ -28,6 +29,13 @@ const sections = [
 ] as const;
 
 type SectionId = (typeof sections)[number]["id"];
+const primarySections = new Set<SectionId>([
+  "home",
+  "tasks",
+  "calendar",
+  "guests",
+  "budget",
+]);
 
 const sectionCopy: Record<SectionId, { title: string; description: string }> = {
   home: {
@@ -78,58 +86,75 @@ export function WorkspaceShell({
 }: {
   activeSection: SectionId;
   /** Shown in the header once the wedding has loaded. */
-  account?: { weddingTitle: string; userName: string };
+  account?: {
+    weddingTitle: string;
+    weddingDate?: string | null;
+    userName: string;
+  };
   /** The section's content; without it the section shows its placeholder. */
   children?: ReactNode;
 }) {
   const current = sectionCopy[activeSection];
 
   return (
-    <div className="min-h-screen bg-[#f6f5f0] text-[#20352f]">
+    <div className="min-h-screen bg-[#faf7f4] text-[#35151f]">
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
-        <aside className="hidden w-64 shrink-0 flex-col border-r border-[#e3e4dc] bg-[#fbfaf7] px-5 py-7 lg:flex">
+        <aside className="hidden w-64 shrink-0 flex-col border-r border-[#eadfe2] bg-[#fffdfb] px-5 py-7 lg:flex">
           <Brand />
-          <p className="mt-10 mb-3 px-3 text-xs font-bold tracking-[0.12em] text-[#68766f] uppercase">
-            Your workspace
+          <p className="mt-10 mb-3 px-3 text-xs font-bold tracking-[0.12em] text-[#8a6f79] uppercase">
+            Plan together
           </p>
           <Navigation activeSection={activeSection} />
-          <div className="mt-auto rounded-2xl border border-[#e5e3d7] bg-[#f3f0e5] p-4">
+          <div className="mt-auto rounded-2xl border border-[#eadfe2] bg-[#fbf3f5] p-4">
             <p className="text-sm font-semibold">Planning is a team effort</p>
-            <p className="mt-1 text-sm leading-5 text-[#596960]">
+            <p className="mt-1 text-sm leading-5 text-[#75666c]">
               Share the little jobs and celebrate each thing you finish.
             </p>
           </div>
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="flex min-h-20 items-center justify-between border-b border-[#e3e4dc] bg-[#fbfaf7] px-5 sm:px-8 lg:px-10">
+          <header className="flex min-h-20 items-center justify-between border-b border-[#eadfe2] bg-[#fffdfb] px-5 sm:px-8 lg:px-10">
             <div className="flex items-center gap-3 lg:hidden">
               <details className="group relative">
                 <summary
                   aria-label="Open workspace navigation"
-                  className="flex h-12 w-12 cursor-pointer list-none items-center justify-center rounded-xl border border-[#d8ded7] text-[#294b40] hover:bg-[#f1f3ee] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#426c5a] [&::-webkit-details-marker]:hidden"
+                  className="flex h-12 w-12 cursor-pointer list-none items-center justify-center rounded-xl border border-[#ddcbd1] text-[#6f1d37] hover:bg-[#fbf3f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8c3c58] [&::-webkit-details-marker]:hidden"
                 >
                   <Menu className="h-6 w-6" aria-hidden="true" />
                 </summary>
-                <div className="absolute top-14 left-0 z-20 w-64 rounded-2xl border border-[#e1e3dc] bg-white p-3 shadow-xl">
+                <div className="absolute top-14 left-0 z-20 w-64 rounded-2xl border border-[#eadfe2] bg-white p-3 shadow-xl">
                   <Brand compact />
                   <Navigation activeSection={activeSection} />
                 </div>
               </details>
               <Brand compact />
             </div>
-            <p className="hidden text-sm font-medium text-[#617168] lg:block">
+            <p className="hidden text-sm font-medium text-[#806c74] lg:block">
               A little progress, shared by everyone.
             </p>
             <div className="flex items-center gap-2">
-              <div className="flex h-12 items-center gap-2 rounded-full border border-[#e1e3dc] bg-white px-4 text-sm font-semibold">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#e6eee8] text-xs text-[#294b40]">
+              <div className="flex min-h-12 items-center gap-3 rounded-full border border-[#eadfe2] bg-white px-4 py-1.5 text-sm font-semibold">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f4e7eb] text-xs font-bold text-[#6f1d37]">
                   {(account?.userName || "W").charAt(0).toUpperCase()}
                 </span>
                 <span className="flex flex-col leading-tight">
-                  <span>{account?.weddingTitle ?? "Wedding team"}</span>
+                  <span className="max-w-[min(38vw,280px)] truncate text-[#492734]">
+                    {account?.weddingTitle ?? "Wedding team"}
+                  </span>
+                  {account?.weddingDate && (
+                    <span className="text-xs font-normal text-[#806c74]">
+                      {new Date(
+                        `${account.weddingDate}T12:00:00`,
+                      ).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
+                  )}
                   {account?.userName && (
-                    <span className="text-xs font-normal text-[#66756c]">
+                    <span className="hidden text-xs font-normal text-[#806c74] sm:block">
                       {account.userName}
                     </span>
                   )}
@@ -140,7 +165,7 @@ export function WorkspaceShell({
                   <button
                     type="submit"
                     aria-label="Log out"
-                    className="flex h-12 w-12 items-center justify-center rounded-full border border-[#e1e3dc] bg-white text-[#294b40] hover:bg-[#f1f3ee] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#426c5a]"
+                    className="flex h-12 w-12 items-center justify-center rounded-full border border-[#eadfe2] bg-white text-[#6f1d37] hover:bg-[#fbf3f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8c3c58]"
                   >
                     <LogOut className="h-5 w-5" aria-hidden="true" />
                   </button>
@@ -151,15 +176,19 @@ export function WorkspaceShell({
 
           <main className="w-full flex-1 px-5 py-9 sm:px-8 sm:py-12 lg:px-12">
             <div className="mx-auto max-w-5xl">
-              <p className="text-sm font-bold tracking-[0.12em] text-[#536c5f] uppercase">
-                Wedding Plan Organizer
-              </p>
-              <h1 className="mt-3 max-w-3xl text-4xl leading-tight font-semibold tracking-[-0.035em] text-[#20352f] sm:text-5xl">
-                {current.title}
-              </h1>
-              <p className="mt-4 max-w-2xl text-lg leading-8 text-[#52635a]">
-                {current.description}
-              </p>
+              {activeSection !== "home" && (
+                <>
+                  <p className="text-sm font-bold tracking-[0.12em] text-[#956779] uppercase">
+                    Wedding Plan Organizer
+                  </p>
+                  <h1 className="font-heading mt-3 max-w-3xl text-4xl leading-tight font-semibold tracking-[-0.035em] text-[#35151f] sm:text-5xl">
+                    {current.title}
+                  </h1>
+                  <p className="mt-4 max-w-2xl text-lg leading-8 text-[#695b60]">
+                    {current.description}
+                  </p>
+                </>
+              )}
 
               {children ??
                 (activeSection === "home" ? (
@@ -179,14 +208,14 @@ function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <Link
       href="/?section=home"
-      className={`flex items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#426c5a] ${compact ? "mb-4 px-2 py-2" : "px-3"}`}
+      className={`flex items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#8c3c58] ${compact ? "mb-4 px-2 py-2" : "px-3"}`}
     >
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#315b4b] text-white">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#6f1d37] text-white">
         <Heart className="h-5 w-5 fill-current" aria-hidden="true" />
       </span>
       <span>
         <span className="block text-base leading-5 font-bold">Together</span>
-        <span className="block text-sm leading-5 text-[#66756c]">
+        <span className="block text-sm leading-5 text-[#806c74]">
           Wedding planning
         </span>
       </span>
@@ -195,20 +224,24 @@ function Brand({ compact = false }: { compact?: boolean }) {
 }
 
 function Navigation({ activeSection }: { activeSection: SectionId }) {
+  const primary = sections.filter(({ id }) => primarySections.has(id));
+  const more = sections.filter(({ id }) => !primarySections.has(id));
+  const activeIsMore = more.some(({ id }) => id === activeSection);
+
   return (
     <nav aria-label="Wedding workspace">
       <ul className="space-y-1">
-        {sections.map(({ id, label, icon: Icon }) => {
+        {primary.map(({ id, label, icon: Icon }) => {
           const isActive = id === activeSection;
           return (
             <li key={id}>
               <Link
                 href={`/?section=${id}`}
                 aria-current={isActive ? "page" : undefined}
-                className={`flex min-h-12 items-center gap-3 rounded-xl px-3 text-base font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#426c5a] ${
+                className={`flex min-h-12 items-center gap-3 rounded-xl px-3 text-base font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8c3c58] ${
                   isActive
-                    ? "bg-[#e6eee8] text-[#244c3d]"
-                    : "text-[#506057] hover:bg-[#f0f2ed] hover:text-[#20352f]"
+                    ? "bg-[#f4e7eb] text-[#6f1d37]"
+                    : "text-[#65555c] hover:bg-[#fbf3f5] hover:text-[#35151f]"
                 }`}
               >
                 <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
@@ -217,6 +250,43 @@ function Navigation({ activeSection }: { activeSection: SectionId }) {
             </li>
           );
         })}
+        <li>
+          <details className="group" open={activeIsMore}>
+            <summary
+              className={`flex min-h-12 cursor-pointer list-none items-center gap-3 rounded-xl px-3 text-base font-semibold transition-colors hover:bg-[#fbf3f5] [&::-webkit-details-marker]:hidden ${activeIsMore ? "text-[#6f1d37]" : "text-[#65555c]"}`}
+            >
+              <MoreHorizontal className="h-5 w-5 shrink-0" aria-hidden="true" />
+              More
+              <span
+                className="ml-auto text-xs text-[#806c74] group-open:rotate-180"
+                aria-hidden="true"
+              >
+                ⌄
+              </span>
+            </summary>
+            <ul className="mt-1 ml-4 space-y-1 border-l border-[#eadfe2] pl-2">
+              {more.map(({ id, label, icon: Icon }) => {
+                const isActive = id === activeSection;
+                return (
+                  <li key={id}>
+                    <Link
+                      href={`/?section=${id}`}
+                      aria-current={isActive ? "page" : undefined}
+                      className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8c3c58] ${
+                        isActive
+                          ? "bg-[#f4e7eb] text-[#6f1d37]"
+                          : "text-[#65555c] hover:bg-[#fbf3f5] hover:text-[#35151f]"
+                      }`}
+                    >
+                      <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      {label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </details>
+        </li>
       </ul>
     </nav>
   );
@@ -225,14 +295,14 @@ function Navigation({ activeSection }: { activeSection: SectionId }) {
 function HomeWelcome() {
   return (
     <section className="mt-10 grid gap-5 lg:grid-cols-[1.3fr_0.7fr]">
-      <div className="rounded-[28px] bg-[#315b4b] p-7 text-white shadow-sm sm:p-9">
-        <p className="text-sm font-bold tracking-[0.12em] text-[#d5e4d8] uppercase">
+      <div className="rounded-[28px] bg-[#6f1d37] p-7 text-white shadow-sm sm:p-9">
+        <p className="text-sm font-bold tracking-[0.12em] text-[#f0dce3] uppercase">
           One place for all the details
         </p>
         <h2 className="mt-4 max-w-xl text-3xl leading-tight font-semibold tracking-[-0.025em] sm:text-4xl">
           Make room for the moments that matter.
         </h2>
-        <p className="mt-4 max-w-lg text-lg leading-8 text-[#edf4ee]">
+        <p className="mt-4 max-w-lg text-lg leading-8 text-[#f3e8ec]">
           Bring your people, plans, and important dates together. Start with one
           next step and build from there.
         </p>
@@ -245,20 +315,20 @@ function HomeWelcome() {
           />
         </div>
       </div>
-      <div className="flex flex-col justify-between rounded-[28px] border border-[#e2e4dc] bg-white p-7 sm:p-8">
+      <div className="flex flex-col justify-between rounded-[28px] border border-[#eadfe2] bg-white p-7 sm:p-8">
         <div>
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f3f0e5] text-[#785e35]">
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fbf3f5] text-[#8c3c58]">
             <UsersRound className="h-6 w-6" aria-hidden="true" />
           </span>
           <h2 className="mt-5 text-xl font-bold">Better, together</h2>
-          <p className="mt-2 text-base leading-7 text-[#52635a]">
+          <p className="mt-2 text-base leading-7 text-[#695b60]">
             Invite family and friends to help. Everyone can see the plan and
             know what comes next.
           </p>
         </div>
         <Link
           href="/?section=team"
-          className="mt-6 inline-flex min-h-12 items-center font-bold text-[#315b4b] underline decoration-[#9db4a3] decoration-2 underline-offset-4 hover:text-[#203f33] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#426c5a]"
+          className="mt-6 inline-flex min-h-12 items-center font-bold text-[#6f1d37] underline decoration-[#cba7b4] decoration-2 underline-offset-4 hover:text-[#4c172c] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#8c3c58]"
         >
           Invite your people
         </Link>
@@ -282,7 +352,7 @@ function QuickLink({
       className={`inline-flex min-h-12 items-center justify-center rounded-xl px-5 text-base font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
         secondary
           ? "border border-white/60 bg-transparent text-white hover:bg-white/10"
-          : "bg-white text-[#244c3d] hover:bg-[#edf3ee]"
+          : "bg-white text-[#6f1d37] hover:bg-[#edf3ee]"
       }`}
     >
       {label}
@@ -303,14 +373,14 @@ function SectionWelcome({ section }: { section: SectionId }) {
   };
 
   return (
-    <section className="mt-10 rounded-[28px] border border-dashed border-[#bdc9bf] bg-white/70 px-6 py-12 text-center sm:px-12">
-      <p className="text-sm font-bold tracking-[0.12em] text-[#536c5f] uppercase">
+    <section className="mt-10 rounded-[28px] border border-dashed border-[#d9c4cb] bg-white/70 px-6 py-12 text-center sm:px-12">
+      <p className="text-sm font-bold tracking-[0.12em] text-[#956779] uppercase">
         Getting ready for you
       </p>
-      <h2 className="mt-3 text-2xl font-semibold tracking-[-0.02em] text-[#29483c]">
+      <h2 className="mt-3 text-2xl font-semibold tracking-[-0.02em] text-[#4b2734]">
         {titles[section as Exclude<SectionId, "home">]}
       </h2>
-      <p className="mx-auto mt-3 max-w-xl text-base leading-7 text-[#52635a]">
+      <p className="mx-auto mt-3 max-w-xl text-base leading-7 text-[#695b60]">
         This part of the shared wedding workspace is just getting started. Your
         plans will stay connected with the rest of the team.
       </p>

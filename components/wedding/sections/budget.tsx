@@ -64,9 +64,9 @@ export async function BudgetSection({ ctx }: { ctx: WeddingContext }) {
               {Math.round((summary.committed / summary.budgetTotal) * 100)}%
             </span>
           </div>
-          <div className="mt-3 h-4 overflow-hidden rounded-full bg-[#e6eee8]">
+          <div className="mt-3 h-4 overflow-hidden rounded-full bg-[#f4e7eb]">
             <div
-              className={`h-full rounded-full ${over ? "bg-[#b4532a]" : "bg-[#315b4b]"}`}
+              className={`h-full rounded-full ${over ? "bg-[#b4532a]" : "bg-[#6f1d37]"}`}
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -77,7 +77,7 @@ export async function BudgetSection({ ctx }: { ctx: WeddingContext }) {
                   <span>{c.category}</span>
                   <span className="font-semibold">
                     {formatMoney(c.committed)}{" "}
-                    <span className="font-normal text-[#66756c]">
+                    <span className="font-normal text-[#806c74]">
                       ({formatMoney(c.paid)} paid)
                     </span>
                   </span>
@@ -164,7 +164,7 @@ export async function BudgetSection({ ctx }: { ctx: WeddingContext }) {
         categories.map((category) => (
           <Card key={category}>
             <CardTitle>{category}</CardTitle>
-            <ul className="mt-3 divide-y divide-[#eceee8]">
+            <ul className="mt-3 divide-y divide-[#f0e8ea]">
               {items
                 .filter((i) => i.category === category)
                 .map((item) => (
@@ -188,8 +188,8 @@ function Stat({
   warn?: boolean;
 }) {
   return (
-    <div className="rounded-[20px] border border-[#e2e4dc] bg-white p-5">
-      <p className="text-base text-[#52635a]">{label}</p>
+    <div className="rounded-[20px] border border-[#eadfe2] bg-white p-5">
+      <p className="text-base text-[#695b60]">{label}</p>
       <p
         className={`mt-1 text-2xl font-semibold ${warn ? "text-[#b4532a]" : ""}`}
       >
@@ -212,7 +212,7 @@ function BudgetRow({ item, ctx }: { item: BudgetItem; ctx: WeddingContext }) {
         <p className="text-lg font-semibold">
           {item.description || item.category}
         </p>
-        <p className="mt-0.5 flex flex-wrap items-center gap-2 text-base text-[#52635a]">
+        <p className="mt-0.5 flex flex-wrap items-center gap-2 text-base text-[#695b60]">
           <span>
             {item.actual === null
               ? `Estimate ${formatMoney(item.estimated)}`

@@ -175,7 +175,7 @@ export function IdeaItemForm({
           name="photo"
           type="file"
           accept="image/*"
-          className={`${inputClass} py-2.5 file:mr-3 file:rounded-lg file:border-0 file:bg-[#e6eee8] file:px-3 file:py-1.5 file:font-semibold`}
+          className={`${inputClass} py-2.5 file:mr-3 file:rounded-lg file:border-0 file:bg-[#f4e7eb] file:px-3 file:py-1.5 file:font-semibold`}
         />
       </Field>
       <Field label="Note">
@@ -527,14 +527,14 @@ export function RoleSelect({
       </select>
       <span role="status" className="min-w-16 text-base">
         {pending ? (
-          <span className="inline-flex items-center gap-1.5 text-[#52635a]">
+          <span className="inline-flex items-center gap-1.5 text-[#695b60]">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             Saving...
           </span>
         ) : state.error ? (
           <span className="text-[#8a3f1d]">{state.error}</span>
         ) : state.message ? (
-          <span className="inline-flex items-center gap-1.5 font-semibold text-[#24553f]">
+          <span className="inline-flex items-center gap-1.5 font-semibold text-[#6f1d37]">
             <Check className="h-4 w-4" aria-hidden="true" />
             {state.message}
           </span>
@@ -584,7 +584,7 @@ export function IdeaBoardForm({ weddingId }: { weddingId: string }) {
       {!pending && state.message && state.id && (
         <p
           role="status"
-          className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-[#e3efe6] px-4 py-3 text-base text-[#24553f]"
+          className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-[#f4e7eb] px-4 py-3 text-base text-[#6f1d37]"
         >
           <span className="inline-flex items-center gap-1.5 font-semibold">
             <Check className="h-5 w-5" aria-hidden="true" />
@@ -695,7 +695,7 @@ export function GuestForm({
         {!pending && state.message && (
           <p
             role="status"
-            className="flex items-center gap-1.5 rounded-xl bg-[#e3efe6] px-4 py-3 text-base font-semibold text-[#24553f]"
+            className="flex items-center gap-1.5 rounded-xl bg-[#f4e7eb] px-4 py-3 text-base font-semibold text-[#6f1d37]"
           >
             <Check className="h-5 w-5" aria-hidden="true" />
             {state.message}
@@ -708,8 +708,8 @@ export function GuestForm({
 
 function Checkbox({ name, label }: { name: string; label: string }) {
   return (
-    <label className="flex min-h-11 items-center gap-2 text-base font-semibold text-[#2d4a3f]">
-      <input type="checkbox" name={name} className="h-5 w-5 accent-[#315b4b]" />
+    <label className="flex min-h-11 items-center gap-2 text-base font-semibold text-[#4b2734]">
+      <input type="checkbox" name={name} className="h-5 w-5 accent-[#6f1d37]" />
       {label}
     </label>
   );

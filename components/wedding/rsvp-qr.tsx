@@ -28,7 +28,7 @@ export function RsvpQr({ weddingId }: { weddingId: string }) {
     QRCode.toDataURL(link, {
       width: 600,
       margin: 2,
-      color: { dark: "#20352f", light: "#ffffff" },
+      color: { dark: "#35151f", light: "#ffffff" },
     }).then((url) => !cancelled && setQr(url));
     return () => {
       cancelled = true;
@@ -37,7 +37,7 @@ export function RsvpQr({ weddingId }: { weddingId: string }) {
 
   return (
     <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-center">
-      <div className="h-44 w-44 shrink-0 overflow-hidden rounded-2xl border border-[#e2e4dc] bg-white">
+      <div className="h-44 w-44 shrink-0 overflow-hidden rounded-2xl border border-[#eadfe2] bg-white">
         {qr && (
           // eslint-disable-next-line @next/next/no-img-element -- a generated data: URL
           <img
@@ -48,7 +48,7 @@ export function RsvpQr({ weddingId }: { weddingId: string }) {
         )}
       </div>
       <div className="min-w-0 space-y-3">
-        <p className="text-sm break-all text-[#66756c]">{link}</p>
+        <p className="text-sm break-all text-[#806c74]">{link}</p>
         <div className="flex flex-wrap gap-2">
           {qr && (
             <a

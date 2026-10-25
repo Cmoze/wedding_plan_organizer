@@ -47,15 +47,15 @@ export async function RegistrySection({ ctx }: { ctx: WeddingContext }) {
           {links.map((link) => (
             <li
               key={link.id}
-              className="flex flex-col rounded-[24px] border border-[#e2e4dc] bg-white p-6"
+              className="flex flex-col rounded-[24px] border border-[#eadfe2] bg-white p-6"
             >
               <div className="flex items-start gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#f3f0e5] text-[#785e35]">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#fbf3f5] text-[#8c3c58]">
                   <Gift className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-xl font-bold">{link.store_name}</p>
-                  <p className="truncate text-base text-[#66756c]">
+                  <p className="truncate text-base text-[#806c74]">
                     {hostOf(link.url)}
                   </p>
                 </div>
@@ -73,7 +73,7 @@ export async function RegistrySection({ ctx }: { ctx: WeddingContext }) {
                 )}
               </div>
               {link.notes && (
-                <p className="mt-3 text-base text-[#52635a]">{link.notes}</p>
+                <p className="mt-3 text-base text-[#695b60]">{link.notes}</p>
               )}
               {giftCount(link.id) > 0 && (
                 <p className="mt-3">
@@ -87,7 +87,7 @@ export async function RegistrySection({ ctx }: { ctx: WeddingContext }) {
                 href={link.url}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 self-start rounded-xl bg-[#315b4b] px-5 text-base font-bold text-white hover:bg-[#264a3c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#426c5a]"
+                className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 self-start rounded-xl bg-[#6f1d37] px-5 text-base font-bold text-white hover:bg-[#4b2734] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8c3c58]"
               >
                 Open registry
                 <ExternalLink className="h-4 w-4" aria-hidden="true" />
@@ -109,7 +109,7 @@ export async function RegistrySection({ ctx }: { ctx: WeddingContext }) {
       {ctx.canEdit && (
         <Card>
           <CardTitle>Record a gift</CardTitle>
-          <p className="mt-1 text-base text-[#52635a]">
+          <p className="mt-1 text-base text-[#695b60]">
             Note who gave what as gifts arrive, so nobody is missed when
             thank-you cards go out.
           </p>
@@ -163,7 +163,7 @@ function ThankYouList({
         <div className="min-w-0 flex-1">
           <p className="text-lg font-semibold">{card.name}</p>
           {address.length > 0 ? (
-            <address className="mt-1 text-base text-[#52635a] not-italic">
+            <address className="mt-1 text-base text-[#695b60] not-italic">
               {address.map((line) => (
                 <span key={line} className="block">
                   {line}
@@ -186,11 +186,11 @@ function ThankYouList({
                 className="flex flex-wrap items-center gap-x-2 text-base"
               >
                 <Gift
-                  className="h-4 w-4 shrink-0 text-[#785e35]"
+                  className="h-4 w-4 shrink-0 text-[#8c3c58]"
                   aria-hidden="true"
                 />
                 <span className="font-semibold">{g.description}</span>
-                <span className="text-[#66756c]">
+                <span className="text-[#806c74]">
                   {[store(g.registry_link_id), formatDate(g.received_on)]
                     .filter(Boolean)
                     .join(" · ")}
@@ -208,7 +208,7 @@ function ThankYouList({
                   </form>
                 )}
                 {g.notes && (
-                  <span className="w-full pl-6 text-sm text-[#66756c]">
+                  <span className="w-full pl-6 text-sm text-[#806c74]">
                     {g.notes}
                   </span>
                 )}
@@ -249,22 +249,22 @@ function ThankYouList({
           <Mail className="h-5 w-5" aria-hidden="true" /> Thank-you cards
         </span>
       </CardTitle>
-      <p className="mt-1 text-base text-[#52635a]">
+      <p className="mt-1 text-base text-[#695b60]">
         {toSend.length === 0
           ? `All ${sent.length} sent. Nice work!`
           : `${toSend.length} to send · ${sent.length} sent`}
       </p>
       {toSend.length > 0 && (
-        <ul className="mt-2 divide-y divide-[#eceee8]">
+        <ul className="mt-2 divide-y divide-[#f0e8ea]">
           {toSend.map(cardRow)}
         </ul>
       )}
       {sent.length > 0 && (
-        <details className="mt-4 border-t border-[#eceee8] pt-4">
-          <summary className="min-h-11 cursor-pointer text-base font-semibold text-[#315b4b]">
+        <details className="mt-4 border-t border-[#f0e8ea] pt-4">
+          <summary className="min-h-11 cursor-pointer text-base font-semibold text-[#6f1d37]">
             Already sent ({sent.length})
           </summary>
-          <ul className="divide-y divide-[#eceee8]">{sent.map(cardRow)}</ul>
+          <ul className="divide-y divide-[#f0e8ea]">{sent.map(cardRow)}</ul>
         </details>
       )}
     </Card>

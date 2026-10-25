@@ -70,23 +70,23 @@ export async function InboxSection({
                 </span>
               )}
             </CardTitle>
-            <ul className="mt-3 divide-y divide-[#eceee8]">
+            <ul className="mt-3 divide-y divide-[#f0e8ea]">
               {emails.map((e) => (
                 <li key={e.id}>
                   <Link
                     href={`/?section=inbox&email=${e.id}`}
-                    className="-mx-3 flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-xl px-3 py-4 hover:bg-[#f6f7f3] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#426c5a]"
+                    className="-mx-3 flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-xl px-3 py-4 hover:bg-[#f6f7f3] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8c3c58]"
                   >
                     <span
-                      className={`min-w-0 flex-1 text-lg ${e.is_read ? "text-[#3d5248]" : "font-bold text-[#20352f]"}`}
+                      className={`min-w-0 flex-1 text-lg ${e.is_read ? "text-[#65555c]" : "font-bold text-[#35151f]"}`}
                     >
                       {!e.is_read && <span className="sr-only">New: </span>}
                       {e.subject || "(no subject)"}
-                      <span className="block text-base font-normal text-[#52635a]">
+                      <span className="block text-base font-normal text-[#695b60]">
                         {e.from_name || e.from_address}
                       </span>
                     </span>
-                    <span className="text-base text-[#66756c]">
+                    <span className="text-base text-[#806c74]">
                       <LocalDateTime iso={e.received_at} />
                     </span>
                   </Link>
@@ -139,18 +139,18 @@ async function EmailView({
       <Card>
         <div className="flex flex-wrap items-start gap-4">
           <div className="min-w-0 flex-1">
-            <h2 className="text-2xl font-bold text-[#20352f]">
+            <h2 className="text-2xl font-bold text-[#35151f]">
               {email.subject || "(no subject)"}
             </h2>
-            <p className="mt-2 text-base text-[#52635a]">
+            <p className="mt-2 text-base text-[#695b60]">
               From{" "}
-              <span className="font-semibold text-[#2d4a3f]">
+              <span className="font-semibold text-[#4b2734]">
                 {email.from_name
                   ? `${email.from_name} <${email.from_address}>`
                   : email.from_address}
               </span>
             </p>
-            <p className="text-base text-[#66756c]">
+            <p className="text-base text-[#806c74]">
               <LocalDateTime iso={email.received_at} />
             </p>
           </div>
@@ -169,7 +169,7 @@ async function EmailView({
         </div>
 
         {links.length > 0 && (
-          <p className="mt-4 flex flex-wrap items-center gap-2 text-base text-[#52635a]">
+          <p className="mt-4 flex flex-wrap items-center gap-2 text-base text-[#695b60]">
             Added to:
             {links.map((l) =>
               l.section ? (
@@ -185,12 +185,12 @@ async function EmailView({
           </p>
         )}
 
-        <div className="mt-6 border-t border-[#eceee8] pt-6">
+        <div className="mt-6 border-t border-[#f0e8ea] pt-6">
           <EmailBody email={email} />
         </div>
 
         {attachments.length > 0 && (
-          <ul className="mt-6 flex flex-wrap gap-3 border-t border-[#eceee8] pt-6">
+          <ul className="mt-6 flex flex-wrap gap-3 border-t border-[#f0e8ea] pt-6">
             {attachments.map((a) => (
               <li key={a.name}>
                 {a.url ? (
@@ -204,7 +204,7 @@ async function EmailView({
                     {a.name}
                   </a>
                 ) : (
-                  <span className="text-base text-[#66756c]">{a.name}</span>
+                  <span className="text-base text-[#806c74]">{a.name}</span>
                 )}
               </li>
             ))}
@@ -228,11 +228,11 @@ function EmailBody({ email }: { email: Email }) {
   const text = cleanEmailText(email.body_text ?? "");
   if (text)
     return (
-      <div className="text-lg leading-relaxed break-words whitespace-pre-wrap text-[#2d4a3f]">
+      <div className="text-lg leading-relaxed break-words whitespace-pre-wrap text-[#4b2734]">
         {text}
       </div>
     );
-  return <p className="text-base text-[#66756c]">This email has no text.</p>;
+  return <p className="text-base text-[#806c74]">This email has no text.</p>;
 }
 
 function ForwardingCard({ address }: { address: string | null }) {
@@ -241,19 +241,19 @@ function ForwardingCard({ address }: { address: string | null }) {
       <CardTitle>Your wedding email address</CardTitle>
       {address ? (
         <>
-          <p className="mt-2 text-base text-[#52635a]">
+          <p className="mt-2 text-base text-[#695b60]">
             Forward any vendor email here, or give it to vendors directly.
             Forward registry &quot;someone bought you a gift&quot; emails too,
             and the helper can add them to your gift list. Everyone on your
             wedding team will see them in this inbox.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <code className="rounded-xl border border-[#cfd8d0] bg-white px-4 py-3 text-lg font-semibold break-all text-[#20352f]">
+            <code className="rounded-xl border border-[#ddcbd1] bg-white px-4 py-3 text-lg font-semibold break-all text-[#35151f]">
               {address}
             </code>
             <CopyButton text={address} />
           </div>
-          <ol className="mt-5 list-decimal space-y-1 pl-6 text-base text-[#3d5248]">
+          <ol className="mt-5 list-decimal space-y-1 pl-6 text-base text-[#65555c]">
             <li>Open the email from your vendor.</li>
             <li>
               Choose <strong>Forward</strong>.
@@ -262,7 +262,7 @@ function ForwardingCard({ address }: { address: string | null }) {
           </ol>
         </>
       ) : (
-        <p className="mt-2 text-base text-[#52635a]">
+        <p className="mt-2 text-base text-[#695b60]">
           The wedding inbox isn&apos;t set up yet.
         </p>
       )}

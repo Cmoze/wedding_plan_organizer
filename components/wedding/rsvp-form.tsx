@@ -28,7 +28,7 @@ export function RsvpForm({ weddingId }: { weddingId: string }) {
       <div className="space-y-5">
         <div
           role="status"
-          className="rounded-2xl bg-[#e3efe6] px-5 py-4 text-[#24553f]"
+          className="rounded-2xl bg-[#f4e7eb] px-5 py-4 text-[#6f1d37]"
         >
           <p className="text-lg font-semibold">
             Thank you! Your RSVP is saved.
@@ -46,7 +46,7 @@ export function RsvpForm({ weddingId }: { weddingId: string }) {
               className="flex flex-wrap justify-between gap-2 rounded-xl bg-[#f8f8f4] px-4 py-3 text-base"
             >
               <span className="font-semibold">{fullName(g)}</span>
-              <span className="text-[#52635a]">
+              <span className="text-[#695b60]">
                 {g.rsvp === "attending"
                   ? `Coming${g.meal_choice ? ` · ${g.meal_choice}` : ""}`
                   : "Not coming"}
@@ -69,9 +69,9 @@ export function RsvpForm({ weddingId }: { weddingId: string }) {
       <form action={action} className="space-y-5">
         <NameFields weddingId={weddingId} state={state} hidden />
         <input type="hidden" name="step" value="save" />
-        <p className="text-base text-[#52635a]">
+        <p className="text-base text-[#695b60]">
           We found your invitation:{" "}
-          <strong className="text-[#20352f]">{invitation.householdName}</strong>
+          <strong className="text-[#35151f]">{invitation.householdName}</strong>
         </p>
         {invitation.guests.map((g) => (
           <GuestAnswer key={g.id} guest={g} />
@@ -149,7 +149,7 @@ function GuestAnswer({ guest }: { guest: RsvpGuest }) {
   const name = fullName(guest);
   const choice = guest.rsvp === "pending" ? undefined : guest.rsvp;
   return (
-    <fieldset className="space-y-3 rounded-2xl border border-[#e2e4dc] p-4">
+    <fieldset className="space-y-3 rounded-2xl border border-[#eadfe2] p-4">
       <legend className="px-1 text-lg font-semibold">{name}</legend>
       <div className="grid grid-cols-2 gap-2">
         {(
@@ -160,7 +160,7 @@ function GuestAnswer({ guest }: { guest: RsvpGuest }) {
         ).map(([value, label]) => (
           <label
             key={value}
-            className="flex min-h-12 cursor-pointer items-center gap-2 rounded-xl border border-[#cfd8d0] px-3 text-base font-semibold text-[#294b40] has-checked:border-[#315b4b] has-checked:bg-[#e3efe6]"
+            className="flex min-h-12 cursor-pointer items-center gap-2 rounded-xl border border-[#ddcbd1] px-3 text-base font-semibold text-[#6f1d37] has-checked:border-[#6f1d37] has-checked:bg-[#f4e7eb]"
           >
             <input
               type="radio"
@@ -168,7 +168,7 @@ function GuestAnswer({ guest }: { guest: RsvpGuest }) {
               value={value}
               required
               defaultChecked={choice === value}
-              className="h-5 w-5 accent-[#315b4b]"
+              className="h-5 w-5 accent-[#6f1d37]"
             />
             {label}
           </label>

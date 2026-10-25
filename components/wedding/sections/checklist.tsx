@@ -33,6 +33,7 @@ import { getVendors, type Vendor } from "@/lib/db/vendors";
 
 const FILTERS = [
   { id: "open", label: "To do" },
+  { id: "overdue", label: "Past due" },
   { id: "planned", label: "Done & booked" },
   { id: "all", label: "Everything" },
 ] as const;
@@ -62,7 +63,11 @@ export async function ChecklistSection({
       ? true
       : filter === "open"
         ? OPEN_STATUSES.includes(t.status)
-        : PLANNED_STATUSES.includes(t.status),
+        : filter === "overdue"
+          ? OPEN_STATUSES.includes(t.status) &&
+            t.due_date !== null &&
+            t.due_date < ctx.today
+          : PLANNED_STATUSES.includes(t.status),
   );
   const finished = tasks.filter((t) =>
     PLANNED_STATUSES.includes(t.status),
@@ -81,7 +86,7 @@ export async function ChecklistSection({
       <Card>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-base text-[#52635a]">Progress</p>
+            <p className="text-base text-[#695b60]">Progress</p>
             <p className="text-3xl font-semibold">
               {finished} of {tasks.length} done or booked
             </p>
@@ -94,8 +99,8 @@ export async function ChecklistSection({
                 aria-current={f.id === filter ? "page" : undefined}
                 className={`inline-flex min-h-11 items-center rounded-full px-4 text-base font-semibold ${
                   f.id === filter
-                    ? "bg-[#315b4b] text-white"
-                    : "border border-[#cfd8d0] text-[#294b40] hover:bg-[#f1f3ee]"
+                    ? "bg-[#6f1d37] text-white"
+                    : "border border-[#ddcbd1] text-[#6f1d37] hover:bg-[#fbf3f5]"
                 }`}
               >
                 {f.label}
@@ -103,9 +108,9 @@ export async function ChecklistSection({
             ))}
           </nav>
         </div>
-        <div className="mt-4 h-3 overflow-hidden rounded-full bg-[#e6eee8]">
+        <div className="mt-4 h-3 overflow-hidden rounded-full bg-[#f4e7eb]">
           <div
-            className="h-full rounded-full bg-[#315b4b]"
+            className="h-full rounded-full bg-[#6f1d37]"
             style={{
               width: `${tasks.length ? (finished / tasks.length) * 100 : 0}%`,
             }}
@@ -159,14 +164,18 @@ export async function ChecklistSection({
       ) : (
         <Card>
           <CardTitle>
-            {filter === "planned" ? "Done and booked" : "In order of priority"}
+            {filter === "planned"
+              ? "Done and booked"
+              : filter === "overdue"
+                ? "Past-due tasks"
+                : "In order of priority"}
           </CardTitle>
           {filter !== "planned" && (
-            <p className="mt-1 text-base text-[#52635a]">
+            <p className="mt-1 text-base text-[#695b60]">
               The big decisions come first. Work down the list at your own pace.
             </p>
           )}
-          <ul className="mt-3 divide-y divide-[#eceee8]">
+          <ul className="mt-3 divide-y divide-[#f0e8ea]">
             {ordered.map((task) => (
               <TaskRow
                 key={task.id}
@@ -201,7 +210,8 @@ function TaskRow({
 }) {
   const finished = PLANNED_STATUSES.includes(task.status);
   const dueDate = hasChosenDueDate(task) ? task.due_date : null;
-  const overdue = !finished && dueDate !== null && dueDate < ctx.today;
+  const overdue =
+    !finished && task.due_date !== null && task.due_date < ctx.today;
   const totalBudget = setsTheBudget(task);
   const budgetTotal =
     totalBudget && ctx.wedding.budget_total !== null
@@ -235,8 +245,8 @@ function TaskRow({
             }
             className={`flex h-11 w-11 items-center justify-center rounded-xl border-2 ${
               finished
-                ? "border-[#315b4b] bg-[#315b4b] text-white"
-                : "border-[#b8c6bc] bg-white text-transparent hover:border-[#315b4b] hover:text-[#9db4a3]"
+                ? "border-[#6f1d37] bg-[#6f1d37] text-white"
+                : "border-[#d9c4cb] bg-white text-transparent hover:border-[#6f1d37] hover:text-[#cba7b4]"
             }`}
           >
             <Check className="h-6 w-6" aria-hidden="true" />
@@ -247,11 +257,11 @@ function TaskRow({
       )}
       <div className="min-w-0 flex-1">
         <p
-          className={`text-lg font-semibold ${finished ? "text-[#6b7a72] line-through" : ""}`}
+          className={`text-lg font-semibold ${finished ? "text-[#806c74] line-through" : ""}`}
         >
           {task.title}
         </p>
-        <p className="mt-0.5 flex flex-wrap items-center gap-2 text-base text-[#52635a]">
+        <p className="mt-0.5 flex flex-wrap items-center gap-2 text-base text-[#695b60]">
           {nextUp && <Badge tone="info">Next up</Badge>}
           {dueDate && <span>Due {formatDate(dueDate)}</span>}
           {overdue && <Badge tone="warn">Overdue</Badge>}
@@ -264,7 +274,7 @@ function TaskRow({
           {assignee && <span>· {assignee}</span>}
         </p>
         {hasDetails && (
-          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-base text-[#2d4a3f]">
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-base text-[#4b2734]">
             {vendor && <span className="font-semibold">{vendor.name}</span>}
             {amount !== undefined && (
               <span>
@@ -278,14 +288,14 @@ function TaskRow({
                 href={vendor.website}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 font-semibold text-[#315b4b] underline underline-offset-4"
+                className="inline-flex items-center gap-1 font-semibold text-[#6f1d37] underline underline-offset-4"
               >
                 · Website
                 <ExternalLink className="h-4 w-4" aria-hidden="true" />
               </a>
             )}
             {task.notes && (
-              <span className="text-[#52635a]">· {task.notes}</span>
+              <span className="text-[#695b60]">· {task.notes}</span>
             )}
           </p>
         )}
@@ -304,7 +314,7 @@ function TaskRow({
       )}
       {ctx.canEdit && (
         <details className="basis-full pl-15">
-          <summary className="inline-flex min-h-11 cursor-pointer items-center text-base font-semibold text-[#315b4b] underline underline-offset-4">
+          <summary className="inline-flex min-h-11 cursor-pointer items-center text-base font-semibold text-[#6f1d37] underline underline-offset-4">
             {finished
               ? hasDetails
                 ? "Edit details"

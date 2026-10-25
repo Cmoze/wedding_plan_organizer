@@ -114,12 +114,12 @@ export function ChecklistSuggestions({
     <Card>
       <CardTitle>
         <Sparkles
-          className="mr-2 inline h-5 w-5 align-[-2px] text-[#785e35]"
+          className="mr-2 inline h-5 w-5 align-[-2px] text-[#8c3c58]"
           aria-hidden="true"
         />
         Tailor my checklist
       </CardTitle>
-      <p className="mt-2 text-base text-[#52635a]">
+      <p className="mt-2 text-base text-[#695b60]">
         {fresh
           ? "This is a standard checklist. The helper can fit it to your date, guest count and budget: adding what's missing, moving dates and skipping what doesn't apply."
           : "The helper looks at your date, guest count and budget and suggests changes to the checklist."}{" "}
@@ -139,7 +139,7 @@ export function ChecklistSuggestions({
             {loading ? "Looking at your checklist..." : "Tailor my checklist"}
           </button>
         ) : items.length === 0 ? (
-          <p className="text-base text-[#52635a]">
+          <p className="text-base text-[#695b60]">
             Your checklist already fits your wedding. Nothing to change.
           </p>
         ) : (
@@ -147,16 +147,16 @@ export function ChecklistSuggestions({
             {items.map(({ suggestion, state }, i) => (
               <li
                 key={i}
-                className="rounded-2xl border border-[#e2e4dc] bg-[#fbfbf8] p-4"
+                className="rounded-2xl border border-[#eadfe2] bg-[#fbfbf8] p-4"
               >
-                <p className="text-sm font-bold tracking-[0.1em] text-[#785e35] uppercase">
+                <p className="text-sm font-bold tracking-[0.1em] text-[#8c3c58] uppercase">
                   {KIND_LABEL[suggestion.kind]}
                 </p>
-                <p className="mt-1 text-lg font-semibold text-[#20352f]">
+                <p className="mt-1 text-lg font-semibold text-[#35151f]">
                   {suggestion.label}
                 </p>
                 {suggestion.reason && (
-                  <p className="mt-1 text-base text-[#66756c]">
+                  <p className="mt-1 text-base text-[#806c74]">
                     {suggestion.reason}
                   </p>
                 )}
@@ -164,7 +164,7 @@ export function ChecklistSuggestions({
                   {state === "done" ? (
                     <p
                       role="status"
-                      className="inline-flex min-h-12 items-center text-base font-semibold text-[#24553f]"
+                      className="inline-flex min-h-12 items-center text-base font-semibold text-[#6f1d37]"
                     >
                       <Check className="mr-2 h-5 w-5" aria-hidden="true" />
                       {ACCEPT_LABEL[suggestion.kind][1]}

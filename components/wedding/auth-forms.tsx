@@ -22,7 +22,7 @@ const withInvite = (path: string, invite?: string) =>
 function InviteNote({ joining }: { joining?: string }) {
   if (!joining) return null;
   return (
-    <p className="rounded-xl bg-[#e3efe6] px-4 py-3 text-base text-[#24553f]">
+    <p className="rounded-xl bg-[#f4e7eb] px-4 py-3 text-base text-[#6f1d37]">
       You&apos;re joining <strong>{joining}</strong>&apos;s wedding. Use the
       email address the invite was sent to.
     </p>
@@ -67,11 +67,11 @@ export function LoginForm({
       >
         {pending ? "Logging in..." : "Log in"}
       </button>
-      <p className="text-center text-base text-[#52635a]">
+      <p className="text-center text-base text-[#695b60]">
         New here?{" "}
         <Link
           href={withInvite("/signup", invite)}
-          className="font-bold text-[#315b4b] underline underline-offset-4"
+          className="font-bold text-[#6f1d37] underline underline-offset-4"
         >
           Create an account
         </Link>
@@ -124,11 +124,11 @@ export function SignUpForm({
       >
         {pending ? "Creating account..." : "Create account"}
       </button>
-      <p className="text-center text-base text-[#52635a]">
+      <p className="text-center text-base text-[#695b60]">
         Already have an account?{" "}
         <Link
           href={withInvite("/login", invite)}
-          className="font-bold text-[#315b4b] underline underline-offset-4"
+          className="font-bold text-[#6f1d37] underline underline-offset-4"
         >
           Log in
         </Link>

@@ -154,12 +154,12 @@ export function EmailSuggestions({
     <Card>
       <CardTitle>
         <Sparkles
-          className="mr-2 inline h-5 w-5 align-[-2px] text-[#785e35]"
+          className="mr-2 inline h-5 w-5 align-[-2px] text-[#8c3c58]"
           aria-hidden="true"
         />
         Add this to your plan
       </CardTitle>
-      <p className="mt-2 text-base text-[#52635a]">
+      <p className="mt-2 text-base text-[#695b60]">
         The helper reads the email and suggests costs, dates, to-dos, vendors
         and gifts. Nothing is saved until you say yes.
       </p>
@@ -177,7 +177,7 @@ export function EmailSuggestions({
             {loading ? "Reading the email..." : "Find dates and costs"}
           </button>
         ) : items.length === 0 ? (
-          <p className="text-base text-[#52635a]">
+          <p className="text-base text-[#695b60]">
             Nothing to add from this email.
           </p>
         ) : (
@@ -213,15 +213,15 @@ function SuggestionCard({
   children?: ReactNode;
 }) {
   return (
-    <li className="rounded-2xl border border-[#e2e4dc] bg-[#fbfbf8] p-4">
-      <p className="text-sm font-bold tracking-[0.1em] text-[#785e35] uppercase">
+    <li className="rounded-2xl border border-[#eadfe2] bg-[#fbfbf8] p-4">
+      <p className="text-sm font-bold tracking-[0.1em] text-[#8c3c58] uppercase">
         {KIND_LABEL[suggestion.kind]}
       </p>
-      <p className="mt-1 text-lg font-semibold text-[#20352f]">
+      <p className="mt-1 text-lg font-semibold text-[#35151f]">
         {suggestion.label}
       </p>
       {suggestion.reason && (
-        <p className="mt-1 text-base text-[#66756c] italic">
+        <p className="mt-1 text-base text-[#806c74] italic">
           {/* Claude often quotes the reason itself; don't double the quotes. */}
           &ldquo;{suggestion.reason.replace(/^["“']+|["”']+$/g, "")}
           &rdquo;
@@ -231,7 +231,7 @@ function SuggestionCard({
         {state === "added" ? (
           <p
             role="status"
-            className="inline-flex min-h-12 items-center text-base font-semibold text-[#24553f]"
+            className="inline-flex min-h-12 items-center text-base font-semibold text-[#6f1d37]"
           >
             <Check className="mr-2 h-5 w-5" aria-hidden="true" />
             Added
@@ -359,12 +359,12 @@ export function InboxQuery({
     <Card>
       <CardTitle>
         <Sparkles
-          className="mr-2 inline h-5 w-5 align-[-2px] text-[#785e35]"
+          className="mr-2 inline h-5 w-5 align-[-2px] text-[#8c3c58]"
           aria-hidden="true"
         />
         Ask your inbox
       </CardTitle>
-      <p className="mt-2 text-base text-[#52635a]">
+      <p className="mt-2 text-base text-[#695b60]">
         The helper reads your newest emails together, sums them up and suggests
         what to add to your plan. Nothing is saved until you say yes.
       </p>
@@ -417,19 +417,19 @@ export function InboxQuery({
           <>
             <p
               aria-live="polite"
-              className="rounded-2xl bg-[#f6f7f1] p-4 text-lg leading-relaxed text-[#20352f]"
+              className="rounded-2xl bg-[#f6f7f1] p-4 text-lg leading-relaxed text-[#35151f]"
             >
               {summary}
             </p>
 
             {items.length === 0 ? (
-              <p className="text-base text-[#52635a]">
+              <p className="text-base text-[#695b60]">
                 Nothing new to add to your plan.
               </p>
             ) : (
               <>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-base font-semibold text-[#2d4a3f]">
+                  <p className="text-base font-semibold text-[#4b2734]">
                     {items.length} suggestion{items.length === 1 ? "" : "s"}
                   </p>
                   {openCount > 1 && (
@@ -452,11 +452,11 @@ export function InboxQuery({
                       onDismiss={() => setState(i, null)}
                     >
                       {emailId && emailSubjects[emailId] !== undefined && (
-                        <p className="mt-2 text-sm text-[#66756c]">
+                        <p className="mt-2 text-sm text-[#806c74]">
                           From{" "}
                           <Link
                             href={`/?section=inbox&email=${emailId}`}
-                            className="font-semibold text-[#315b4b] underline"
+                            className="font-semibold text-[#6f1d37] underline"
                           >
                             {emailSubjects[emailId] || "(no subject)"}
                           </Link>
@@ -512,7 +512,7 @@ export function EmailHtmlFrame({ html }: { html: string }) {
       sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
       srcDoc={emailHtmlDocument(html)}
       style={{ height }}
-      className="w-full rounded-xl border border-[#eceee8] bg-white"
+      className="w-full rounded-xl border border-[#f0e8ea] bg-white"
     />
   );
 }

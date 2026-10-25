@@ -142,10 +142,10 @@ export function InviteForm({
           </button>
         </div>
       </form>
-      <ul className="space-y-1 text-base text-[#52635a]">
+      <ul className="space-y-1 text-base text-[#695b60]">
         {roles.map((r) => (
           <li key={r}>
-            <span className="font-semibold text-[#2d4a3f]">
+            <span className="font-semibold text-[#4b2734]">
               {ROLE_INFO[r].label}:
             </span>{" "}
             {ROLE_INFO[r].description}
@@ -156,7 +156,7 @@ export function InviteForm({
       {invite && (
         <div
           role="status"
-          className="space-y-3 rounded-2xl bg-[#e3efe6] px-5 py-4 text-[#24553f]"
+          className="space-y-3 rounded-2xl bg-[#f4e7eb] px-5 py-4 text-[#6f1d37]"
         >
           <p className="text-base font-semibold">
             Invite ready for {invite.email}. Your email app should open with the

@@ -52,7 +52,7 @@ export async function GuestsSection({ ctx }: { ctx: WeddingContext }) {
       {ctx.canEdit && (
         <Card>
           <CardTitle>RSVP QR code</CardTitle>
-          <p className="mt-1 text-base text-[#52635a]">
+          <p className="mt-1 text-base text-[#695b60]">
             Print this on your invitations. Guests scan it, find their name and
             answer for everyone on their invitation. Their replies show up here.
           </p>
@@ -63,7 +63,7 @@ export async function GuestsSection({ ctx }: { ctx: WeddingContext }) {
       {ctx.canEdit && (
         <Card>
           <CardTitle>Add a guest</CardTitle>
-          <p className="mt-1 text-base text-[#52635a]">
+          <p className="mt-1 text-base text-[#695b60]">
             Add each person. Couples and families can share one invitation.
           </p>
           <GuestForm
@@ -86,7 +86,7 @@ export async function GuestsSection({ ctx }: { ctx: WeddingContext }) {
             {counts.households}{" "}
             {counts.households === 1 ? "invitation" : "invitations"}
           </CardTitle>
-          <ul className="mt-3 divide-y divide-[#eceee8]">
+          <ul className="mt-3 divide-y divide-[#f0e8ea]">
             {households.map((h) => (
               <HouseholdRow
                 key={h.id}
@@ -149,10 +149,10 @@ function GuestRow({ guest, ctx }: { guest: Guest; ctx: WeddingContext }) {
           {guest.plus_one_allowed && <Badge tone="info">+1</Badge>}
         </p>
         {contact && (
-          <p className="text-sm break-all text-[#66756c]">{contact}</p>
+          <p className="text-sm break-all text-[#806c74]">{contact}</p>
         )}
         {guest.rsvp === "attending" && guest.meal_choice && (
-          <p className="text-sm text-[#66756c]">Meal: {guest.meal_choice}</p>
+          <p className="text-sm text-[#806c74]">Meal: {guest.meal_choice}</p>
         )}
       </div>
       {ctx.canEdit ? (
@@ -170,8 +170,8 @@ function GuestRow({ guest, ctx }: { guest: Guest; ctx: WeddingContext }) {
                 aria-pressed={o.value === guest.rsvp}
                 className={`min-h-11 rounded-full px-3 text-sm font-semibold ${
                   o.value === guest.rsvp
-                    ? "bg-[#315b4b] text-white"
-                    : "border border-[#cfd8d0] bg-white text-[#294b40] hover:bg-[#f1f3ee]"
+                    ? "bg-[#6f1d37] text-white"
+                    : "border border-[#ddcbd1] bg-white text-[#6f1d37] hover:bg-[#fbf3f5]"
                 }`}
               >
                 {o.label}
@@ -210,8 +210,8 @@ function GuestRow({ guest, ctx }: { guest: Guest; ctx: WeddingContext }) {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-[20px] border border-[#e2e4dc] bg-white p-5">
-      <p className="text-base text-[#52635a]">{label}</p>
+    <div className="rounded-[20px] border border-[#eadfe2] bg-white p-5">
+      <p className="text-base text-[#695b60]">{label}</p>
       <p className="mt-1 text-2xl font-semibold">{value}</p>
     </div>
   );

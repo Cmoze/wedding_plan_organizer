@@ -15,7 +15,7 @@ import { getCalendarItems, type CalendarItem } from "@/lib/db/calendar";
 import { toDateString } from "@/lib/db/shared";
 
 const KIND = {
-  task: { label: "Task", dot: "bg-[#315b4b]", tone: "good" },
+  task: { label: "Task", dot: "bg-[#6f1d37]", tone: "good" },
   event: { label: "Event", dot: "bg-[#3d5f9c]", tone: "info" },
   payment: { label: "Payment", dot: "bg-[#b4532a]", tone: "warn" },
 } as const;
@@ -70,7 +70,7 @@ export async function CalendarSection({
           </Link>
         </div>
         <MonthGrid first={first} items={items} ctx={ctx} />
-        <p className="mt-4 flex flex-wrap gap-4 text-base text-[#52635a]">
+        <p className="mt-4 flex flex-wrap gap-4 text-base text-[#695b60]">
           {Object.values(KIND).map((k) => (
             <span key={k.label} className="flex items-center gap-2">
               <span className={`h-3 w-3 rounded-full ${k.dot}`} /> {k.label}
@@ -134,7 +134,7 @@ function MonthGrid({
   return (
     <div className="mt-5 grid grid-cols-7 gap-1 text-center">
       {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-        <div key={d} className="pb-2 text-sm font-bold text-[#66756c]">
+        <div key={d} className="pb-2 text-sm font-bold text-[#806c74]">
           {d}
         </div>
       ))}
@@ -148,19 +148,19 @@ function MonthGrid({
             title={dayItems.map((d) => d.title).join("\n") || undefined}
             className={`min-h-16 rounded-xl border p-1.5 text-left sm:min-h-20 ${
               isWedding
-                ? "border-[#315b4b] bg-[#e6eee8]"
+                ? "border-[#6f1d37] bg-[#f4e7eb]"
                 : day === ctx.today
-                  ? "border-[#9db4a3] bg-[#fbfaf7]"
-                  : "border-[#eceee8]"
+                  ? "border-[#cba7b4] bg-[#fffdfb]"
+                  : "border-[#f0e8ea]"
             }`}
           >
             <span
-              className={`text-sm font-semibold ${day === ctx.today ? "text-[#315b4b]" : ""}`}
+              className={`text-sm font-semibold ${day === ctx.today ? "text-[#6f1d37]" : ""}`}
             >
               {Number(day.slice(8))}
             </span>
             {isWedding && (
-              <span className="block text-xs font-bold text-[#315b4b]">
+              <span className="block text-xs font-bold text-[#6f1d37]">
                 Wedding!
               </span>
             )}
@@ -187,7 +187,7 @@ function ItemList({
   ctx: WeddingContext;
 }) {
   return (
-    <ul className="mt-3 divide-y divide-[#eceee8]">
+    <ul className="mt-3 divide-y divide-[#f0e8ea]">
       {items.map((item) => (
         <li
           key={`${item.kind}-${item.id}`}
@@ -196,7 +196,7 @@ function ItemList({
           <Badge tone={KIND[item.kind].tone}>{KIND[item.kind].label}</Badge>
           <div className="min-w-0 flex-1">
             <p className="text-lg font-semibold">{item.title}</p>
-            <p className="text-base text-[#52635a]">
+            <p className="text-base text-[#695b60]">
               {formatDate(dayOf(item))}
               {item.kind === "event" && (
                 <>

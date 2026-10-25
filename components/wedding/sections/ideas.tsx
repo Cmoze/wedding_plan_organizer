@@ -57,13 +57,13 @@ export async function IdeasSection({
             <li key={b.id} className="relative">
               <Link
                 href={`/?section=ideas&board=${b.id}`}
-                className="block h-full rounded-[24px] border border-[#e2e4dc] bg-white p-6 pr-14 hover:border-[#9db4a3] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#426c5a]"
+                className="block h-full rounded-[24px] border border-[#eadfe2] bg-white p-6 pr-14 hover:border-[#cba7b4] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8c3c58]"
               >
-                <p className="text-sm font-bold tracking-[0.1em] text-[#785e35] uppercase">
+                <p className="text-sm font-bold tracking-[0.1em] text-[#8c3c58] uppercase">
                   {b.category || "Ideas"}
                 </p>
                 <p className="mt-2 text-xl font-bold">{b.title}</p>
-                <p className="mt-1 text-base text-[#52635a]">
+                <p className="mt-1 text-base text-[#695b60]">
                   {b.item_count} {b.item_count === 1 ? "idea" : "ideas"}
                 </p>
               </Link>
@@ -167,7 +167,7 @@ function IdeaCard({
   const thumbs = item.reactions.find((r) => r.emoji === "👍");
 
   return (
-    <li className="overflow-hidden rounded-[24px] border border-[#e2e4dc] bg-white">
+    <li className="overflow-hidden rounded-[24px] border border-[#eadfe2] bg-white">
       {photoUrl && (
         // Signed URLs from private storage; next/image would need the Supabase host configured.
         // eslint-disable-next-line @next/next/no-img-element
@@ -186,7 +186,7 @@ function IdeaCard({
             href={item.link_url}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-base font-semibold break-all text-[#315b4b] underline underline-offset-4"
+            className="inline-flex items-center gap-1.5 text-base font-semibold break-all text-[#6f1d37] underline underline-offset-4"
           >
             Open link{" "}
             <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -206,15 +206,15 @@ function IdeaCard({
               aria-pressed={Boolean(thumbs?.mine)}
               className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-base font-semibold ${
                 thumbs?.mine
-                  ? "border-[#315b4b] bg-[#e6eee8] text-[#244c3d]"
-                  : "border-[#cfd8d0] text-[#506057] hover:bg-[#f1f3ee]"
+                  ? "border-[#6f1d37] bg-[#f4e7eb] text-[#6f1d37]"
+                  : "border-[#ddcbd1] text-[#65555c] hover:bg-[#fbf3f5]"
               }`}
             >
               <ThumbsUp className="h-5 w-5" aria-hidden="true" />{" "}
               {thumbs?.count ?? 0}
             </button>
           </form>
-          <span className="inline-flex items-center gap-1.5 text-base text-[#52635a]">
+          <span className="inline-flex items-center gap-1.5 text-base text-[#695b60]">
             <MessageCircle className="h-5 w-5" aria-hidden="true" />{" "}
             {comments.length}
           </span>
@@ -232,7 +232,7 @@ function IdeaCard({
           )}
         </div>
         {comments.length > 0 && (
-          <ul className="space-y-2 border-t border-[#eceee8] pt-3">
+          <ul className="space-y-2 border-t border-[#f0e8ea] pt-3">
             {comments.map((c) => (
               <li key={c.id} className="text-base">
                 <span className="font-semibold">
