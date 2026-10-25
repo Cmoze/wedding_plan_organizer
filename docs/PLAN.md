@@ -197,7 +197,7 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 - [x] **Piper the Planner** (`POST /api/ai/assistant`; "Ask Piper" chat on every workspace page): looks things up across the plan and offers changes (tasks, costs, events, vendors, gifts, guests, RSVPs, thank-you cards) as "Yes, do it" buttons. Helpers can ask but aren't offered changes. The AI is called Piper everywhere in the app.
   - Not yet tried: tapping "Yes, do it" against real data. Try one on something harmless before the demo.
 - [x] **Personalized checklist** (`POST /api/ai/checklist`; "Tailor my checklist" card on the Tasks screen, which is also where a new wedding lands): tweak the template based on date, guest count and budget
-- [ ] **"What should we do this week?"** (API done: `GET /api/ai/weekly-summary`; UI pending with A) summary on the dashboard, built from overdue and upcoming tasks
+- [x] **"What should we do this week?"** (`GET /api/ai/weekly-summary`; card under the countdown on Home, `components/wedding/weekly-summary-card.tsx`): Piper's 3–5 priorities from overdue and upcoming tasks and payments, with a plain fallback when AI is off
 - [ ] **Stretch:** photo of a handwritten list → guests or tasks, with a preview before saving
 - [x] Rate limiting and graceful failure (the app must work fine when AI is down)
   - 20 calls / 10 min per user (in-memory, `lib/ai/rate-limit.ts`); routes return 503 `unavailable` / 429 `rate_limited`, weekly summary falls back to a plain summary.

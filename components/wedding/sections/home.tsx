@@ -27,6 +27,7 @@ import {
 } from "@/lib/db/tasks";
 import type { WeddingContext } from "@/components/wedding/context";
 import { CouplePhoto } from "@/components/wedding/couple-photo";
+import { WeeklySummaryCard } from "@/components/wedding/weekly-summary-card";
 import { getCouplePhotoUrl } from "@/lib/db/weddings";
 import { countGuests, getGuestList } from "@/lib/db/guests";
 
@@ -157,6 +158,8 @@ export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
           </Link>
         </div>
       </section>
+
+      <WeeklySummaryCard weddingId={ctx.wedding.id} />
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr_0.85fr]">
         <section className="rounded-[1.75rem] border border-[#eadfe2] bg-white p-5 shadow-sm sm:p-7">

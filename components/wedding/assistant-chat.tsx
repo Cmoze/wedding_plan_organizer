@@ -326,7 +326,7 @@ export function AssistantChat({ weddingId }: { weddingId: string }) {
 }
 
 /** Piper's face, cropped from public/piper/piper.webp for small round avatars. */
-function PiperAvatar({
+export function PiperAvatar({
   size,
   className = "",
 }: {
