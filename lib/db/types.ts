@@ -935,6 +935,7 @@ export type Database = {
           id: string;
           partner1_name: string;
           partner2_name: string | null;
+          photo_path: string | null;
           updated_at: string;
           wedding_date: string | null;
         };
@@ -947,6 +948,7 @@ export type Database = {
           id?: string;
           partner1_name: string;
           partner2_name?: string | null;
+          photo_path?: string | null;
           updated_at?: string;
           wedding_date?: string | null;
         };
@@ -959,6 +961,7 @@ export type Database = {
           id?: string;
           partner1_name?: string;
           partner2_name?: string | null;
+          photo_path?: string | null;
           updated_at?: string;
           wedding_date?: string | null;
         };
@@ -991,6 +994,7 @@ export type Database = {
           id: string;
           partner1_name: string;
           partner2_name: string | null;
+          photo_path: string | null;
           updated_at: string;
           wedding_date: string | null;
         };

@@ -24,6 +24,8 @@ import {
   OPEN_STATUSES,
 } from "@/lib/db/tasks";
 import type { WeddingContext } from "@/components/wedding/context";
+import { CouplePhoto } from "@/components/wedding/couple-photo";
+import { getCouplePhotoUrl } from "@/lib/db/weddings";
 
 export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
   const { wedding, db, today } = ctx;
@@ -34,6 +36,7 @@ export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
     activity,
     weekTasks,
     plannedTasks,
+    photoUrl,
   ] = await Promise.all([
     getOverdueTasks(db, wedding.id, today),
     getCalendarItems(db, wedding.id, {
@@ -48,6 +51,7 @@ export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
       dueTo: addDays(today, 7),
     }),
     getAlreadyPlanned(db, wedding.id),
+    getCouplePhotoUrl(db, wedding),
   ]);
   const upcoming = calendarItems.filter((item) => !item.done).slice(0, 5);
   const myWeekTasks = weekTasks.filter(
@@ -75,18 +79,26 @@ export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
         <span className="pointer-events-none absolute -top-28 right-[-4rem] h-72 w-72 rounded-full border border-white/10 sm:right-10" />
         <span className="pointer-events-none absolute -top-16 right-[-1rem] h-52 w-52 rounded-full border border-white/10 sm:right-20" />
         <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
-          <div>
-            <p className="text-sm font-bold tracking-[0.16em] text-[#f0dce3] uppercase">
-              Your wedding workspace
-            </p>
-            <h1 className="font-heading mt-3 max-w-3xl text-4xl leading-tight tracking-[-0.04em] sm:text-5xl lg:text-6xl">
-              {weddingTitle(wedding)}
-            </h1>
-            <p className="mt-3 text-base text-[#f3e8ec] sm:text-lg">
-              {wedding.wedding_date
-                ? formatDate(wedding.wedding_date)
-                : "Choose your wedding date when you’re ready"}
-            </p>
+          <div className="flex flex-wrap items-center gap-5 sm:gap-7">
+            <CouplePhoto
+              weddingId={wedding.id}
+              photoUrl={photoUrl}
+              names={weddingTitle(wedding)}
+              canEdit={ctx.canEdit}
+            />
+            <div className="min-w-0">
+              <p className="text-sm font-bold tracking-[0.16em] text-[#f0dce3] uppercase">
+                Your wedding workspace
+              </p>
+              <h1 className="font-heading mt-3 max-w-3xl text-4xl leading-tight tracking-[-0.04em] sm:text-5xl lg:text-6xl">
+                {weddingTitle(wedding)}
+              </h1>
+              <p className="mt-3 text-base text-[#f3e8ec] sm:text-lg">
+                {wedding.wedding_date
+                  ? formatDate(wedding.wedding_date)
+                  : "Choose your wedding date when you’re ready"}
+              </p>
+            </div>
           </div>
           <Link
             href="/?section=tasks"

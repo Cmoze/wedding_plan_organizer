@@ -43,8 +43,11 @@ import {
   getMembers,
   getMyMembership,
   getMyWeddings,
+  getCouplePhotoUrl,
   getWedding,
+  removeCouplePhoto,
   removeMember,
+  setCouplePhoto,
   updateMember,
   updateWedding,
 } from "@/lib/db/weddings";
@@ -360,6 +363,26 @@ describe.skipIf(!process.env.RUN_DB_TESTS)(
           .from(IDEA_PHOTOS_BUCKET)
           .remove([path]);
         expect(error).toBeNull();
+      });
+
+      it("can add, replace and remove the couple's photo", async () => {
+        const png = () => new File(["x"], "us.png", { type: "image/png" });
+        const first = await setCouplePhoto(couple, weddingId, png());
+        expect(await getCouplePhotoUrl(couple, first)).toMatch(/^https:/);
+        const second = await setCouplePhoto(couple, weddingId, png());
+        const exists = async (path: string) =>
+          (
+            await couple.storage
+              .from(IDEA_PHOTOS_BUCKET)
+              .list(weddingId, { search: path.split("/").pop() })
+          ).data?.length === 1;
+        expect(await exists(first.photo_path!)).toBe(false);
+        expect(await exists(second.photo_path!)).toBe(true);
+
+        await expect(removeCouplePhoto(helper, weddingId)).rejects.toThrow();
+        await removeCouplePhoto(couple, weddingId);
+        expect((await getWedding(couple, weddingId)).photo_path).toBeNull();
+        expect(await exists(second.photo_path!)).toBe(false);
       });
 
       it("can change a helper to planner and back", async () => {

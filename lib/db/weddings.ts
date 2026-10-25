@@ -1,5 +1,10 @@
 import { getCurrentUser } from "@/lib/db/auth";
 import {
+  IDEA_PHOTOS_BUCKET,
+  getIdeaPhotoUrls,
+  uploadIdeaPhoto,
+} from "@/lib/db/ideas";
+import {
   DbError,
   unwrap,
   type Db,
@@ -73,6 +78,38 @@ export async function updateWedding(
       .select()
       .single(),
   );
+}
+
+/** Couple/planner. Uploads the couple's photo (from the browser: server actions cap uploads at 1 MB) and replaces the old one. */
+export async function setCouplePhoto(
+  db: Db,
+  weddingId: string,
+  file: File,
+): Promise<Wedding> {
+  const previous = (await getWedding(db, weddingId)).photo_path;
+  const path = await uploadIdeaPhoto(db, weddingId, file);
+  const wedding = await updateWedding(db, weddingId, { photo_path: path });
+  if (previous) await db.storage.from(IDEA_PHOTOS_BUCKET).remove([previous]);
+  return wedding;
+}
+
+export async function removeCouplePhoto(
+  db: Db,
+  weddingId: string,
+): Promise<void> {
+  const previous = (await getWedding(db, weddingId)).photo_path;
+  await updateWedding(db, weddingId, { photo_path: null });
+  if (previous) await db.storage.from(IDEA_PHOTOS_BUCKET).remove([previous]);
+}
+
+/** A temporary link to the couple's photo, or null if there isn't one. */
+export async function getCouplePhotoUrl(
+  db: Db,
+  wedding: Pick<Wedding, "photo_path">,
+): Promise<string | null> {
+  if (!wedding.photo_path) return null;
+  const urls = await getIdeaPhotoUrls(db, [wedding.photo_path]);
+  return urls[wedding.photo_path] ?? null;
 }
 
 /** Couple only. Deletes everything in the wedding. */

@@ -39,7 +39,7 @@ Every table except `checklist_templates` has `id uuid`, `wedding_id`, `created_a
 
 | Table | Main fields |
 |---|---|
-| `weddings` | `partner1_name`, `partner2_name`, `wedding_date`, `budget_total`, `guest_count_estimate`, `email_slug` (unique; inbox address is `<email_slug>@<INBOUND_EMAIL_DOMAIN>`) |
+| `weddings` | `partner1_name`, `partner2_name`, `wedding_date`, `budget_total`, `guest_count_estimate`, `email_slug` (unique; inbox address is `<email_slug>@<INBOUND_EMAIL_DOMAIN>`), `photo_path` (optional couple photo in the `idea-photos` bucket) |
 | `members` | `user_id`, `role` (`couple` / `planner` / `helper`), `display_name`. One row per person per wedding |
 | `invites` | `token` (uuid, goes in the link), `role`, `email` (only this account can accept; null = anyone with the link), `expires_at` (default 14 days), `accepted_at` / `accepted_by`. Used once |
 | `tasks` | `title`, `notes`, `category`, `due_date`, `months_before`, `status` (`todo` / `in_progress` / `done` / `booked`), `assignee_id` (a member), `vendor_id`, `completed_at`, `template_id` |
