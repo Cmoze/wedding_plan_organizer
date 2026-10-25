@@ -5,6 +5,7 @@ import {
   deleteTaskAction,
   setTaskStatusAction,
 } from "@/app/actions";
+import { ChecklistSuggestions } from "@/components/wedding/checklist-suggestions";
 import { TaskDetailsForm } from "@/components/wedding/client-forms";
 import { memberName, type WeddingContext } from "@/components/wedding/context";
 import { formatDate, formatMoney } from "@/components/wedding/format";
@@ -111,6 +112,13 @@ export async function ChecklistSection({
           />
         </div>
       </Card>
+
+      {ctx.canEdit && (
+        <ChecklistSuggestions
+          weddingId={ctx.wedding.id}
+          fresh={finished === 0}
+        />
+      )}
 
       {ctx.canEdit && (
         <Card>

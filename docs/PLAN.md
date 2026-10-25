@@ -180,7 +180,7 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
 **Days 4–6: AI helper (Claude API)**
 - [x] Server-only `lib/ai/` wrapper; the API key is never sent to the browser
 - [x] **Email → actions** (`POST /api/ai/email-actions`; UI is the "Add this to your plan" card on each inbox email): pull out dates, amounts, vendor names and to-dos from an incoming email; show "Add $500 deposit due Nov 3 to budget + calendar?" with accept/dismiss
-- [ ] **Personalized checklist** (API done: `POST /api/ai/checklist`; UI pending with A): tweak the template based on date, guest count and budget
+- [x] **Personalized checklist** (`POST /api/ai/checklist`; "Tailor my checklist" card on the Tasks screen, which is also where a new wedding lands): tweak the template based on date, guest count and budget
 - [ ] **"What should we do this week?"** (API done: `GET /api/ai/weekly-summary`; UI pending with A) summary on the dashboard, built from overdue and upcoming tasks
 - [ ] **Stretch:** photo of a handwritten list → guests or tasks, with a preview before saving
 - [x] Rate limiting and graceful failure (the app must work fine when AI is down)
