@@ -5,6 +5,7 @@ import type { WeddingContext } from "@/components/wedding/context";
 import {
   CopyButton,
   EmailSuggestions,
+  InboxQuery,
   LocalDateTime,
 } from "@/components/wedding/inbox-client";
 import {
@@ -49,39 +50,49 @@ export async function InboxSection({
           up here.
         </EmptyState>
       ) : (
-        <Card>
-          <CardTitle>
-            Emails{" "}
-            {unread > 0 && (
-              <span className="ml-1 align-middle">
-                <Badge tone="info">{unread} new</Badge>
-              </span>
-            )}
-          </CardTitle>
-          <ul className="mt-3 divide-y divide-[#eceee8]">
-            {emails.map((e) => (
-              <li key={e.id}>
-                <Link
-                  href={`/?section=inbox&email=${e.id}`}
-                  className="-mx-3 flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-xl px-3 py-4 hover:bg-[#f6f7f3] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#426c5a]"
-                >
-                  <span
-                    className={`min-w-0 flex-1 text-lg ${e.is_read ? "text-[#3d5248]" : "font-bold text-[#20352f]"}`}
+        <>
+          {ctx.canEdit && (
+            <InboxQuery
+              weddingId={ctx.wedding.id}
+              emailSubjects={Object.fromEntries(
+                emails.map((e) => [e.id, e.subject]),
+              )}
+            />
+          )}
+          <Card>
+            <CardTitle>
+              Emails{" "}
+              {unread > 0 && (
+                <span className="ml-1 align-middle">
+                  <Badge tone="info">{unread} new</Badge>
+                </span>
+              )}
+            </CardTitle>
+            <ul className="mt-3 divide-y divide-[#eceee8]">
+              {emails.map((e) => (
+                <li key={e.id}>
+                  <Link
+                    href={`/?section=inbox&email=${e.id}`}
+                    className="-mx-3 flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-xl px-3 py-4 hover:bg-[#f6f7f3] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#426c5a]"
                   >
-                    {!e.is_read && <span className="sr-only">New: </span>}
-                    {e.subject || "(no subject)"}
-                    <span className="block text-base font-normal text-[#52635a]">
-                      {e.from_name || e.from_address}
+                    <span
+                      className={`min-w-0 flex-1 text-lg ${e.is_read ? "text-[#3d5248]" : "font-bold text-[#20352f]"}`}
+                    >
+                      {!e.is_read && <span className="sr-only">New: </span>}
+                      {e.subject || "(no subject)"}
+                      <span className="block text-base font-normal text-[#52635a]">
+                        {e.from_name || e.from_address}
+                      </span>
                     </span>
-                  </span>
-                  <span className="text-base text-[#66756c]">
-                    <LocalDateTime iso={e.received_at} />
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Card>
+                    <span className="text-base text-[#66756c]">
+                      <LocalDateTime iso={e.received_at} />
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </>
       )}
     </div>
   );

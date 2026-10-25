@@ -11,6 +11,8 @@ const { AiError } = await import("@/lib/ai/client");
 const { buildEmailPrompt, cleanEmailSuggestions, suggestEmailActions } =
   await import("@/lib/ai/email-actions");
 const { cleanChecklistSuggestions } = await import("@/lib/ai/checklist");
+const { buildInboxPrompt, summarizeInbox } =
+  await import("@/lib/ai/inbox-summary");
 const { fallbackWeeklySummary, getWeeklySummary } =
   await import("@/lib/ai/weekly-summary");
 const { takeRateLimit } = await import("@/lib/ai/rate-limit");
@@ -134,6 +136,65 @@ describe("email → actions", () => {
     generateStructured.mockImplementation(failAi);
     const error = await suggestEmailActions(email, context).catch((e) => e);
     expect(error).toMatchObject({ name: "AiError", code: "unavailable" });
+  });
+});
+
+describe("ask your inbox", () => {
+  const inbox = [
+    { ...email, id: "e1" },
+    {
+      ...email,
+      id: "e2",
+      subject: "Gift for you",
+      body_text: "Sue Miller bought you a stand mixer from your Zola registry.",
+    },
+  ];
+  const mixer = {
+    kind: "gift" as const,
+    label: "Record a stand mixer from Sue Miller?",
+    reason: "bought you a stand mixer",
+    giver_name: "Sue Miller",
+    household_name: "The Millers",
+    description: "Stand mixer",
+    store_name: "Zola",
+    received_on: null,
+  };
+
+  it("puts every email in its own tagged block, with the question", () => {
+    const prompt = buildInboxPrompt(inbox, context, "Any gifts?");
+    expect(prompt).toContain('<email id="e1">');
+    expect(prompt).toMatch(/<email id="e2">[\s\S]*stand mixer[\s\S]*<\/email>/);
+    expect(prompt).toMatch(/<question>\nAny gifts\?\n<\/question>/);
+    expect(prompt).toContain("Willow Creek Barn (Venue)");
+  });
+
+  it("asks for a general summary when no question is given", () => {
+    expect(buildInboxPrompt(inbox, context, "  ")).toContain(
+      "what we should do next",
+    );
+  });
+
+  it("keeps several suggestions and drops made-up email ids", async () => {
+    generateStructured.mockResolvedValue({
+      summary: "Bloom & Vine sent a quote and Sue sent a gift.",
+      suggestions: [
+        { email_id: "e2", suggestion: mixer },
+        { email_id: "nope", suggestion: { ...mixer, description: "Towels" } },
+        { email_id: "e1", suggestion: { ...mixer, giver_name: " " } },
+      ],
+    });
+    const result = await summarizeInbox(inbox, context, "");
+    expect(result.summary).toContain("Sue sent a gift");
+    expect(result.suggestions).toEqual([
+      { emailId: "e2", suggestion: mixer },
+      { emailId: null, suggestion: { ...mixer, description: "Towels" } },
+    ]);
+  });
+
+  it("skips the AI call for an empty inbox", async () => {
+    const result = await summarizeInbox([], context, "");
+    expect(result.suggestions).toEqual([]);
+    expect(generateStructured).not.toHaveBeenCalled();
   });
 });
 
