@@ -2,8 +2,8 @@ import {
   deleteInviteAction,
   removeMemberAction,
   switchWeddingAction,
-  updateMemberRoleAction,
 } from "@/app/actions";
+import { RoleSelect } from "@/components/wedding/client-forms";
 import type { WeddingContext } from "@/components/wedding/context";
 import { formatDate, weddingTitle } from "@/components/wedding/format";
 import {
@@ -15,7 +15,6 @@ import {
   Badge,
   Card,
   CardTitle,
-  inputClass,
   quietButtonClass,
   secondaryButtonClass,
 } from "@/components/wedding/ui";
@@ -140,30 +139,15 @@ export async function TeamSection({
                 </div>
                 {isCouple && !isMe ? (
                   <div className="flex flex-wrap items-center gap-2">
-                    <form
-                      action={updateMemberRoleAction}
-                      className="flex items-center gap-2"
-                    >
-                      <input type="hidden" name="memberId" value={m.id} />
-                      <label className="sr-only" htmlFor={`role-${m.id}`}>
-                        Role for {m.display_name}
-                      </label>
-                      <select
-                        id={`role-${m.id}`}
-                        name="role"
-                        defaultValue={m.role}
-                        className={`${inputClass} w-auto`}
-                      >
-                        {ROLES.map((r) => (
-                          <option key={r} value={r}>
-                            {ROLE_INFO[r].label}
-                          </option>
-                        ))}
-                      </select>
-                      <button type="submit" className={secondaryButtonClass}>
-                        Save
-                      </button>
-                    </form>
+                    <RoleSelect
+                      memberId={m.id}
+                      memberName={m.display_name || "this person"}
+                      role={m.role}
+                      options={ROLES.map((r) => ({
+                        value: r,
+                        label: ROLE_INFO[r].label,
+                      }))}
+                    />
                     <form action={removeMemberAction}>
                       <input type="hidden" name="memberId" value={m.id} />
                       <button type="submit" className={quietButtonClass}>

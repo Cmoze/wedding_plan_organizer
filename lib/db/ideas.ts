@@ -1,5 +1,6 @@
 import { getCurrentUser } from "@/lib/db/auth";
 import {
+  DbError,
   unwrap,
   type Db,
   type NewRow,
@@ -62,8 +63,22 @@ export async function updateIdeaBoard(
   );
 }
 
+/** Deletes the board with all its ideas, comments and photos. Its creator or couple/planner only. */
 export async function deleteIdeaBoard(db: Db, boardId: string): Promise<void> {
-  unwrap(await db.from("idea_boards").delete().eq("id", boardId));
+  const photos = unwrap(
+    await db
+      .from("idea_items")
+      .select("photo_path")
+      .eq("board_id", boardId)
+      .not("photo_path", "is", null),
+  ).flatMap((i) => (i.photo_path ? [i.photo_path] : []));
+  const deleted = unwrap(
+    await db.from("idea_boards").delete().eq("id", boardId).select("id"),
+  );
+  if (deleted.length === 0)
+    throw new DbError("You can't delete this board", "42501");
+  if (photos.length > 0)
+    await db.storage.from(IDEA_PHOTOS_BUCKET).remove(photos);
 }
 
 /** Items on a board, newest first, with comment counts and reaction totals. */

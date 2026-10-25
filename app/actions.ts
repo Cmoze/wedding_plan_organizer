@@ -25,6 +25,7 @@ import {
   addReaction,
   createIdeaBoard,
   createIdeaItem,
+  deleteIdeaBoard,
   deleteIdeaItem,
   removeReaction,
 } from "@/lib/db/ideas";
@@ -58,6 +59,8 @@ export type FormState = {
   message?: string;
   /** Where the form should send the browser with a full page load. */
   redirectTo?: string;
+  /** The row the form created. */
+  id?: string;
 };
 
 const text = (form: FormData, key: string) => {
@@ -228,12 +231,22 @@ export async function deleteInviteAction(form: FormData) {
   refresh();
 }
 
-export async function updateMemberRoleAction(form: FormData) {
+const ROLES: MemberRole[] = ["couple", "planner", "helper"];
+
+export async function updateMemberRoleAction(
+  _prev: FormState,
+  form: FormData,
+): Promise<FormState> {
   const db = await signedInDb();
-  await updateMember(db, required(form, "memberId"), {
-    role: required(form, "role") as MemberRole,
-  });
+  const role = ROLES.find((r) => r === text(form, "role"));
+  if (!role) return { error: "Pick a role." };
+  try {
+    await updateMember(db, required(form, "memberId"), { role });
+  } catch (e) {
+    return { error: friendly(e) };
+  }
   refresh();
+  return { message: "Saved" };
 }
 
 export async function removeMemberAction(form: FormData) {
@@ -408,12 +421,28 @@ export async function deleteEventAction(form: FormData) {
 
 // ideas -----------------------------------------------------------------------
 
-export async function addIdeaBoardAction(form: FormData) {
+export async function addIdeaBoardAction(
+  _prev: FormState,
+  form: FormData,
+): Promise<FormState> {
   const db = await signedInDb();
-  await createIdeaBoard(db, required(form, "weddingId"), {
-    title: required(form, "title"),
-    category: text(form, "category") ?? null,
-  });
+  const title = text(form, "title");
+  if (!title) return { error: "Give the board a name." };
+  try {
+    const board = await createIdeaBoard(db, required(form, "weddingId"), {
+      title,
+      category: text(form, "category") ?? null,
+    });
+    refresh();
+    return { message: `"${board.title}" is ready.`, id: board.id };
+  } catch (e) {
+    return { error: friendly(e) };
+  }
+}
+
+export async function deleteIdeaBoardAction(form: FormData) {
+  const db = await signedInDb();
+  await deleteIdeaBoard(db, required(form, "boardId"));
   refresh();
 }
 

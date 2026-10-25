@@ -15,7 +15,9 @@ import { getEmails } from "@/lib/db/emails";
 import { addGuest, getGuestList, removeGuest } from "@/lib/db/guests";
 import {
   IDEA_PHOTOS_BUCKET,
+  createIdeaBoard,
   createIdeaItem,
+  deleteIdeaBoard,
   deleteIdeaItem,
   getIdeaBoards,
   getIdeaItems,
@@ -202,6 +204,36 @@ describe.skipIf(!process.env.RUN_DB_TESTS)(
         expect(items.some((i) => i.id === theirs.id)).toBe(true);
         await deleteIdeaItem(couple, theirs.id);
       });
+
+      it("can delete a board they made, with its photos, but not anyone else's", async () => {
+        const [theirs] = await getIdeaBoards(helper, weddingId);
+        await expect(deleteIdeaBoard(helper, theirs.id)).rejects.toThrow(
+          /can't delete/,
+        );
+
+        const board = await createIdeaBoard(helper, weddingId, {
+          title: "Helper board",
+        });
+        const path = await uploadIdeaPhoto(
+          helper,
+          weddingId,
+          new File(["x"], "pic.png", { type: "image/png" }),
+        );
+        await createIdeaItem(helper, weddingId, {
+          board_id: board.id,
+          photo_path: path,
+        });
+        await deleteIdeaBoard(helper, board.id);
+        expect(
+          (await getIdeaBoards(couple, weddingId)).some(
+            (b) => b.id === board.id,
+          ),
+        ).toBe(false);
+        const { data } = await couple.storage
+          .from(IDEA_PHOTOS_BUCKET)
+          .list(weddingId, { search: path.split("/").pop() });
+        expect(data).toEqual([]);
+      });
     });
 
     describe("planner", () => {
@@ -328,6 +360,20 @@ describe.skipIf(!process.env.RUN_DB_TESTS)(
           .from(IDEA_PHOTOS_BUCKET)
           .remove([path]);
         expect(error).toBeNull();
+      });
+
+      it("can change a helper to planner and back", async () => {
+        const helperMember = (await getMembers(couple, weddingId)).find(
+          (m) => m.role === "helper",
+        )!;
+        expect(
+          (await updateMember(couple, helperMember.id, { role: "planner" }))
+            .role,
+        ).toBe("planner");
+        expect(
+          (await updateMember(couple, helperMember.id, { role: "helper" }))
+            .role,
+        ).toBe("helper");
       });
     });
 

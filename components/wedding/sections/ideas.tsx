@@ -7,20 +7,21 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import {
-  addIdeaBoardAction,
   addIdeaCommentAction,
   deleteIdeaItemAction,
   toggleReactionAction,
 } from "@/app/actions";
-import { IdeaItemForm } from "@/components/wedding/client-forms";
+import {
+  DeleteIdeaBoardButton,
+  IdeaBoardForm,
+  IdeaItemForm,
+} from "@/components/wedding/client-forms";
 import { userName, type WeddingContext } from "@/components/wedding/context";
 import {
   Card,
   CardTitle,
   EmptyState,
-  Field,
   inputClass,
-  primaryButtonClass,
   quietButtonClass,
   secondaryButtonClass,
 } from "@/components/wedding/ui";
@@ -29,6 +30,7 @@ import {
   getIdeaBoards,
   getIdeaItems,
   getIdeaPhotoUrls,
+  type IdeaBoard,
   type IdeaItemWithCounts,
 } from "@/lib/db/ideas";
 
@@ -52,10 +54,10 @@ export async function IdeasSection({
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {boards.map((b) => (
-            <li key={b.id}>
+            <li key={b.id} className="relative">
               <Link
                 href={`/?section=ideas&board=${b.id}`}
-                className="block rounded-[24px] border border-[#e2e4dc] bg-white p-6 hover:border-[#9db4a3] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#426c5a]"
+                className="block h-full rounded-[24px] border border-[#e2e4dc] bg-white p-6 pr-14 hover:border-[#9db4a3] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#426c5a]"
               >
                 <p className="text-sm font-bold tracking-[0.1em] text-[#785e35] uppercase">
                   {b.category || "Ideas"}
@@ -65,6 +67,14 @@ export async function IdeasSection({
                   {b.item_count} {b.item_count === 1 ? "idea" : "ideas"}
                 </p>
               </Link>
+              {canDeleteBoard(ctx, b) && (
+                <DeleteIdeaBoardButton
+                  boardId={b.id}
+                  title={b.title}
+                  ideaCount={b.item_count}
+                  className="absolute top-3 right-3"
+                />
+              )}
             </li>
           ))}
         </ul>
@@ -72,39 +82,23 @@ export async function IdeasSection({
 
       <Card>
         <CardTitle>Start a board</CardTitle>
-        <form
-          action={addIdeaBoardAction}
-          className="mt-4 grid gap-4 sm:grid-cols-[1fr_1fr_auto]"
-        >
-          <input type="hidden" name="weddingId" value={ctx.wedding.id} />
-          <Field label="Board name">
-            <input
-              name="title"
-              required
-              className={inputClass}
-              placeholder="Table settings"
-            />
-          </Field>
-          <Field label="Category">
-            <input name="category" className={inputClass} placeholder="Decor" />
-          </Field>
-          <div className="flex items-end">
-            <button type="submit" className={primaryButtonClass}>
-              Create board
-            </button>
-          </div>
-        </form>
+        <IdeaBoardForm weddingId={ctx.wedding.id} />
       </Card>
     </div>
   );
 }
+
+const canDeleteBoard = (
+  ctx: WeddingContext,
+  board: Pick<IdeaBoard, "created_by">,
+) => ctx.canEdit || board.created_by === ctx.me.user_id;
 
 async function BoardView({
   ctx,
   board,
 }: {
   ctx: WeddingContext;
-  board: { id: string; title: string; category: string | null };
+  board: IdeaBoard & { item_count: number };
 }) {
   const items = await getIdeaItems(ctx.db, board.id);
   const [photoUrls, comments] = await Promise.all([
@@ -120,7 +114,16 @@ async function BoardView({
       <Link href="/?section=ideas" className={secondaryButtonClass}>
         <ArrowLeft className="mr-2 h-5 w-5" aria-hidden="true" /> All boards
       </Link>
-      <h2 className="text-3xl font-semibold">{board.title}</h2>
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="text-3xl font-semibold">{board.title}</h2>
+        {canDeleteBoard(ctx, board) && (
+          <DeleteIdeaBoardButton
+            boardId={board.id}
+            title={board.title}
+            ideaCount={items.length}
+          />
+        )}
+      </div>
 
       <Card>
         <CardTitle>Add an idea</CardTitle>

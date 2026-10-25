@@ -1,5 +1,7 @@
 "use client";
 
+import { Check, Loader2, Trash2 } from "lucide-react";
+import Link from "next/link";
 import {
   useActionState,
   useRef,
@@ -10,9 +12,12 @@ import {
 import {
   addEventAction,
   addGiftAction,
+  addIdeaBoardAction,
   addIdeaItemAction,
   addRegistryLinkAction,
+  deleteIdeaBoardAction,
   finishTaskAction,
+  updateMemberRoleAction,
   type FormState,
 } from "@/app/actions";
 import {
@@ -20,6 +25,7 @@ import {
   FormMessage,
   inputClass,
   primaryButtonClass,
+  quietButtonClass,
 } from "@/components/wedding/ui";
 import { uploadIdeaPhoto } from "@/lib/db/ideas";
 import { createClient } from "@/lib/db/supabase/browser";
@@ -468,6 +474,171 @@ export function GiftForm({
         </button>
         <FormMessage error={state.error} message={state.message} />
       </div>
+    </form>
+  );
+}
+
+/** Saves as soon as a new role is picked. */
+export function RoleSelect({
+  memberId,
+  memberName,
+  role,
+  options,
+}: {
+  memberId: string;
+  memberName: string;
+  role: string;
+  options: { value: string; label: string }[];
+}) {
+  // Not a <form>: React resets forms after their action, which would snap the select back.
+  const [value, setValue] = useState(role);
+  const [state, setState] = useState<FormState>({});
+  const [pending, startTransition] = useTransition();
+  const save = (next: string) => {
+    setValue(next);
+    startTransition(async () => {
+      const form = new FormData();
+      form.set("memberId", memberId);
+      form.set("role", next);
+      const result = await updateMemberRoleAction({}, form);
+      setState(result);
+      if (result.error) setValue(role);
+    });
+  };
+  const id = `role-${memberId}`;
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <label className="sr-only" htmlFor={id}>
+        Role for {memberName}
+      </label>
+      <select
+        id={id}
+        value={value}
+        aria-busy={pending}
+        onChange={(e) => save(e.target.value)}
+        className={`${inputClass} w-auto`}
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      <span role="status" className="min-w-16 text-base">
+        {pending ? (
+          <span className="inline-flex items-center gap-1.5 text-[#52635a]">
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            Saving...
+          </span>
+        ) : state.error ? (
+          <span className="text-[#8a3f1d]">{state.error}</span>
+        ) : state.message ? (
+          <span className="inline-flex items-center gap-1.5 font-semibold text-[#24553f]">
+            <Check className="h-4 w-4" aria-hidden="true" />
+            {state.message}
+          </span>
+        ) : null}
+      </span>
+    </div>
+  );
+}
+
+const atLeast = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+export function IdeaBoardForm({ weddingId }: { weddingId: string }) {
+  const [state, action, pending] = useActionState<FormState, FormData>(
+    async (prev, form) =>
+      (await Promise.all([addIdeaBoardAction(prev, form), atLeast(600)]))[0],
+    {},
+  );
+  return (
+    <form action={action} className="mt-4 space-y-4">
+      <input type="hidden" name="weddingId" value={weddingId} />
+      <div className="grid gap-4 sm:grid-cols-[1fr_1fr_auto]">
+        <Field label="Board name">
+          <input
+            name="title"
+            required
+            className={inputClass}
+            placeholder="Table settings"
+          />
+        </Field>
+        <Field label="Category">
+          <input name="category" className={inputClass} placeholder="Decor" />
+        </Field>
+        <div className="flex items-end">
+          <button
+            type="submit"
+            disabled={pending}
+            className={`${primaryButtonClass} gap-2`}
+          >
+            {pending && (
+              <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+            )}
+            {pending ? "Creating..." : "Create board"}
+          </button>
+        </div>
+      </div>
+      {!pending && state.error && <FormMessage error={state.error} />}
+      {!pending && state.message && state.id && (
+        <p
+          role="status"
+          className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-[#e3efe6] px-4 py-3 text-base text-[#24553f]"
+        >
+          <span className="inline-flex items-center gap-1.5 font-semibold">
+            <Check className="h-5 w-5" aria-hidden="true" />
+            {state.message}
+          </span>
+          <Link
+            href={`/?section=ideas&board=${state.id}`}
+            className="font-semibold underline underline-offset-4"
+          >
+            Open it
+          </Link>
+        </p>
+      )}
+    </form>
+  );
+}
+
+export function DeleteIdeaBoardButton({
+  boardId,
+  title,
+  ideaCount,
+  className,
+}: {
+  boardId: string;
+  title: string;
+  ideaCount: number;
+  className?: string;
+}) {
+  const [pending, startTransition] = useTransition();
+  const ideas =
+    ideaCount === 0
+      ? ""
+      : ` and its ${ideaCount} ${ideaCount === 1 ? "idea" : "ideas"}`;
+  return (
+    <form
+      className={className}
+      action={(form) => {
+        if (!window.confirm(`Delete "${title}"${ideas}? This can't be undone.`))
+          return;
+        startTransition(() => deleteIdeaBoardAction(form));
+      }}
+    >
+      <input type="hidden" name="boardId" value={boardId} />
+      <button
+        type="submit"
+        disabled={pending}
+        aria-label={`Delete board "${title}"`}
+        className={quietButtonClass}
+      >
+        {pending ? (
+          <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+        ) : (
+          <Trash2 className="h-5 w-5" aria-hidden="true" />
+        )}
+      </button>
     </form>
   );
 }
