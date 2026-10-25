@@ -42,6 +42,7 @@ import {
   createTask,
   deleteTask,
   finishTaskWithDetails,
+  updateTask,
   updateTaskStatus,
   type TaskStatus,
 } from "@/lib/db/tasks";
@@ -329,6 +330,14 @@ export async function finishTaskAction(
   }
   refresh();
   return { message: "Saved" };
+}
+
+export async function setTaskDueDateAction(form: FormData) {
+  const db = await signedInDb();
+  await updateTask(db, required(form, "taskId"), {
+    due_date: text(form, "dueDate") ?? null,
+  });
+  refresh();
 }
 
 export async function deleteTaskAction(form: FormData): Promise<FormState> {

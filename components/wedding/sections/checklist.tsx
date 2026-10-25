@@ -6,6 +6,7 @@ import {
   DeleteTaskButton,
   NoticeProvider,
   TaskDetailsForm,
+  TaskDueDate,
   TaskForm,
 } from "@/components/wedding/client-forms";
 import { memberName, type WeddingContext } from "@/components/wedding/context";
@@ -16,9 +17,8 @@ import {
   OPEN_STATUSES,
   PLANNED_STATUSES,
   getTasks,
-  hasChosenDueDate,
   setsTheBudget,
-  sortTasksInPlanOrder,
+  sortTasksByDueDate,
   type Task,
 } from "@/lib/db/tasks";
 import { getVendors, type Vendor } from "@/lib/db/vendors";
@@ -64,8 +64,8 @@ export async function ChecklistSection({
   const finished = tasks.filter((t) =>
     PLANNED_STATUSES.includes(t.status),
   ).length;
-  const ordered = sortTasksInPlanOrder(visible);
-  const nextUpId = sortTasksInPlanOrder(tasks).find((t) =>
+  const ordered = sortTasksByDueDate(visible);
+  const nextUpId = sortTasksByDueDate(tasks).find((t) =>
     OPEN_STATUSES.includes(t.status),
   )?.id;
   const vendors = new Map(vendorList.map((v) => [v.id, v]));
@@ -140,12 +140,12 @@ export async function ChecklistSection({
                 ? "Done and booked"
                 : filter === "overdue"
                   ? "Past-due tasks"
-                  : "In order of priority"}
+                  : "By due date"}
             </CardTitle>
             {filter !== "planned" && (
               <p className="mt-1 text-base text-[#695b60]">
-                The big decisions come first. Work down the list at your own
-                pace.
+                Soonest first. The dates come from your wedding day, and you can
+                change any of them.
               </p>
             )}
             <ul className="mt-3 divide-y divide-[#f0e8ea]">
@@ -183,7 +183,6 @@ function TaskRow({
   cost?: BudgetItem;
 }) {
   const finished = PLANNED_STATUSES.includes(task.status);
-  const dueDate = hasChosenDueDate(task) ? task.due_date : null;
   const overdue =
     !finished && task.due_date !== null && task.due_date < ctx.today;
   const totalBudget = setsTheBudget(task);
@@ -237,7 +236,11 @@ function TaskRow({
         </p>
         <p className="mt-0.5 flex flex-wrap items-center gap-2 text-base text-[#695b60]">
           {nextUp && <Badge tone="info">Next up</Badge>}
-          {dueDate && <span>Due {formatDate(dueDate)}</span>}
+          {ctx.canEdit ? (
+            <TaskDueDate taskId={task.id} dueDate={task.due_date} />
+          ) : (
+            task.due_date && <span>Due {formatDate(task.due_date)}</span>
+          )}
           {overdue && <Badge tone="warn">Overdue</Badge>}
           {task.status !== "todo" && (
             <Badge tone={finished ? "good" : "info"}>

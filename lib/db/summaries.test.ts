@@ -5,6 +5,7 @@ import { mergeCalendarItems } from "@/lib/db/calendar";
 import {
   budgetCategoryFor,
   setsTheBudget,
+  sortTasksByDueDate,
   sortTasksInPlanOrder,
 } from "@/lib/db/tasks";
 
@@ -86,6 +87,29 @@ describe("sortTasksInPlanOrder", () => {
       { id: "a", sort_order: 1, created_at: "2026-10-01T00:00:00Z" },
     ]);
     expect(sorted.map((t) => t.id)).toEqual(["a", "b", "c", "d"]);
+  });
+});
+
+describe("sortTasksByDueDate", () => {
+  it("puts the soonest due date first and undated tasks last", () => {
+    const task = (id: string, due_date: string | null, sort_order: number) => ({
+      id,
+      due_date,
+      sort_order,
+      created_at: "2026-10-01T00:00:00Z",
+    });
+    const sorted = sortTasksByDueDate([
+      task("later", "2027-06-01", 1),
+      task("none", null, 2),
+      task("sooner", "2026-11-01", 40),
+      task("same-day", "2026-11-01", 3),
+    ]);
+    expect(sorted.map((t) => t.id)).toEqual([
+      "same-day",
+      "sooner",
+      "later",
+      "none",
+    ]);
   });
 });
 

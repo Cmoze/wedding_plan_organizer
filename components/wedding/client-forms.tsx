@@ -23,6 +23,7 @@ import {
   addTaskAction,
   deleteIdeaBoardAction,
   deleteTaskAction,
+  setTaskDueDateAction,
   finishTaskAction,
   updateMemberRoleAction,
   type FormState,
@@ -657,6 +658,45 @@ export function TaskForm({ weddingId }: { weddingId: string }) {
       </div>
       {!pending && state.error && <FormMessage error={state.error} />}
       {!pending && state.message && <SuccessMessage text={state.message} />}
+    </form>
+  );
+}
+
+/** Changes a task's due date as soon as a new day is picked. Clearing it leaves the task undated. */
+export function TaskDueDate({
+  taskId,
+  dueDate,
+}: {
+  taskId: string;
+  /** `YYYY-MM-DD`, or null when the task has no date. */
+  dueDate: string | null;
+}) {
+  const [pending, startTransition] = useTransition();
+  return (
+    <form
+      action={(form) => startTransition(() => setTaskDueDateAction(form))}
+      className="inline-flex items-center gap-2"
+    >
+      <input type="hidden" name="taskId" value={taskId} />
+      <label className="inline-flex items-center gap-2 text-base text-[#695b60]">
+        Due
+        <input
+          key={dueDate ?? "none"}
+          name="dueDate"
+          type="date"
+          defaultValue={dueDate ?? ""}
+          aria-label="Due date"
+          disabled={pending}
+          onChange={(e) => e.currentTarget.form?.requestSubmit()}
+          className="min-h-11 rounded-xl border border-[#ddcbd1] bg-white px-3 text-base text-[#35151f]"
+        />
+      </label>
+      {pending && (
+        <Loader2
+          className="h-5 w-5 animate-spin text-[#6f1d37]"
+          aria-label="Saving"
+        />
+      )}
     </form>
   );
 }

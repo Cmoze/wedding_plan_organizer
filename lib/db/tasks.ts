@@ -136,10 +136,20 @@ export function sortTasksInPlanOrder<
   );
 }
 
-/** Due dates someone typed in. Checklist dates are worked out from the wedding date, so they aren't shown. */
-export const hasChosenDueDate = (
-  task: Pick<Task, "template_id" | "due_date">,
-) => task.template_id === null && task.due_date !== null;
+/** Soonest due date first. Tasks with no date come last, in checklist order. */
+export function sortTasksByDueDate<
+  T extends Pick<Task, "due_date" | "sort_order" | "created_at">,
+>(tasks: T[]): T[] {
+  return [...tasks].sort((a, b) => {
+    if (a.due_date === b.due_date)
+      return (
+        a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at)
+      );
+    if (a.due_date === null) return 1;
+    if (b.due_date === null) return -1;
+    return a.due_date.localeCompare(b.due_date);
+  });
+}
 
 const BUDGET_CATEGORIES: [RegExp, string][] = [
   [/venue/i, "Venue"],
