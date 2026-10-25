@@ -4,7 +4,7 @@ import {
   EmailSuggestionSchema,
 } from "@/lib/ai/suggestions";
 import { setThankYouSent } from "@/lib/db/gifts";
-import { updateGuest } from "@/lib/db/guests";
+import { addGuest, updateGuest } from "@/lib/db/guests";
 import type { Db } from "@/lib/db/shared";
 import { updateTask } from "@/lib/db/tasks";
 
@@ -39,6 +39,36 @@ export const AssistantActionSchema = z.discriminatedUnion("kind", [
     rsvp: z.enum(["attending", "declined", "pending"]),
   }),
   z.object({
+    kind: z.literal("add_guest"),
+    label,
+    reason,
+    first_name: z.string(),
+    last_name: z.string().nullable(),
+    email: z.string().nullable(),
+    phone: z.string().nullable(),
+    plus_one_allowed: z.boolean(),
+    rsvp: z.enum(["pending", "attending", "declined"]),
+    household_id: z
+      .string()
+      .nullable()
+      .describe(
+        "Join this existing household (same invitation), from find_guests; null for a new invitation of their own",
+      ),
+    side: z
+      .enum(["partner1", "partner2", "both"])
+      .nullable()
+      .describe("Whose side, for a new invitation only"),
+    address_line1: z.string().nullable(),
+    city: z.string().nullable(),
+    region: z.string().nullable().describe("State or province"),
+    postal_code: z.string().nullable(),
+    is_different_person: z
+      .boolean()
+      .describe(
+        "true only when the user confirmed this is a different person from a guest with the same name",
+      ),
+  }),
+  z.object({
     kind: z.literal("mark_thank_you_sent"),
     label,
     reason,
@@ -55,6 +85,7 @@ export const ACTION_KIND_LABEL: Record<AssistantAction["kind"], string> = {
   gift: "Gift",
   complete_task: "Checklist",
   set_rsvp: "RSVP",
+  add_guest: "Guest list",
   mark_thank_you_sent: "Thank-you card",
 };
 
@@ -73,6 +104,29 @@ export async function applyAssistantAction(
       return;
     case "set_rsvp":
       await updateGuest(db, action.guest_id, { rsvp: action.rsvp });
+      return;
+    case "add_guest":
+      await addGuest(
+        db,
+        weddingId,
+        {
+          first_name: action.first_name.trim(),
+          last_name: action.last_name?.trim() || null,
+          email: action.email?.trim() || null,
+          phone: action.phone?.trim() || null,
+          plus_one_allowed: action.plus_one_allowed,
+          rsvp: action.rsvp,
+        },
+        action.household_id
+          ? { id: action.household_id }
+          : {
+              side: action.side ?? undefined,
+              address_line1: action.address_line1,
+              city: action.city,
+              region: action.region,
+              postal_code: action.postal_code,
+            },
+      );
       return;
     case "mark_thank_you_sent":
       await setThankYouSent(db, [action.gift_id], true);

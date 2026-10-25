@@ -57,7 +57,7 @@ Answer questions about this wedding by looking things up with your tools: the ch
 
 ${
   ctx.canEdit
-    ? `When the user asks you to do something (add a task, mark something done, record an RSVP, add a cost, an event, a vendor or a gift, mark a thank-you card sent), call propose_action once per change. You can't save anything yourself: each proposal appears under your reply as a button the user taps to confirm. So say something like "Tap the button below to add it", never "Done" or "I've added it". Look up ids first; only use ids your tools returned. Don't propose things the user didn't ask for.`
+    ? `When the user asks you to do something (add a task, mark something done, add a guest, record an RSVP, add a cost, an event, a vendor or a gift, mark a thank-you card sent), call propose_action once per change. You can't save anything yourself: each proposal appears under your reply as a button the user taps to confirm. So say something like "Tap the button below to add it", never "Done" or "I've added it". Look up ids first; only use ids your tools returned. Don't propose things the user didn't ask for.`
     : `This user can view the plan but not change it. If they ask you to change something, explain that the couple or their planner can make that change.`
 }
 
@@ -93,6 +93,9 @@ export function buildAssistantTools(ctx: AssistantContext) {
           couple: [wedding.partner1_name, wedding.partner2_name]
             .filter(Boolean)
             .join(" & "),
+          // Guest "side": partner1 / partner2 refer to these names.
+          partner1: wedding.partner1_name,
+          partner2: wedding.partner2_name,
           wedding_date: wedding.wedding_date,
           days_to_go: wedding.wedding_date
             ? Math.round(
@@ -379,6 +382,25 @@ export async function checkAction(
       )
         ? action
         : "Unknown guest_id. Look it up with find_guests first.";
+    }
+    case "add_guest": {
+      if (!action.first_name.trim()) return "A guest needs a first name.";
+      const households = await getGuestList(db, weddingId);
+      if (
+        action.household_id &&
+        !households.some((h) => h.id === action.household_id)
+      )
+        return "Unknown household_id. Look it up with find_guests, or use null for a new invitation.";
+      const name = fullName({
+        first_name: action.first_name.trim(),
+        last_name: action.last_name?.trim() || null,
+      }).toLowerCase();
+      const twin = households
+        .flatMap((h) => h.guests.map((g) => ({ g, h })))
+        .find(({ g }) => fullName(g).toLowerCase() === name);
+      if (twin && !action.is_different_person)
+        return `${fullName(twin.g)} is already on the guest list (${twin.h.name}). Ask the user whether this is a different person before proposing again with is_different_person: true.`;
+      return action;
     }
     case "mark_thank_you_sent": {
       const gifts = await getGifts(db, weddingId);

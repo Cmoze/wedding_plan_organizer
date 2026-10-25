@@ -156,6 +156,40 @@ describe("site assistant", () => {
     ).toEqual(expect.any(String));
   });
 
+  it("adds guests, but not duplicates or to unknown households", async () => {
+    const guest = {
+      ...base,
+      kind: "add_guest" as const,
+      first_name: "Tom",
+      last_name: "Miller",
+      email: null,
+      phone: null,
+      plus_one_allowed: false,
+      rsvp: "pending" as const,
+      household_id: "h1",
+      side: null,
+      address_line1: null,
+      city: null,
+      region: null,
+      postal_code: null,
+      is_different_person: false,
+    };
+    expect(await checkAction(ctx, guest)).toEqual(guest);
+    expect(
+      await checkAction(ctx, { ...guest, household_id: "nope" }),
+    ).toContain("Unknown household_id");
+    const sue = { ...guest, first_name: "sue", household_id: null };
+    expect(await checkAction(ctx, sue)).toContain(
+      "Sue Miller is already on the guest list",
+    );
+    expect(
+      await checkAction(ctx, { ...sue, is_different_person: true }),
+    ).toMatchObject({ first_name: "sue" });
+    expect(await checkAction(ctx, { ...guest, first_name: " " })).toContain(
+      "first name",
+    );
+  });
+
   it("keeps recent history and starts with a user turn", () => {
     const turns = [
       { role: "assistant" as const, content: "Hi!" },
