@@ -63,9 +63,7 @@ export function ChecklistSuggestions({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok)
-        throw new Error(
-          data.error || "The AI helper couldn't look at your checklist.",
-        );
+        throw new Error(data.error || "Piper couldn't look at your checklist.");
       setItems(
         (data.suggestions as ChecklistSuggestion[]).map((suggestion) => ({
           suggestion,
@@ -76,7 +74,7 @@ export function ChecklistSuggestions({
       setError(
         err instanceof Error
           ? err.message
-          : "The AI helper couldn't look at your checklist.",
+          : "Piper couldn't look at your checklist.",
       );
     } finally {
       setLoading(false);
@@ -121,8 +119,8 @@ export function ChecklistSuggestions({
       </CardTitle>
       <p className="mt-2 text-base text-[#695b60]">
         {fresh
-          ? "This is a standard checklist. The helper can fit it to your date, guest count and budget: adding what's missing, moving dates and skipping what doesn't apply."
-          : "The helper looks at your date, guest count and budget and suggests changes to the checklist."}{" "}
+          ? "This is a standard checklist. Piper can fit it to your date, guest count and budget: adding what's missing, moving dates and skipping what doesn't apply."
+          : "Piper looks at your date, guest count and budget and suggests changes to the checklist."}{" "}
         Nothing changes until you say yes.
       </p>
 

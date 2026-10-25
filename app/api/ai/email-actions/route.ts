@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   });
   if (denied) return denied;
   if (!isAiConfigured())
-    return jsonError(503, "The AI helper isn't set up yet", "unavailable");
+    return jsonError(503, "Piper isn't set up yet", "unavailable");
 
   try {
     const [wedding, vendors, budgetItems, openTasks, households, registries] =

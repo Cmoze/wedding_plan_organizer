@@ -102,9 +102,7 @@ export function EmailSuggestions({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok)
-        throw new Error(
-          data.error || "The AI helper couldn't read this email.",
-        );
+        throw new Error(data.error || "Piper couldn't read this email.");
       setItems(
         (data.suggestions as EmailSuggestion[]).map((suggestion) => ({
           suggestion,
@@ -113,9 +111,7 @@ export function EmailSuggestions({
       );
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "The AI helper couldn't read this email.",
+        err instanceof Error ? err.message : "Piper couldn't read this email.",
       );
     } finally {
       setLoading(false);
@@ -160,8 +156,8 @@ export function EmailSuggestions({
         Add this to your plan
       </CardTitle>
       <p className="mt-2 text-base text-[#695b60]">
-        The helper reads the email and suggests costs, dates, to-dos, vendors
-        and gifts. Nothing is saved until you say yes.
+        Piper reads the email and suggests costs, dates, to-dos, vendors and
+        gifts. Nothing is saved until you say yes.
       </p>
 
       <div className="mt-4 space-y-3">
@@ -301,7 +297,7 @@ export function InboxQuery({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok)
-        throw new Error(data.error || "The AI helper couldn't read the inbox.");
+        throw new Error(data.error || "Piper couldn't read the inbox.");
       setSummary(data.summary as string);
       setItems(
         (
@@ -313,9 +309,7 @@ export function InboxQuery({
       );
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "The AI helper couldn't read the inbox.",
+        err instanceof Error ? err.message : "Piper couldn't read the inbox.",
       );
     } finally {
       setLoading(false);
@@ -365,8 +359,8 @@ export function InboxQuery({
         Ask your inbox
       </CardTitle>
       <p className="mt-2 text-base text-[#695b60]">
-        The helper reads your newest emails together, sums them up and suggests
-        what to add to your plan. Nothing is saved until you say yes.
+        Piper reads your newest emails together, sums them up and suggests what
+        to add to your plan. Nothing is saved until you say yes.
       </p>
 
       <form

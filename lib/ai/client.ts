@@ -35,25 +35,26 @@ export function isAiConfigured(): boolean {
 
 let client: Anthropic | null = null;
 
-function getClient(): Anthropic {
+/** The shared SDK client, for helpers that need more than generateStructured (e.g. the tool runner). */
+export function getClient(): Anthropic {
   if (!isAiConfigured())
-    throw new AiError("The AI helper isn't set up yet", "unavailable");
+    throw new AiError("Piper isn't set up yet", "unavailable");
   // Short timeout and one retry: a slow AI answer should never hang a screen.
   client ??= new Anthropic({ maxRetries: 1, timeout: 45_000 });
   return client;
 }
 
-function toAiError(error: unknown): AiError {
+export function toAiError(error: unknown): AiError {
   if (error instanceof AiError) return error;
   if (error instanceof Anthropic.RateLimitError)
-    return new AiError("The AI helper is busy, try again soon", "rate_limited");
+    return new AiError("Piper is busy, try again soon", "rate_limited");
   if (error instanceof Anthropic.BadRequestError)
     return new AiError(
       `AI request was rejected: ${error.message}`,
       "bad_output",
     );
   // Auth, overload, 5xx, timeouts and network errors: treat AI as down.
-  return new AiError("The AI helper is unavailable right now", "unavailable");
+  return new AiError("Piper is unavailable right now", "unavailable");
 }
 
 /**
@@ -88,11 +89,8 @@ export async function generateStructured<T extends z.ZodType>(options: {
     throw toAiError(error);
   }
   if (response.stop_reason === "refusal")
-    throw new AiError(
-      "The AI helper couldn't help with this one",
-      "bad_output",
-    );
+    throw new AiError("Piper couldn't help with this one", "bad_output");
   if (response.stop_reason === "max_tokens" || !response.parsed_output)
-    throw new AiError("The AI helper gave an incomplete answer", "bad_output");
+    throw new AiError("Piper gave an incomplete answer", "bad_output");
   return response.parsed_output as z.infer<T>;
 }

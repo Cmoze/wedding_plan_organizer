@@ -244,8 +244,8 @@ function ForwardingCard({ address }: { address: string | null }) {
           <p className="mt-2 text-base text-[#695b60]">
             Forward any vendor email here, or give it to vendors directly.
             Forward registry &quot;someone bought you a gift&quot; emails too,
-            and the helper can add them to your gift list. Everyone on your
-            wedding team will see them in this inbox.
+            and Piper can add them to your gift list. Everyone on your wedding
+            team will see them in this inbox.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <code className="rounded-xl border border-[#ddcbd1] bg-white px-4 py-3 text-lg font-semibold break-all text-[#35151f]">

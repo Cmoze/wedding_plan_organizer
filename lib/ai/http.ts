@@ -40,7 +40,7 @@ export async function checkAiAccess(
   if (options.rateLimit !== false && !takeRateLimit(member.user_id))
     return jsonError(
       429,
-      "You've used the AI helper a lot just now. Try again in a few minutes.",
+      "You've asked Piper a lot just now. Try again in a few minutes.",
       "rate_limited",
     );
   return null;

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense, type ReactNode } from "react";
+import { AssistantChat } from "@/components/wedding/assistant-chat";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { LandingPage } from "@/components/wedding/landing-page";
 import type { WeddingContext } from "@/components/wedding/context";
@@ -103,6 +104,7 @@ async function SectionWorkspace({
       }}
     >
       {content[activeSection]}
+      <AssistantChat weddingId={wedding.id} />
     </WorkspaceShell>
   );
 }

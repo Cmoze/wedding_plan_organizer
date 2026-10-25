@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   const denied = await checkAiAccess(db, weddingId, { editorsOnly: true });
   if (denied) return denied;
   if (!isAiConfigured())
-    return jsonError(503, "The AI helper isn't set up yet", "unavailable");
+    return jsonError(503, "Piper isn't set up yet", "unavailable");
 
   try {
     const [wedding, tasks] = await Promise.all([
