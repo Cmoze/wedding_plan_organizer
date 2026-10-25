@@ -7,6 +7,7 @@ import {
 } from "@/lib/ai/suggestions";
 import type { BudgetItem } from "@/lib/db/budget";
 import type { Email } from "@/lib/db/emails";
+import { cleanEmailText } from "@/lib/email/display";
 import type { Task } from "@/lib/db/tasks";
 import type { Vendor } from "@/lib/db/vendors";
 import type { Wedding } from "@/lib/db/weddings";
@@ -53,7 +54,7 @@ export function emailText(
   maxChars = MAX_EMAIL_CHARS,
 ): string {
   const text =
-    email.body_text?.trim() ||
+    cleanEmailText(email.body_text ?? "") ||
     (email.body_html ?? "")
       .replace(/<(script|style)[\s\S]*?<\/\1>/gi, " ")
       .replace(/<br\s*\/?>|<\/p>|<\/div>/gi, "\n")

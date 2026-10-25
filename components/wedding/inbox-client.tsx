@@ -3,7 +3,13 @@
 import { Check, Copy, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type ReactNode,
+} from "react";
 import {
   Card,
   CardTitle,
@@ -19,6 +25,7 @@ import {
   type EmailSuggestion,
 } from "@/lib/ai/suggestions";
 import { createClient } from "@/lib/db/supabase/browser";
+import { emailHtmlDocument } from "@/lib/email/display";
 
 /** Shows an ISO timestamp as a date and time in the viewer's own time zone. */
 export function LocalDateTime({ iso }: { iso: string }) {
@@ -464,5 +471,48 @@ export function InboxQuery({
         )}
       </div>
     </Card>
+  );
+}
+
+/**
+ * An email's HTML (logos, layout) in a sandboxed frame that grows to fit it. No scripts or forms
+ * can run inside; allow-same-origin only lets this page measure the height.
+ */
+export function EmailHtmlFrame({ html }: { html: string }) {
+  const frame = useRef<HTMLIFrameElement>(null);
+  const [height, setHeight] = useState(400);
+
+  useEffect(() => {
+    const el = frame.current;
+    if (!el) return;
+    let observer: ResizeObserver | undefined;
+    const fit = () => {
+      const doc = el.contentDocument;
+      if (!doc?.body) return;
+      setHeight(Math.max(120, doc.documentElement.scrollHeight));
+      observer?.disconnect();
+      // Images load after the page, so keep fitting as the email grows.
+      observer = new ResizeObserver(() =>
+        setHeight(Math.max(120, doc.documentElement.scrollHeight)),
+      );
+      observer.observe(doc.body);
+    };
+    el.addEventListener("load", fit);
+    fit();
+    return () => {
+      el.removeEventListener("load", fit);
+      observer?.disconnect();
+    };
+  }, [html]);
+
+  return (
+    <iframe
+      ref={frame}
+      title="Email message"
+      sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+      srcDoc={emailHtmlDocument(html)}
+      style={{ height }}
+      className="w-full rounded-xl border border-[#eceee8] bg-white"
+    />
   );
 }

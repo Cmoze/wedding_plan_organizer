@@ -4,6 +4,7 @@ import { deleteEmailAction } from "@/app/actions";
 import type { WeddingContext } from "@/components/wedding/context";
 import {
   CopyButton,
+  EmailHtmlFrame,
   EmailSuggestions,
   InboxQuery,
   LocalDateTime,
@@ -23,6 +24,7 @@ import {
   markEmailRead,
   type Email,
 } from "@/lib/db/emails";
+import { cleanEmailText } from "@/lib/email/display";
 
 export async function InboxSection({
   ctx,
@@ -217,22 +219,18 @@ async function EmailView({
   );
 }
 
-/** Plain text when we have it; HTML-only mail goes in a sandboxed iframe so its scripts and styles can't touch the app. */
+/**
+ * The HTML version when there is one, so logos and layout look like the sender meant them; otherwise
+ * the plain text, tidied of image placeholders and tracking links.
+ */
 function EmailBody({ email }: { email: Email }) {
-  if (email.body_text?.trim())
+  if (email.body_html?.trim()) return <EmailHtmlFrame html={email.body_html} />;
+  const text = cleanEmailText(email.body_text ?? "");
+  if (text)
     return (
       <div className="text-lg leading-relaxed break-words whitespace-pre-wrap text-[#2d4a3f]">
-        {email.body_text.trim()}
+        {text}
       </div>
-    );
-  if (email.body_html)
-    return (
-      <iframe
-        title="Email message"
-        sandbox=""
-        srcDoc={email.body_html}
-        className="h-[60vh] w-full rounded-xl border border-[#eceee8] bg-white"
-      />
     );
   return <p className="text-base text-[#66756c]">This email has no text.</p>;
 }
