@@ -15,6 +15,7 @@ import {
   primaryButtonClass,
   quietButtonClass,
 } from "@/components/wedding/ui";
+import { getGifts, thankYouCards, type ThankYouCard } from "@/lib/db/gifts";
 import {
   countGuests,
   getGuestList,
@@ -29,7 +30,13 @@ const RSVP_OPTIONS: { value: Guest["rsvp"]; label: string }[] = [
 ];
 
 export async function GuestsSection({ ctx }: { ctx: WeddingContext }) {
-  const households = await getGuestList(ctx.db, ctx.wedding.id);
+  const [households, gifts] = await Promise.all([
+    getGuestList(ctx.db, ctx.wedding.id),
+    getGifts(ctx.db, ctx.wedding.id),
+  ]);
+  const giftCards = new Map(
+    thankYouCards(gifts, households).map((c) => [c.household?.id, c]),
+  );
   const counts = countGuests(households);
   const { partner1_name, partner2_name } = ctx.wedding;
   const sideLabel = {
@@ -144,6 +151,7 @@ export async function GuestsSection({ ctx }: { ctx: WeddingContext }) {
                 key={h.id}
                 household={h}
                 side={sideLabel[h.side]}
+                giftCard={giftCards.get(h.id)}
                 ctx={ctx}
               />
             ))}
@@ -157,10 +165,13 @@ export async function GuestsSection({ ctx }: { ctx: WeddingContext }) {
 function HouseholdRow({
   household,
   side,
+  giftCard,
   ctx,
 }: {
   household: HouseholdWithGuests;
   side: string;
+  /** Their gifts, for the thank-you badge; tracked in the Registry section. */
+  giftCard?: ThankYouCard;
   ctx: WeddingContext;
 }) {
   return (
@@ -168,6 +179,11 @@ function HouseholdRow({
       <p className="flex flex-wrap items-center gap-2 text-lg font-semibold">
         {household.name}
         {household.side !== "both" && <Badge>{side}</Badge>}
+        {giftCard && (
+          <Badge tone={giftCard.sent ? "good" : "warn"}>
+            {giftCard.sent ? "🎁 Thank-you sent" : "🎁 Thank-you to send"}
+          </Badge>
+        )}
       </p>
       <ul className="mt-2 space-y-2">
         {household.guests.map((g) => (

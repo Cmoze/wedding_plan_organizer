@@ -9,6 +9,7 @@ import {
 } from "react";
 import {
   addEventAction,
+  addGiftAction,
   addIdeaItemAction,
   addRegistryLinkAction,
   finishTaskAction,
@@ -347,6 +348,123 @@ export function RegistryLinkForm({ weddingId }: { weddingId: string }) {
       <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
         <button type="submit" disabled={pending} className={primaryButtonClass}>
           {pending ? "Saving..." : "Add registry"}
+        </button>
+        <FormMessage error={state.error} message={state.message} />
+      </div>
+    </form>
+  );
+}
+
+/** "Who is it from?" picks a household from the guest list; anyone else is typed in. */
+export function GiftForm({
+  weddingId,
+  today,
+  households,
+  registries,
+}: {
+  weddingId: string;
+  today: string;
+  households: { id: string; name: string }[];
+  registries: { id: string; store_name: string }[];
+}) {
+  const empty = {
+    householdId: "",
+    giverName: "",
+    description: "",
+    registryLinkId: "",
+    receivedOn: today,
+    notes: "",
+  };
+  const [values, setValues] = useState(empty);
+  const [state, action, pending] = useActionState<FormState, FormData>(
+    async (prev, form) => {
+      const result = await addGiftAction(prev, form);
+      if (!result.error) setValues(empty);
+      return result;
+    },
+    {},
+  );
+  const field =
+    (key: keyof typeof empty) =>
+    (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+      setValues((v) => ({ ...v, [key]: e.target.value }));
+
+  return (
+    <form action={action} className="mt-4 grid gap-4 sm:grid-cols-2">
+      <input type="hidden" name="weddingId" value={weddingId} />
+      <Field label="Who is it from?">
+        <select
+          name="householdId"
+          value={values.householdId}
+          onChange={field("householdId")}
+          className={inputClass}
+        >
+          <option value="">Someone not on the guest list</option>
+          {households.map((h) => (
+            <option key={h.id} value={h.id}>
+              {h.name}
+            </option>
+          ))}
+        </select>
+      </Field>
+      {values.householdId === "" && (
+        <Field label="Their name">
+          <input
+            name="giverName"
+            required
+            value={values.giverName}
+            onChange={field("giverName")}
+            className={inputClass}
+            placeholder="Aunt Rose"
+          />
+        </Field>
+      )}
+      <Field label="What did they give?">
+        <input
+          name="description"
+          required
+          value={values.description}
+          onChange={field("description")}
+          className={inputClass}
+          placeholder="Stand mixer"
+        />
+      </Field>
+      <Field label="From which registry?">
+        <select
+          name="registryLinkId"
+          value={values.registryLinkId}
+          onChange={field("registryLinkId")}
+          className={inputClass}
+        >
+          <option value="">Not from a registry</option>
+          {registries.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.store_name}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <Field label="Date received">
+        <input
+          name="receivedOn"
+          type="date"
+          value={values.receivedOn}
+          onChange={field("receivedOn")}
+          className={inputClass}
+        />
+      </Field>
+      <Field label="Notes (optional)">
+        <input
+          name="notes"
+          value={values.notes}
+          onChange={field("notes")}
+          className={inputClass}
+          placeholder="Mention the card she wrote"
+        />
+      </Field>
+      <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+        <button type="submit" disabled={pending} className={primaryButtonClass}>
+          {pending ? "Saving..." : "Add gift"}
         </button>
         <FormMessage error={state.error} message={state.message} />
       </div>

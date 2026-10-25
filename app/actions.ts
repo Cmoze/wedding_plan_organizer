@@ -14,7 +14,13 @@ import {
 import { addComment } from "@/lib/db/comments";
 import { deleteEmail } from "@/lib/db/emails";
 import { createEvent, deleteEvent } from "@/lib/db/events";
-import { addGuest, removeGuest, updateGuest } from "@/lib/db/guests";
+import { createGift, deleteGift, setThankYouSent } from "@/lib/db/gifts";
+import {
+  addGuest,
+  getGuestList,
+  removeGuest,
+  updateGuest,
+} from "@/lib/db/guests";
 import {
   addReaction,
   createIdeaBoard,
@@ -482,6 +488,55 @@ export async function addRegistryLinkAction(
 export async function deleteRegistryLinkAction(form: FormData) {
   const db = await signedInDb();
   await deleteRegistryLink(db, required(form, "linkId"));
+  refresh();
+}
+
+export async function addGiftAction(
+  _prev: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const db = await signedInDb();
+  const weddingId = required(form, "weddingId");
+  const householdId = text(form, "householdId") ?? null;
+  const description = text(form, "description");
+  if (!description) return { error: "Say what the gift was." };
+  try {
+    const giverName =
+      text(form, "giverName") ??
+      (householdId
+        ? (await getGuestList(db, weddingId)).find((h) => h.id === householdId)
+            ?.name
+        : undefined);
+    if (!giverName) return { error: "Say who the gift is from." };
+    await createGift(db, weddingId, {
+      household_id: householdId,
+      giver_name: giverName,
+      description,
+      registry_link_id: text(form, "registryLinkId") ?? null,
+      received_on: text(form, "receivedOn") ?? null,
+      notes: text(form, "notes") ?? null,
+    });
+    refresh();
+    return { message: `Added the gift from ${giverName}` };
+  } catch (e) {
+    return { error: friendly(e) };
+  }
+}
+
+/** `giftIds` is comma-separated: one card can thank several gifts. */
+export async function setThankYouSentAction(form: FormData) {
+  const db = await signedInDb();
+  await setThankYouSent(
+    db,
+    required(form, "giftIds").split(","),
+    text(form, "sent") === "true",
+  );
+  refresh();
+}
+
+export async function deleteGiftAction(form: FormData) {
+  const db = await signedInDb();
+  await deleteGift(db, required(form, "giftId"));
   refresh();
 }
 
