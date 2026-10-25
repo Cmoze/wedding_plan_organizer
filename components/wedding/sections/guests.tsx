@@ -1,4 +1,5 @@
 import { Trash2 } from "lucide-react";
+import Link from "next/link";
 import { removeGuestAction, setGuestRsvpAction } from "@/app/actions";
 import { GuestForm } from "@/components/wedding/client-forms";
 import type { WeddingContext } from "@/components/wedding/context";
@@ -8,6 +9,9 @@ import {
   Card,
   CardTitle,
   EmptyState,
+  Field,
+  inputClass,
+  primaryButtonClass,
   quietButtonClass,
 } from "@/components/wedding/ui";
 import {
@@ -29,7 +33,20 @@ const RSVP_OPTIONS: { value: Guest["rsvp"]; label: string }[] = [
   { value: "pending", label: "No reply" },
 ];
 
-export async function GuestsSection({ ctx }: { ctx: WeddingContext }) {
+const RSVP_FILTERS = [
+  { value: "all", label: "All replies" },
+  ...RSVP_OPTIONS,
+] as const;
+
+export async function GuestsSection({
+  ctx,
+  search,
+  rsvp,
+}: {
+  ctx: WeddingContext;
+  search?: string;
+  rsvp?: string;
+}) {
   const [households, gifts] = await Promise.all([
     getGuestList(ctx.db, ctx.wedding.id),
     getGifts(ctx.db, ctx.wedding.id),
@@ -38,6 +55,37 @@ export async function GuestsSection({ ctx }: { ctx: WeddingContext }) {
     thankYouCards(gifts, households).map((c) => [c.household?.id, c]),
   );
   const counts = countGuests(households);
+  const query = search?.trim().toLocaleLowerCase() ?? "";
+  const selectedRsvp = RSVP_FILTERS.some((option) => option.value === rsvp)
+    ? rsvp!
+    : "all";
+  const visibleHouseholds = households.flatMap((household) => {
+    const householdSearchText = [household.name, ...envelopeAddress(household)]
+      .join(" ")
+      .toLocaleLowerCase();
+    const householdMatches = query && householdSearchText.includes(query);
+    const guests = household.guests.filter((guest) => {
+      const matchesRsvp = selectedRsvp === "all" || guest.rsvp === selectedRsvp;
+      const guestSearchText = [
+        guest.first_name,
+        guest.last_name,
+        guest.email,
+        guest.phone,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLocaleLowerCase();
+      return (
+        matchesRsvp &&
+        (!query || householdMatches || guestSearchText.includes(query))
+      );
+    });
+    return guests.length > 0 ? [{ ...household, guests }] : [];
+  });
+  const visibleGuestCount = visibleHouseholds.reduce(
+    (total, household) => total + household.guests.length,
+    0,
+  );
   const { partner1_name, partner2_name } = ctx.wedding;
   const sideLabel = {
     partner1: `${partner1_name}'s side`,
@@ -75,23 +123,79 @@ export async function GuestsSection({ ctx }: { ctx: WeddingContext }) {
             : "The couple hasn't added guests yet."}
         </EmptyState>
       ) : (
-        <Card>
-          <CardTitle>
-            {counts.households}{" "}
-            {counts.households === 1 ? "invitation" : "invitations"}
-          </CardTitle>
-          <ul className="mt-3 divide-y divide-[#f0e8ea]">
-            {households.map((h) => (
-              <HouseholdRow
-                key={h.id}
-                household={h}
-                side={sideLabel[h.side]}
-                giftCard={giftCards.get(h.id)}
-                ctx={ctx}
-              />
-            ))}
-          </ul>
-        </Card>
+        <>
+          <Card>
+            <CardTitle>Find guests</CardTitle>
+            <form
+              action="/"
+              method="get"
+              className="mt-4 grid items-end gap-4 sm:grid-cols-[minmax(0,1fr)_220px_auto_auto]"
+            >
+              <input type="hidden" name="section" value="guests" />
+              <Field label="Search by name, household, or contact">
+                <input
+                  type="search"
+                  name="q"
+                  defaultValue={search}
+                  className={inputClass}
+                  placeholder="e.g. Jordan Lee"
+                />
+              </Field>
+              <Field label="RSVP status">
+                <select
+                  name="rsvp"
+                  defaultValue={selectedRsvp}
+                  className={inputClass}
+                >
+                  {RSVP_FILTERS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <button type="submit" className={primaryButtonClass}>
+                Search
+              </button>
+              {(query || selectedRsvp !== "all") && (
+                <Link href="/?section=guests" className={quietButtonClass}>
+                  Clear
+                </Link>
+              )}
+            </form>
+          </Card>
+
+          {visibleHouseholds.length === 0 ? (
+            <EmptyState title="No guests match those filters">
+              <Link
+                href="/?section=guests"
+                className="font-semibold text-[#6f1d37] underline underline-offset-4"
+              >
+                Clear search and filters
+              </Link>
+            </EmptyState>
+          ) : (
+            <Card>
+              <CardTitle>
+                {visibleGuestCount}{" "}
+                {visibleGuestCount === 1 ? "guest" : "guests"} in{" "}
+                {visibleHouseholds.length}{" "}
+                {visibleHouseholds.length === 1 ? "invitation" : "invitations"}
+              </CardTitle>
+              <ul className="mt-3 divide-y divide-[#f0e8ea]">
+                {visibleHouseholds.map((h) => (
+                  <HouseholdRow
+                    key={h.id}
+                    household={h}
+                    side={sideLabel[h.side]}
+                    giftCard={giftCards.get(h.id)}
+                    ctx={ctx}
+                  />
+                ))}
+              </ul>
+            </Card>
+          )}
+        </>
       )}
 
       {ctx.canEdit && (

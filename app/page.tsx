@@ -87,7 +87,9 @@ async function SectionWorkspace({
       <CalendarSection ctx={ctx} month={param("month")} day={param("day")} />
     ),
     budget: <BudgetSection ctx={ctx} />,
-    guests: <GuestsSection ctx={ctx} />,
+    guests: (
+      <GuestsSection ctx={ctx} search={param("q")} rsvp={param("rsvp")} />
+    ),
     ideas: <IdeasSection ctx={ctx} boardId={param("board")} />,
     inbox: <InboxSection ctx={ctx} emailId={param("email")} />,
     registry: <RegistrySection ctx={ctx} />,
