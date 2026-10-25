@@ -10,7 +10,12 @@ import {
   EmptyState,
   quietButtonClass,
 } from "@/components/wedding/ui";
-import { getGifts, thankYouCards, type ThankYouCard } from "@/lib/db/gifts";
+import {
+  envelopeAddress,
+  getGifts,
+  thankYouCards,
+  type ThankYouCard,
+} from "@/lib/db/gifts";
 import {
   countGuests,
   getGuestList,
@@ -115,6 +120,7 @@ function HouseholdRow({
   giftCard?: ThankYouCard;
   ctx: WeddingContext;
 }) {
+  const address = envelopeAddress(household);
   return (
     <li className="py-4">
       <p className="flex flex-wrap items-center gap-2 text-lg font-semibold">
@@ -126,6 +132,9 @@ function HouseholdRow({
           </Badge>
         )}
       </p>
+      {address.length > 0 && (
+        <p className="text-sm text-[#66756c]">{address.join(", ")}</p>
+      )}
       <ul className="mt-2 space-y-2">
         {household.guests.map((g) => (
           <GuestRow key={g.id} guest={g} ctx={ctx} />
@@ -145,7 +154,6 @@ function GuestRow({ guest, ctx }: { guest: Guest; ctx: WeddingContext }) {
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-center gap-2 text-base font-semibold">
           {name}
-          {guest.is_child && <Badge>Child</Badge>}
           {guest.plus_one_allowed && <Badge tone="info">+1</Badge>}
         </p>
         {contact && (

@@ -18,8 +18,8 @@ import { signOutAction } from "@/app/actions";
 
 const sections = [
   { id: "home", label: "Home", icon: Home },
-  { id: "tasks", label: "Tasks", icon: CheckSquare },
   { id: "calendar", label: "Calendar", icon: CalendarDays },
+  { id: "tasks", label: "Tasks", icon: CheckSquare },
   { id: "budget", label: "Budget", icon: Wallet },
   { id: "guests", label: "Guests", icon: UsersRound },
   { id: "ideas", label: "Ideas", icon: Heart },

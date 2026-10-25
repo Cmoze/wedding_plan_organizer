@@ -78,15 +78,28 @@ export async function createGuest(
 }
 
 /**
- * Adds one person. Without `householdId` they get their own invitation (household) named after them.
- * Joining a household whose name was made from its guests ("Alex Smith") renames it ("Alex & Sam Smith");
- * a name someone typed in is kept.
+ * Adds one person. Without a household `id` they get their own invitation (household) named after them,
+ * with the side and mailing address given. Joining a household whose name was made from its guests
+ * ("Alex Smith") renames it ("Alex & Sam Smith"); a name someone typed in is kept.
  */
 export async function addGuest(
   db: Db,
   weddingId: string,
   guest: Omit<NewRow<"guests">, "household_id">,
-  household: { id: string } | { side?: Household["side"] } = {},
+  household:
+    | { id: string }
+    | Partial<
+        Pick<
+          Household,
+          | "side"
+          | "address_line1"
+          | "address_line2"
+          | "city"
+          | "region"
+          | "postal_code"
+          | "country"
+        >
+      > = {},
 ): Promise<Guest> {
   let householdId: string;
   if ("id" in household) {
@@ -110,8 +123,8 @@ export async function addGuest(
   } else {
     householdId = (
       await createHousehold(db, weddingId, {
+        ...household,
         name: envelopeName([guest]),
-        side: household.side,
       })
     ).id;
   }

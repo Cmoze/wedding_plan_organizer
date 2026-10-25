@@ -82,7 +82,9 @@ async function SectionWorkspace({
   const content: Partial<Record<Section, ReactNode>> = {
     home: <HomeSection ctx={ctx} />,
     tasks: <ChecklistSection ctx={ctx} show={param("show")} />,
-    calendar: <CalendarSection ctx={ctx} month={param("month")} />,
+    calendar: (
+      <CalendarSection ctx={ctx} month={param("month")} day={param("day")} />
+    ),
     budget: <BudgetSection ctx={ctx} />,
     guests: <GuestsSection ctx={ctx} />,
     ideas: <IdeasSection ctx={ctx} boardId={param("board")} />,

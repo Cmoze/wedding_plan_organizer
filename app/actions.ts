@@ -380,9 +380,17 @@ export async function addGuestAction(
         email: text(form, "email") ?? null,
         phone: text(form, "phone") ?? null,
         plus_one_allowed: form.get("plusOne") === "on",
-        is_child: form.get("child") === "on",
       },
-      householdId ? { id: householdId } : { side },
+      householdId
+        ? { id: householdId }
+        : {
+            side,
+            address_line1: text(form, "addressLine1") ?? null,
+            address_line2: text(form, "addressLine2") ?? null,
+            city: text(form, "city") ?? null,
+            region: text(form, "region") ?? null,
+            postal_code: text(form, "postalCode") ?? null,
+          },
     );
     refresh();
     const name = [firstName, lastName].filter(Boolean).join(" ");

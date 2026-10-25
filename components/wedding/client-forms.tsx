@@ -52,7 +52,14 @@ export function LocalTime({
   );
 }
 
-export function EventForm({ weddingId }: { weddingId: string }) {
+export function EventForm({
+  weddingId,
+  defaultDate,
+}: {
+  weddingId: string;
+  /** `YYYY-MM-DD` */
+  defaultDate?: string;
+}) {
   const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState<string>();
   const [pending, startTransition] = useTransition();
@@ -98,7 +105,13 @@ export function EventForm({ weddingId }: { weddingId: string }) {
         />
       </Field>
       <Field label="Date">
-        <input name="date" type="date" required className={inputClass} />
+        <input
+          name="date"
+          type="date"
+          required
+          defaultValue={defaultDate}
+          className={inputClass}
+        />
       </Field>
       <Field label="Time" hint="Leave blank for all day.">
         <input name="time" type="time" className={inputClass} />
@@ -618,6 +631,7 @@ export function GuestForm({
       (await Promise.all([addGuestAction(prev, form), atLeast(600)]))[0],
     {},
   );
+  const [householdId, setHouseholdId] = useState("");
   return (
     <form action={action} className="mt-4 grid gap-4 sm:grid-cols-2">
       <input type="hidden" name="weddingId" value={weddingId} />
@@ -658,7 +672,12 @@ export function GuestForm({
         label="Invitation"
         hint="Pick someone already on the list to send them one invitation together."
       >
-        <select name="householdId" defaultValue="" className={inputClass}>
+        <select
+          name="householdId"
+          value={householdId}
+          onChange={(e) => setHouseholdId(e.target.value)}
+          className={inputClass}
+        >
           <option value="">Their own invitation</option>
           {households.map((h) => (
             <option key={h.id} value={h.id}>
@@ -667,18 +686,64 @@ export function GuestForm({
           ))}
         </select>
       </Field>
-      <Field label="Whose side?" hint="Only used for a new invitation.">
-        <select name="side" defaultValue="both" className={inputClass}>
-          {(["partner1", "partner2", "both"] as const).map((s) => (
-            <option key={s} value={s}>
-              {sideLabel[s]}
-            </option>
-          ))}
-        </select>
-      </Field>
+      {householdId === "" && (
+        <>
+          <Field label="Whose side?">
+            <select name="side" defaultValue="both" className={inputClass}>
+              {(["partner1", "partner2", "both"] as const).map((s) => (
+                <option key={s} value={s}>
+                  {sideLabel[s]}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <fieldset className="grid gap-4 sm:col-span-2 sm:grid-cols-2">
+            <legend className="mb-1 text-base font-semibold text-[#2d4a3f]">
+              Mailing address{" "}
+              <span className="font-normal text-[#66756c]">
+                (optional, for sending the invitation)
+              </span>
+            </legend>
+            <Field label="Street address">
+              <input
+                name="addressLine1"
+                autoComplete="off"
+                className={inputClass}
+                placeholder="418 Maple Ave"
+              />
+            </Field>
+            <Field label="Apt, suite, etc.">
+              <input
+                name="addressLine2"
+                autoComplete="off"
+                className={inputClass}
+              />
+            </Field>
+            <Field label="City">
+              <input name="city" autoComplete="off" className={inputClass} />
+            </Field>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="State">
+                <input
+                  name="region"
+                  autoComplete="off"
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="ZIP code">
+                <input
+                  name="postalCode"
+                  autoComplete="off"
+                  inputMode="numeric"
+                  className={inputClass}
+                />
+              </Field>
+            </div>
+          </fieldset>
+        </>
+      )}
       <div className="flex flex-wrap gap-6 sm:col-span-2">
         <Checkbox name="plusOne" label="Can bring a plus-one" />
-        <Checkbox name="child" label="Child" />
       </div>
       <div className="space-y-4 sm:col-span-2">
         <button

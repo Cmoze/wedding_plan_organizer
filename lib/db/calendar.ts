@@ -13,6 +13,10 @@ export type CalendarItem = {
   end: string | null;
   allDay: boolean;
   done: boolean;
+  /** Events only. */
+  location: string | null;
+  /** Payments only: what's still owed. */
+  amountDue: number | null;
 };
 
 /**
@@ -51,10 +55,11 @@ export async function getCalendarItems(
 
 export function mergeCalendarItems(
   tasks: Pick<Task, "id" | "title" | "due_date" | "status">[],
-  events: Pick<
+  events: (Pick<
     WeddingEvent,
     "id" | "title" | "starts_at" | "ends_at" | "all_day"
-  >[],
+  > &
+    Partial<Pick<WeddingEvent, "location">>)[],
   payments: Pick<
     BudgetItem,
     | "id"
@@ -77,6 +82,8 @@ export function mergeCalendarItems(
         end: null,
         allDay: true,
         done: t.status === "done" || t.status === "booked",
+        location: null,
+        amountDue: null,
       })),
     ...events.map((e) => ({
       kind: "event" as const,
@@ -86,6 +93,8 @@ export function mergeCalendarItems(
       end: e.ends_at,
       allDay: e.all_day,
       done: false,
+      location: e.location ?? null,
+      amountDue: null,
     })),
     ...payments
       .filter((p) => p.due_date)
@@ -99,6 +108,11 @@ export function mergeCalendarItems(
         done:
           Number(p.paid) >= Number(p.actual ?? p.estimated) &&
           Number(p.paid) > 0,
+        location: null,
+        amountDue: Math.max(
+          0,
+          Number(p.actual ?? p.estimated) - Number(p.paid),
+        ),
       })),
   ];
   return items.sort(
