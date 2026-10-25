@@ -56,17 +56,6 @@ export async function GuestsSection({ ctx }: { ctx: WeddingContext }) {
 
       {ctx.canEdit && (
         <Card>
-          <CardTitle>RSVP QR code</CardTitle>
-          <p className="mt-1 text-base text-[#695b60]">
-            Print this on your invitations. Guests scan it, find their name and
-            answer for everyone on their invitation. Their replies show up here.
-          </p>
-          <RsvpQr weddingId={ctx.wedding.id} />
-        </Card>
-      )}
-
-      {ctx.canEdit && (
-        <Card>
           <CardTitle>Add a guest</CardTitle>
           <p className="mt-1 text-base text-[#695b60]">
             Add each person. Couples and families can share one invitation.
@@ -102,6 +91,17 @@ export async function GuestsSection({ ctx }: { ctx: WeddingContext }) {
               />
             ))}
           </ul>
+        </Card>
+      )}
+
+      {ctx.canEdit && (
+        <Card>
+          <CardTitle>RSVP QR code</CardTitle>
+          <p className="mt-1 text-base text-[#695b60]">
+            Print this on your invitations. Guests scan it, find their name and
+            answer for everyone on their invitation. Their replies show up here.
+          </p>
+          <RsvpQr weddingId={ctx.wedding.id} />
         </Card>
       )}
     </div>
