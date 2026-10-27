@@ -15,6 +15,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { signOutAction } from "@/app/actions";
+import { BrandMark } from "@/components/wedding/brand-mark";
 
 const sections = [
   { id: "home", label: "Home", icon: Home },
@@ -213,7 +214,7 @@ function Brand({ compact = false }: { compact?: boolean }) {
       <span
         className={`flex shrink-0 items-center justify-center rounded-2xl bg-[#6f1d37] text-white ${compact ? "h-10 w-10 sm:h-11 sm:w-11" : "h-11 w-11"}`}
       >
-        <Heart className="h-5 w-5 fill-current" aria-hidden="true" />
+        <BrandMark className="h-8 w-8" />
       </span>
       <span className={compact ? "hidden sm:block" : undefined}>
         <span className="block text-base leading-5 font-bold">Together</span>

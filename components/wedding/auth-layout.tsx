@@ -1,5 +1,5 @@
-import { Heart } from "lucide-react";
 import type { ReactNode } from "react";
+import { BrandMark } from "@/components/wedding/brand-mark";
 
 export function AuthLayout({
   title,
@@ -15,7 +15,7 @@ export function AuthLayout({
       <div className="w-full max-w-lg">
         <div className="mb-8 flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#6f1d37] text-white">
-            <Heart className="h-5 w-5 fill-current" aria-hidden="true" />
+            <BrandMark className="h-8 w-8" />
           </span>
           <span>
             <span className="block text-base leading-5 font-bold">

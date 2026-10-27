@@ -9,6 +9,7 @@ import {
   Sparkles,
   UsersRound,
 } from "lucide-react";
+import { BrandMark } from "@/components/wedding/brand-mark";
 
 export function LandingPage() {
   return (
@@ -16,7 +17,7 @@ export function LandingPage() {
       <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-12">
         <Link href="/" className="flex items-center gap-3 rounded-xl">
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#6f1d37] text-white">
-            <Heart className="h-5 w-5 fill-current" aria-hidden="true" />
+            <BrandMark className="h-8 w-8" />
           </span>
           <span>
             <span className="block text-base leading-5 font-bold">
