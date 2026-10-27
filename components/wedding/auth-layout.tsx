@@ -14,7 +14,7 @@ export function AuthLayout({
     <main className="flex min-h-screen items-center justify-center bg-[#faf7f4] px-5 py-12 text-[#35151f]">
       <div className="w-full max-w-lg">
         <div className="mb-8 flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#6f1d37] text-white">
+          <span className="flex h-11 w-11 items-center justify-center">
             <BrandMark className="h-8 w-8" />
           </span>
           <span>

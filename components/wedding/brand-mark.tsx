@@ -8,7 +8,7 @@ export function BrandMark({ className = "h-5 w-5" }: { className?: string }) {
       viewBox="0 0 48 48"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <circle cx="24" cy="29" r="15.2" stroke="#D9BC8E" strokeWidth="2.15" />
+      <circle cx="24" cy="29" r="16.3" stroke="#D9BC8E" strokeWidth="2.15" />
       <path
         d="M18.5 10 21 5.5h6L29.5 10 24 17l-5.5-7Z"
         fill="#FFF9F6"
@@ -25,7 +25,7 @@ export function BrandMark({ className = "h-5 w-5" }: { className?: string }) {
       />
       <path
         d="M17.5 21h13M24 21v13m-3 0h6"
-        stroke="#FFF9F6"
+        stroke="#6F1D37"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="2.3"

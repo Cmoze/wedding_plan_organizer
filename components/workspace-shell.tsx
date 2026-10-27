@@ -212,7 +212,7 @@ function Brand({ compact = false }: { compact?: boolean }) {
       className={`flex items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#8c3c58] ${compact ? "mb-4 px-2 py-2" : "px-3"}`}
     >
       <span
-        className={`flex shrink-0 items-center justify-center rounded-2xl bg-[#6f1d37] text-white ${compact ? "h-10 w-10 sm:h-11 sm:w-11" : "h-11 w-11"}`}
+        className={`flex shrink-0 items-center justify-center ${compact ? "h-10 w-10 sm:h-11 sm:w-11" : "h-11 w-11"}`}
       >
         <BrandMark className="h-8 w-8" />
       </span>

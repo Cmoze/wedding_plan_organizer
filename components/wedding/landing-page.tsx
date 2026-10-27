@@ -16,7 +16,7 @@ export function LandingPage() {
     <main className="min-h-screen overflow-hidden bg-[#fffdfb] text-[#35151f]">
       <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-12">
         <Link href="/" className="flex items-center gap-3 rounded-xl">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#6f1d37] text-white">
+          <span className="flex h-11 w-11 items-center justify-center">
             <BrandMark className="h-8 w-8" />
           </span>
           <span>
