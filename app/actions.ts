@@ -7,6 +7,12 @@ import { webLink } from "@/components/wedding/format";
 import { ACTIVE_WEDDING_COOKIE } from "@/lib/active-wedding";
 import { getCurrentUser, signIn, signOut, signUp } from "@/lib/db/auth";
 import {
+  GUEST_FIELDS,
+  parseGuestCsv,
+  type ColumnMapping,
+  type GuestField,
+} from "@/lib/db/guest-csv";
+import {
   createBudgetItem,
   deleteBudgetItem,
   updateBudgetItem,
@@ -18,6 +24,7 @@ import { createGift, deleteGift, setThankYouSent } from "@/lib/db/gifts";
 import {
   addGuest,
   getGuestList,
+  importGuests,
   removeGuest,
   updateGuest,
 } from "@/lib/db/guests";
@@ -491,6 +498,69 @@ export async function removeGuestAction(form: FormData) {
   const db = await signedInDb();
   await removeGuest(db, required(form, "guestId"));
   refresh();
+}
+
+export async function importGuestCsvAction(
+  _prev: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const db = await signedInDb();
+  const csvValue = form.get("csvText");
+  if (typeof csvValue !== "string" || csvValue.trim() === "")
+    return { error: "Choose a CSV file to import." };
+  if (new TextEncoder().encode(csvValue).byteLength > 750_000)
+    return { error: "This file is too large. Choose a CSV under 750 KB." };
+
+  let mapping: ColumnMapping | undefined;
+  const mappingValue = form.get("mapping");
+  if (typeof mappingValue === "string" && mappingValue !== "") {
+    try {
+      const parsed: unknown = JSON.parse(mappingValue);
+      const fields = new Set(Object.keys(GUEST_FIELDS));
+      if (
+        !Array.isArray(parsed) ||
+        !parsed.every(
+          (field) =>
+            field === null ||
+            (typeof field === "string" && fields.has(field as GuestField)),
+        )
+      )
+        return { error: "The column mapping is invalid. Please review it." };
+      mapping = parsed as ColumnMapping;
+    } catch {
+      return { error: "The column mapping is invalid. Please review it." };
+    }
+  }
+
+  try {
+    const preview = parseGuestCsv(csvValue, mapping);
+    if (preview.headers.length === 0)
+      return { error: "The CSV file is empty." };
+    if (
+      mapping &&
+      (mapping.length !== preview.headers.length ||
+        new Set(mapping.filter(Boolean)).size !==
+          mapping.filter(Boolean).length)
+    )
+      return { error: "The column mapping is invalid. Please review it." };
+    if (preview.households.length === 0)
+      return {
+        error:
+          "No guests could be imported. Map a name column and review the preview.",
+      };
+    const result = await importGuests(
+      db,
+      required(form, "weddingId"),
+      preview.households,
+    );
+    refresh();
+    const skipped = preview.skipped.length;
+    return {
+      message: `Imported ${result.guests} ${result.guests === 1 ? "guest" : "guests"} across ${result.households} ${result.households === 1 ? "invitation" : "invitations"}.${skipped ? ` Skipped ${skipped} row${skipped === 1 ? "" : "s"} without a usable name.` : ""}`,
+    };
+  } catch (e) {
+    return { error: friendly(e) };
+  }
 }
 
 // calendar --------------------------------------------------------------------

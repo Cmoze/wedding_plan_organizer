@@ -66,8 +66,8 @@ Roles inside a wedding: **couple** (full control), **planner/parent** (edit ever
   - Changed (Caleb's call): no timeframe groups, since every couple's timeline differs. One list in checklist order, biggest decisions first, with "Next up" on the first open task; new tasks go to the end. Only due dates people type in are shown. Finishing a task can record what was chosen, its cost and a link (`finishTaskWithDetails`): the name/link become a booked vendor and the cost a budget expense.
 - [ ] **Calendar**: month view plus "upcoming" list view; shows task due dates, payment due dates and events; tap to open the item
 - [ ] **Budget**: category totals, line items (estimated / actual / paid / due date), budget-vs-spent bar, link to a vendor
-- [ ] **Guests**: households with address, guests inside each, RSVP status, side, meal choice; search and filters; counts (invited / attending)
-  - Done: counts, add a guest (own invitation or with someone already listed), side, plus-one, child, RSVP buttons, remove. Still to do: addresses, meal choice, search/filters, CSV upload screen.
+- [x] **Guests**: households with address, guests inside each, RSVP status, side, meal choice; search and filters; counts (invited / attending)
+  - Done: counts, add a guest (own invitation or with someone already listed), side, plus-one, child, RSVP buttons, remove, guest search and RSVP filters, and CSV upload with editable column mapping and a preview before import.
 
 **Days 4–5: Collaboration screens and wiring**
 - [ ] **Ideas boards**: category grid → board → photo grid → photo detail with comments and 👍

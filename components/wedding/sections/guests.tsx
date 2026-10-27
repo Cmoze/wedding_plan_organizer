@@ -3,6 +3,7 @@ import Link from "next/link";
 import { removeGuestAction, setGuestRsvpAction } from "@/app/actions";
 import { GuestForm } from "@/components/wedding/client-forms";
 import type { WeddingContext } from "@/components/wedding/context";
+import { GuestCsvImport } from "@/components/wedding/guest-csv-import";
 import { RsvpQr } from "@/components/wedding/rsvp-qr";
 import {
   Badge,
@@ -115,6 +116,8 @@ export async function GuestsSection({
           />
         </Card>
       )}
+
+      {ctx.canEdit && <GuestCsvImport weddingId={ctx.wedding.id} />}
 
       {households.length === 0 ? (
         <EmptyState title="No guests yet">
