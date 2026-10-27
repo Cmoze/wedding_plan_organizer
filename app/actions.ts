@@ -286,9 +286,9 @@ export async function acceptInviteAction(
 
 export async function setTaskStatusAction(form: FormData): Promise<FormState> {
   const db = await signedInDb();
-  const taskId = required(form, "taskId");
-  const status = required(form, "status") as TaskStatus;
   try {
+    const taskId = required(form, "taskId");
+    const status = required(form, "status") as TaskStatus;
     await updateTaskStatus(db, taskId, status);
     refresh();
     return {

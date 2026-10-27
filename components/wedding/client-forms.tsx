@@ -764,40 +764,55 @@ export function TaskStatusButton({
   finished: boolean;
 }) {
   const [pending, startTransition] = useTransition();
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const notify = useContext(NoticeContext);
+  const confirmButtonRef = useRef<HTMLButtonElement>(null);
+  const nextStatus = finished ? "todo" : "done";
+
+  useEffect(() => {
+    if (confirmOpen) confirmButtonRef.current?.focus();
+  }, [confirmOpen]);
+
+  function confirmChange() {
+    const form = new FormData();
+    form.set("taskId", taskId);
+    form.set("status", nextStatus);
+    startTransition(async () => {
+      try {
+        const result = await setTaskStatusAction(form);
+        notify(
+          result.error
+            ? { text: result.error, error: true }
+            : {
+                text:
+                  result.message ??
+                  (nextStatus === "done"
+                    ? "Task checked off."
+                    : "Task reopened."),
+              },
+        );
+      } catch (err) {
+        notify({
+          text:
+            err instanceof Error ? err.message : "Couldn't update the task.",
+          error: true,
+        });
+      }
+      setConfirmOpen(false);
+    });
+  }
 
   return (
-    <form
-      action={(form) => {
-        const nextStatus = finished ? "todo" : "done";
-        const prompt = finished
-          ? `Mark “${title}” as not done?`
-          : `Mark “${title}” as done?`;
-        if (!window.confirm(prompt)) return;
-        startTransition(async () => {
-          const result = await setTaskStatusAction(form);
-          notify(
-            result.error
-              ? { text: result.error, error: true }
-              : {
-                  text:
-                    result.message ??
-                    (nextStatus === "done"
-                      ? "Task checked off."
-                      : "Task reopened."),
-                },
-          );
-        });
-      }}
-    >
-      <input type="hidden" name="taskId" value={taskId} />
-      <input type="hidden" name="status" value={finished ? "todo" : "done"} />
+    <>
       <button
-        type="submit"
+        type="button"
         disabled={pending}
+        role="checkbox"
+        aria-checked={finished}
         aria-label={
           finished ? `Mark “${title}” as not done` : `Mark “${title}” as done`
         }
+        onClick={() => setConfirmOpen(true)}
         className={`flex h-11 w-11 items-center justify-center rounded-xl border-2 ${
           finished
             ? "border-[#6f1d37] bg-[#6f1d37] text-white"
@@ -806,7 +821,56 @@ export function TaskStatusButton({
       >
         <Check className="h-6 w-6" aria-hidden="true" />
       </button>
-    </form>
+      {confirmOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#24151b]/55 p-4">
+          <section
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby={`task-confirm-title-${taskId}`}
+            aria-describedby={`task-confirm-description-${taskId}`}
+            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+          >
+            <h2
+              id={`task-confirm-title-${taskId}`}
+              className="font-heading text-2xl text-[#35151f]"
+            >
+              {finished ? "Reopen this task?" : "Check off this task?"}
+            </h2>
+            <p
+              id={`task-confirm-description-${taskId}`}
+              className="mt-3 text-base leading-7 text-[#695b60]"
+            >
+              {finished
+                ? `Mark “${title}” as not done?`
+                : `Are you sure “${title}” is complete?`}
+            </p>
+            <div className="mt-6 flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => setConfirmOpen(false)}
+                className={quietButtonClass}
+              >
+                Cancel
+              </button>
+              <button
+                ref={confirmButtonRef}
+                type="button"
+                disabled={pending}
+                onClick={confirmChange}
+                className={primaryButtonClass}
+              >
+                {pending
+                  ? "Saving..."
+                  : finished
+                    ? "Yes, reopen task"
+                    : "Yes, check it off"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+    </>
   );
 }
 
