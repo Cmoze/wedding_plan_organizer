@@ -23,6 +23,7 @@ import {
   addTaskAction,
   deleteIdeaBoardAction,
   deleteTaskAction,
+  setTaskStatusAction,
   setTaskDueDateAction,
   finishTaskAction,
   updateMemberRoleAction,
@@ -750,6 +751,62 @@ export function NoticeProvider({ children }: { children: ReactNode }) {
         )}
       </div>
     </NoticeContext>
+  );
+}
+
+export function TaskStatusButton({
+  taskId,
+  title,
+  finished,
+}: {
+  taskId: string;
+  title: string;
+  finished: boolean;
+}) {
+  const [pending, startTransition] = useTransition();
+  const notify = useContext(NoticeContext);
+
+  return (
+    <form
+      action={(form) => {
+        const nextStatus = finished ? "todo" : "done";
+        const prompt = finished
+          ? `Mark “${title}” as not done?`
+          : `Mark “${title}” as done?`;
+        if (!window.confirm(prompt)) return;
+        startTransition(async () => {
+          const result = await setTaskStatusAction(form);
+          notify(
+            result.error
+              ? { text: result.error, error: true }
+              : {
+                  text:
+                    result.message ??
+                    (nextStatus === "done"
+                      ? "Task checked off."
+                      : "Task reopened."),
+                },
+          );
+        });
+      }}
+    >
+      <input type="hidden" name="taskId" value={taskId} />
+      <input type="hidden" name="status" value={finished ? "todo" : "done"} />
+      <button
+        type="submit"
+        disabled={pending}
+        aria-label={
+          finished ? `Mark “${title}” as not done` : `Mark “${title}” as done`
+        }
+        className={`flex h-11 w-11 items-center justify-center rounded-xl border-2 ${
+          finished
+            ? "border-[#6f1d37] bg-[#6f1d37] text-white"
+            : "border-[#d9c4cb] bg-white text-transparent hover:border-[#6f1d37] hover:text-[#cba7b4]"
+        }`}
+      >
+        <Check className="h-6 w-6" aria-hidden="true" />
+      </button>
+    </form>
   );
 }
 

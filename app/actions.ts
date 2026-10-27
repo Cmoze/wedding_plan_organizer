@@ -284,14 +284,19 @@ export async function acceptInviteAction(
 
 // checklist -------------------------------------------------------------------
 
-export async function setTaskStatusAction(form: FormData) {
+export async function setTaskStatusAction(form: FormData): Promise<FormState> {
   const db = await signedInDb();
-  await updateTaskStatus(
-    db,
-    required(form, "taskId"),
-    required(form, "status") as TaskStatus,
-  );
-  refresh();
+  const taskId = required(form, "taskId");
+  const status = required(form, "status") as TaskStatus;
+  try {
+    await updateTaskStatus(db, taskId, status);
+    refresh();
+    return {
+      message: status === "done" ? "Task checked off." : "Task reopened.",
+    };
+  } catch (e) {
+    return { error: friendly(e) };
+  }
 }
 
 export async function addTaskAction(

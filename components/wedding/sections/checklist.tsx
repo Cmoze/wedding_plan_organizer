@@ -1,11 +1,11 @@
-import { Check, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { setTaskStatusAction } from "@/app/actions";
 import { ChecklistSuggestions } from "@/components/wedding/checklist-suggestions";
 import { EditTaskForm } from "@/components/wedding/edit-forms";
 import {
   DeleteTaskButton,
   NoticeProvider,
+  TaskStatusButton,
   TaskDetailsForm,
   TaskDueDate,
   TaskForm,
@@ -203,29 +203,11 @@ function TaskRow({
   return (
     <li className="flex flex-wrap items-center gap-4 py-3">
       {canUpdate ? (
-        <form action={setTaskStatusAction}>
-          <input type="hidden" name="taskId" value={task.id} />
-          <input
-            type="hidden"
-            name="status"
-            value={finished ? "todo" : "done"}
-          />
-          <button
-            type="submit"
-            aria-label={
-              finished
-                ? `Mark "${task.title}" as not done`
-                : `Mark "${task.title}" as done`
-            }
-            className={`flex h-11 w-11 items-center justify-center rounded-xl border-2 ${
-              finished
-                ? "border-[#6f1d37] bg-[#6f1d37] text-white"
-                : "border-[#d9c4cb] bg-white text-transparent hover:border-[#6f1d37] hover:text-[#cba7b4]"
-            }`}
-          >
-            <Check className="h-6 w-6" aria-hidden="true" />
-          </button>
-        </form>
+        <TaskStatusButton
+          taskId={task.id}
+          title={task.title}
+          finished={finished}
+        />
       ) : (
         <span className="h-11 w-11" />
       )}

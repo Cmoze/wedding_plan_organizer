@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Sparkles } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
@@ -48,6 +48,7 @@ export function ChecklistSuggestions({
 }) {
   const router = useRouter();
   const [items, setItems] = useState<Item[] | null>(null);
+  const [expanded, setExpanded] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [, startTransition] = useTransition();
@@ -92,6 +93,14 @@ export function ChecklistSuggestions({
 
   async function accept(index: number) {
     if (!items) return;
+    const { suggestion } = items[index];
+    const confirmation =
+      suggestion.kind === "remove_task"
+        ? `Remove “${suggestion.label}” from your checklist?`
+        : suggestion.kind === "move_task"
+          ? `Change the due date for “${suggestion.label}”?`
+          : `Add “${suggestion.label}” to your checklist?`;
+    if (!window.confirm(confirmation)) return;
     setState(index, "saving");
     setError(undefined);
     try {
@@ -141,58 +150,77 @@ export function ChecklistSuggestions({
             Your checklist already fits your wedding. Nothing to change.
           </p>
         ) : (
-          <ul className="space-y-3">
-            {items.map(({ suggestion, state }, i) => (
-              <li
-                key={i}
-                className="rounded-2xl border border-[#eadfe2] bg-[#fbfbf8] p-4"
-              >
-                <p className="text-sm font-bold tracking-[0.1em] text-[#8c3c58] uppercase">
-                  {KIND_LABEL[suggestion.kind]}
-                </p>
-                <p className="mt-1 text-lg font-semibold text-[#35151f]">
-                  {suggestion.label}
-                </p>
-                {suggestion.reason && (
-                  <p className="mt-1 text-base text-[#806c74]">
-                    {suggestion.reason}
-                  </p>
-                )}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {state === "done" ? (
-                    <p
-                      role="status"
-                      className="inline-flex min-h-12 items-center text-base font-semibold text-[#6f1d37]"
-                    >
-                      <Check className="mr-2 h-5 w-5" aria-hidden="true" />
-                      {ACCEPT_LABEL[suggestion.kind][1]}
+          <>
+            <button
+              type="button"
+              aria-expanded={expanded}
+              aria-controls="checklist-suggestions-list"
+              onClick={() => setExpanded((open) => !open)}
+              className={quietButtonClass}
+            >
+              {expanded ? (
+                <ChevronUp className="mr-2 h-5 w-5" aria-hidden="true" />
+              ) : (
+                <ChevronDown className="mr-2 h-5 w-5" aria-hidden="true" />
+              )}
+              {expanded ? "Hide suggestions" : "Show suggestions"} (
+              {items.length})
+            </button>
+            {expanded && (
+              <ul id="checklist-suggestions-list" className="space-y-3">
+                {items.map(({ suggestion, state }, i) => (
+                  <li
+                    key={i}
+                    className="rounded-2xl border border-[#eadfe2] bg-[#fbfbf8] p-4"
+                  >
+                    <p className="text-sm font-bold tracking-[0.1em] text-[#8c3c58] uppercase">
+                      {KIND_LABEL[suggestion.kind]}
                     </p>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => accept(i)}
-                        disabled={state === "saving"}
-                        className={primaryButtonClass}
-                      >
-                        {state === "saving"
-                          ? "Saving..."
-                          : ACCEPT_LABEL[suggestion.kind][0]}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setState(i, null)}
-                        disabled={state === "saving"}
-                        className={quietButtonClass}
-                      >
-                        No thanks
-                      </button>
-                    </>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
+                    <p className="mt-1 text-lg font-semibold text-[#35151f]">
+                      {suggestion.label}
+                    </p>
+                    {suggestion.reason && (
+                      <p className="mt-1 text-base text-[#806c74]">
+                        {suggestion.reason}
+                      </p>
+                    )}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {state === "done" ? (
+                        <p
+                          role="status"
+                          className="inline-flex min-h-12 items-center text-base font-semibold text-[#6f1d37]"
+                        >
+                          <Check className="mr-2 h-5 w-5" aria-hidden="true" />
+                          {ACCEPT_LABEL[suggestion.kind][1]}
+                        </p>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => accept(i)}
+                            disabled={state === "saving"}
+                            className={primaryButtonClass}
+                          >
+                            {state === "saving"
+                              ? "Saving..."
+                              : ACCEPT_LABEL[suggestion.kind][0]}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setState(i, null)}
+                            disabled={state === "saving"}
+                            className={quietButtonClass}
+                          >
+                            No thanks
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         )}
       </div>
     </Card>
