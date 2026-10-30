@@ -8,6 +8,7 @@ const PUBLIC_PATHS = [
   "/invite",
   "/rsvp",
   "/find-event",
+  "/about",
   "/api",
 ];
 // "/" shows the landing page when signed out; only the exact path, not everything under it.
