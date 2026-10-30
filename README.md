@@ -4,6 +4,18 @@ Hackathon project. Three contributors, three different coding agents, one shared
 
 Live app: https://wedding-plan-organizer.vercel.app (every push to `main` deploys automatically).
 
+## Product work (from Sprint 4)
+After the hackathon, Carter took Together over as a class product (see `decisions/001-take-over-together.md`).
+
+| Folder | What lives here |
+|---|---|
+| `discovery/` | Interviews, personas, insights about couples and parents |
+| `design/usability-tests/` | One file per usability test |
+| `decisions/` | Numbered records of what was decided and why |
+| `specs/` | One spec per piece of work, written before it's built |
+| `gtm/` | Positioning, channels, copy, experiments |
+| `product/evals/` | Eval sets for Piper |
+
 ## First-time setup
 ```bash
 git clone https://github.com/Cmoze/wedding_plan_organizer.git
