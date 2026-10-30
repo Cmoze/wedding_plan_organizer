@@ -44,6 +44,7 @@ below.
    suggests changes; a person taps "Yes, do it." It never changes the plan on its own.
 3. **One inbox for the wedding.** Each wedding gets its own email address. Forward a
    vendor's email to it and Piper offers to add the deposit, the due date, or the to-do.
+   (Checked 2026-10-30: a forwarded test email arrived in the live app's Inbox.)
 4. **A planner, not a storefront.** No vendor ads in the plan.
 5. **Easy for anyone you invite.** Large text, plain labels, big buttons, and it works on a
    phone, so people who don't live in apps can still use it.
