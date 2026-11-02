@@ -4,12 +4,16 @@ Shared instructions for every coding agent (Claude Code, Cursor, Codex, Copilot,
 This is the single source of truth. Other agent files only point here.
 
 ## Project
-Wedding Plan Organizer: a hackathon app for planning a wedding (guests, budget, vendors, timeline).
-Three contributors, each using a different coding agent, all pushing directly to `main`.
+Together (repo: wedding_plan_organizer): a web app for planning a wedding (guests, budget, vendors, timeline),
+started at a hackathon by three contributors. Since Sprint 4 (2026-10-30) Carter builds it alone as an MSB 341
+class product (`decisions/001-take-over-together.md`); commits still go straight to `main`.
+Product work lives next to the code: `discovery/`, `design/usability-tests/`, `decisions/`, `specs/`, `gtm/`
+(positioning in `gtm/positioning.md`) and `product/evals/` (Piper's eval sets). Sprint plans and reviews live in
+the class repo, Cmoze/cmoser0_msb341. Specs go in `specs/` before the work.
 Stack: responsive web app. Next.js (App Router) + TypeScript + Tailwind + shadcn/ui, Supabase
 (Postgres, Auth, Storage, Realtime), deployed on Vercel. Claude API for the AI helper.
-The week plan, feature scope and per-role to-do lists live in `docs/PLAN.md`. Read it before starting a task,
-and check items off there when you finish them.
+The hackathon week plan, feature scope and design decisions are in `docs/PLAN.md` (history; still the best
+description of what's built).
 
 ## First-time setup (required after cloning)
 - Run `./scripts/setup.sh` once in every new clone. It enables the git hooks (`.githooks/`),
@@ -43,22 +47,22 @@ and check items off there when you finish them.
 - Never commit secrets. Use `.env` (copy `.env.example`); `.env` is gitignored.
 - Keep changes small. If a task needs a huge diff, stop and propose splitting it.
 
-## Ownership (avoid editing the same files at once)
-- Role A, Frontend / UI (Kai): `app/` pages, `components/`, layout, styling.
-- Role B, Data model + auth + roles (Caleb): `supabase/migrations/`, RLS policies, generated types, `lib/db/`.
-- Role C, Integrations (Carter): repo tooling, Vercel, `app/api/` webhook and AI routes, `lib/email/`, `lib/ai/`.
-- Changing the database schema is B's call; propose changes to B instead of editing migrations yourself.
+## Ownership
+- Carter owns everything now. During the hackathon the split was: Kai (frontend: `app/`, `components/`),
+  Caleb (data model, auth, RLS, `lib/db/`, `supabase/migrations/`), Carter (integrations, Vercel, `app/api/`,
+  `lib/email/`, `lib/ai/`). Kai and Caleb have stepped back.
+- The Supabase dev project is still in Caleb's Supabase org; moving it to Carter's org is pending.
+- Schema changes still go only through new migration files; ask the human before writing one.
 
-## Backend collaboration (Supabase)
-- Everyone uses one shared Supabase dev project; put its URL and keys in your own `.env`.
-- Schema changes live only as migration files in `supabase/migrations/`. Only B (Caleb) writes them and
-  runs `supabase db push`, then regenerates `lib/db/types.ts` and pushes migrations + types together.
-- Need a table, column, bucket or policy? Write down what you need (fields, who can read/write) and ask B,
-  or open a GitHub issue. Don't edit migrations or RLS yourself.
+## Backend (Supabase)
+- One Supabase dev project (`wedding-plan-organizer-dev`, ref `iafqkveouictofowncpz`) backs local dev and the live
+  site; its URL and keys go in `.env`.
+- Schema changes live only as migration files in `supabase/migrations/`. Propose the change (fields, who can
+  read/write) and get the human's OK before writing one; after `supabase db push`, run `npm run db:types` and
+  commit migrations and types together. Don't edit RLS outside a migration.
 - App code reads and writes data through functions in `lib/db/`, not ad-hoc queries in pages or routes.
-  If a function you need doesn't exist yet, stub it with the agreed signature, mark it `// TODO(B)`, and tell B.
 - The service-role key is server-only (webhooks, AI routes). Never import it in client components or
-  expose it with a `NEXT_PUBLIC_` prefix. Tell B which routes use it, since they bypass RLS.
+  expose it with a `NEXT_PUBLIC_` prefix. Routes that use it bypass RLS, so check access in the route.
 - After pulling new migrations or types, run `npm install` and restart `npm run dev`.
 
 ## Conventions

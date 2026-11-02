@@ -1,8 +1,10 @@
 # Wedding Plan Organizer
 
-Hackathon project. Three contributors, three different coding agents, one shared rulebook: [AGENTS.md](AGENTS.md).
+Together: wedding planning for couples and the people helping them. Started as a hackathon project by three
+contributors; Carter builds it now as a class product. Agent rules: [AGENTS.md](AGENTS.md).
 
-Live app: https://wedding-plan-organizer.vercel.app (every push to `main` deploys automatically).
+Live app: https://togetherwedding.vercel.app (every push to `main` deploys automatically). The old
+https://wedding-plan-organizer.vercel.app still works and receives the Resend inbound webhook.
 
 ## Product work (from Sprint 4)
 After the hackathon, Carter took Together over as a class product (see `decisions/001-take-over-together.md`).
