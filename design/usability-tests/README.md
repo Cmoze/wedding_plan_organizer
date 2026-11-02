@@ -9,3 +9,15 @@ One file per session, named `NNN-short-description.md` (for example
 - **What to change:** the fixes this session points to, ranked
 
 Write down what they did, not just what they said about it.
+
+## Sprint 4 sessions
+
+Plan and script: `000-test-plan.md`. Copy `000-test-template.md` for each session.
+
+| # | Track | Who (anonymized) | Date | Write-up |
+| - | ----- | ---------------- | ---- | -------- |
+| 1 | A: couple | | | |
+| 2 | A: couple | | | |
+| 3 | A: couple | | | |
+| 4 | B: parent (helper) | | | |
+| 5 | B: parent (planner) | | | |
