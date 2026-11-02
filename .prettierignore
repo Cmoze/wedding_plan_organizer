@@ -8,3 +8,6 @@ supabase/.temp/
 supabase/.branches/
 # Markdown is hand-edited by everyone; skip it to avoid churn and merge conflicts
 *.md
+
+# Eval run output, written by the runner
+product/evals/results/
