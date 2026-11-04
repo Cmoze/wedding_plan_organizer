@@ -8,7 +8,7 @@ import {
 } from "@/lib/ai/assistant-actions";
 import { AI_MODEL, AiError, getClient, toAiError } from "@/lib/ai/client";
 import { cleanEmailSuggestion, emailText } from "@/lib/ai/email-actions";
-import type { EmailSuggestion } from "@/lib/ai/suggestions";
+import { cleanDate, type EmailSuggestion } from "@/lib/ai/suggestions";
 import { getBudgetSummary, getBudgetItems } from "@/lib/db/budget";
 import { getEmail, getEmails } from "@/lib/db/emails";
 import { getEvents } from "@/lib/db/events";
@@ -57,7 +57,7 @@ Answer questions about this wedding by looking things up with your tools: the ch
 
 ${
   ctx.canEdit
-    ? `When the user asks you to do something (add a task, mark something done, add a guest, record an RSVP, add a cost, an event, a vendor or a gift, mark a thank-you card sent), call propose_action once per change. You can't save anything yourself: each proposal appears under your reply as a button the user taps to confirm. So say something like "Tap the button below to add it", never "Done" or "I've added it". Look up ids first; only use ids your tools returned. Don't propose things the user didn't ask for.`
+    ? `When the user asks you to do something (add a task, mark something done, edit a task's title, due date, category or notes, add a guest, record an RSVP, add a cost, an event, a vendor or a gift, mark a thank-you card sent), call propose_action once per change. You can't save anything yourself: each proposal appears under your reply as a button the user taps to confirm. So say something like "Tap the button below to add it", never "Done" or "I've added it". Look up ids first; only use ids your tools returned. Don't propose things the user didn't ask for.`
     : `This user can view the plan but not change it. If they ask you to change something, explain that the couple or their planner can make that change.`
 }
 
@@ -374,6 +374,24 @@ export async function checkAction(
       return tasks.some((t) => t.id === action.task_id)
         ? action
         : "Unknown task_id. Look it up with list_tasks first.";
+    }
+    case "edit_task": {
+      const tasks = await getTasks(db, weddingId);
+      if (!tasks.some((t) => t.id === action.task_id))
+        return "Unknown task_id. Look it up with list_tasks first.";
+      if (
+        action.due_date != null &&
+        cleanDate(action.due_date) !== action.due_date
+      )
+        return "due_date must be a real YYYY-MM-DD date, or null to clear it.";
+      if (
+        action.title === undefined &&
+        action.due_date === undefined &&
+        action.category === undefined &&
+        action.notes === undefined
+      )
+        return "Set at least one field to change.";
+      return action;
     }
     case "set_rsvp": {
       const households = await getGuestList(db, weddingId);

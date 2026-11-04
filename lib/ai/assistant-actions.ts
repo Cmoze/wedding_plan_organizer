@@ -5,7 +5,7 @@ import {
 } from "@/lib/ai/suggestions";
 import { setThankYouSent } from "@/lib/db/gifts";
 import { addGuest, updateGuest } from "@/lib/db/guests";
-import type { Db } from "@/lib/db/shared";
+import type { Db, RowPatch } from "@/lib/db/shared";
 import { updateTask } from "@/lib/db/tasks";
 
 /**
@@ -30,6 +30,28 @@ export const AssistantActionSchema = z.discriminatedUnion("kind", [
     label,
     reason,
     task_id: z.string(),
+  }),
+  z.object({
+    kind: z.literal("edit_task"),
+    label,
+    reason,
+    task_id: z.string(),
+    title: z.string().optional().describe("New title, only if changing it"),
+    due_date: z
+      .string()
+      .nullable()
+      .optional()
+      .describe("YYYY-MM-DD, or null to clear it, only if changing it"),
+    category: z
+      .string()
+      .nullable()
+      .optional()
+      .describe("New category, or null to clear it, only if changing it"),
+    notes: z
+      .string()
+      .nullable()
+      .optional()
+      .describe("New notes, or null to clear them, only if changing it"),
   }),
   z.object({
     kind: z.literal("set_rsvp"),
@@ -84,6 +106,7 @@ export const ACTION_KIND_LABEL: Record<AssistantAction["kind"], string> = {
   vendor: "Vendor",
   gift: "Gift",
   complete_task: "Checklist",
+  edit_task: "Checklist",
   set_rsvp: "RSVP",
   add_guest: "Guest list",
   mark_thank_you_sent: "Thank-you card",
@@ -102,6 +125,15 @@ export async function applyAssistantAction(
         completed_at: new Date().toISOString(),
       });
       return;
+    case "edit_task": {
+      const patch: RowPatch<"tasks"> = {};
+      if (action.title !== undefined) patch.title = action.title;
+      if (action.due_date !== undefined) patch.due_date = action.due_date;
+      if (action.category !== undefined) patch.category = action.category;
+      if (action.notes !== undefined) patch.notes = action.notes;
+      await updateTask(db, action.task_id, patch);
+      return;
+    }
     case "set_rsvp":
       await updateGuest(db, action.guest_id, { rsvp: action.rsvp });
       return;
