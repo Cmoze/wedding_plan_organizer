@@ -23,6 +23,7 @@ import {
   addTaskAction,
   deleteIdeaBoardAction,
   deleteTaskAction,
+  deleteWeddingAction,
   setTaskStatusAction,
   setTaskDueDateAction,
   finishTaskAction,
@@ -911,6 +912,58 @@ export function DeleteTaskButton({
           <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
         ) : (
           <Trash2 className="h-5 w-5" aria-hidden="true" />
+        )}
+      </button>
+    </form>
+  );
+}
+
+export function DeleteWeddingButton({
+  weddingId,
+  title,
+}: {
+  weddingId: string;
+  title: string;
+}) {
+  const [pending, startTransition] = useTransition();
+  const [confirmText, setConfirmText] = useState("");
+  const ready = confirmText.trim() === title;
+  return (
+    <form
+      action={(form) => {
+        if (!ready) return;
+        if (
+          !window.confirm(
+            `Delete ${title}'s wedding and everything in it — guests, budget, tasks, the inbox, all of it? This can't be undone.`,
+          )
+        )
+          return;
+        startTransition(() => {
+          deleteWeddingAction(form);
+        });
+      }}
+      className="space-y-3"
+    >
+      <input type="hidden" name="weddingId" value={weddingId} />
+      <label className="block text-sm font-semibold text-[#6b4a3a]">
+        Type &quot;{title}&quot; to confirm
+        <input
+          className={`${inputClass} mt-1`}
+          value={confirmText}
+          onChange={(e) => setConfirmText(e.target.value)}
+          placeholder={title}
+          autoComplete="off"
+        />
+      </label>
+      <button
+        type="submit"
+        disabled={pending || !ready}
+        className={quietButtonClass}
+      >
+        {pending ? (
+          <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+        ) : (
+          "Delete this wedding"
         )}
       </button>
     </form>

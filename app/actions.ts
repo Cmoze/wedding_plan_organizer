@@ -55,6 +55,7 @@ import {
 } from "@/lib/db/tasks";
 import {
   createWedding,
+  deleteWedding,
   removeMember,
   updateMember,
   type MemberRole,
@@ -261,6 +262,15 @@ export async function removeMemberAction(form: FormData) {
   const db = await signedInDb();
   await removeMember(db, required(form, "memberId"));
   refresh();
+}
+
+/** Couple only (RLS); deletes the wedding and everything in it. */
+export async function deleteWeddingAction(form: FormData) {
+  const db = await signedInDb();
+  await deleteWedding(db, required(form, "weddingId"));
+  (await cookies()).delete(ACTIVE_WEDDING_COOKIE);
+  forgetCachedPages();
+  redirect("/");
 }
 
 export async function acceptInviteAction(

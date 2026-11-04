@@ -3,7 +3,10 @@ import {
   removeMemberAction,
   switchWeddingAction,
 } from "@/app/actions";
-import { RoleSelect } from "@/components/wedding/client-forms";
+import {
+  DeleteWeddingButton,
+  RoleSelect,
+} from "@/components/wedding/client-forms";
 import type { WeddingContext } from "@/components/wedding/context";
 import { formatDate, weddingTitle } from "@/components/wedding/format";
 import {
@@ -190,6 +193,20 @@ export async function TeamSection({
               </li>
             ))}
           </ul>
+        </Card>
+      )}
+
+      {isCouple && (
+        <Card>
+          <CardTitle>Danger zone</CardTitle>
+          <p className="mt-1 text-base text-[#695b60]">
+            Delete {title}&apos;s wedding and everything in it — guests, budget,
+            tasks, the calendar, the inbox, all of it. This can&apos;t be
+            undone.
+          </p>
+          <div className="mt-4">
+            <DeleteWeddingButton weddingId={ctx.wedding.id} title={title} />
+          </div>
         </Card>
       )}
     </div>
