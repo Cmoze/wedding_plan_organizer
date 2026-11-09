@@ -20,4 +20,4 @@ Plan and script: `000-test-plan.md`. Copy `000-test-template.md` for each sessio
 | 2 | A: couple | | | |
 | 3 | A: couple | | | |
 | 4 | B: parent (helper) | | | |
-| 5 | B: parent (planner) | | | |
+| 5 | B: parent (planner) | | 2026-11-07 | `005-parent-planner.md` |
