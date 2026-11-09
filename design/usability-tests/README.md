@@ -16,7 +16,7 @@ Plan and script: `000-test-plan.md`. Copy `000-test-template.md` for each sessio
 
 | # | Track | Who (anonymized) | Date | Write-up |
 | - | ----- | ---------------- | ---- | -------- |
-| 1 | A: couple | | | |
+| 1 | A: couple | bride, first-time setup | 2026-11-08 | `001-couple-first-setup.md` |
 | 2 | A: couple | | | |
 | 3 | A: couple | | | |
 | 4 | B: parent (helper) | | | |
