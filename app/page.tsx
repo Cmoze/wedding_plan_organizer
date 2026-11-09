@@ -1,10 +1,9 @@
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense, type ReactNode } from "react";
 import { AssistantChat } from "@/components/wedding/assistant-chat";
 import { WorkspaceShell } from "@/components/workspace-shell";
-import { LandingPage } from "@/components/wedding/landing-page";
+import { AboutContent } from "@/components/wedding/about-content";
 import type { WeddingContext } from "@/components/wedding/context";
 import { weddingTitle } from "@/components/wedding/format";
 import { BudgetSection } from "@/components/wedding/sections/budget";
@@ -63,11 +62,11 @@ async function SectionWorkspace({
   await connection();
   const db = await createClient();
   const user = await getCurrentUser(db);
-  if (!user) return <LandingPage />;
+  if (!user) return <AboutContent />;
   const weddings = await getMyWeddings(db);
   const activeId = (await cookies()).get(ACTIVE_WEDDING_COOKIE)?.value;
   const wedding = weddings.find((w) => w.id === activeId) ?? weddings[0];
-  if (!wedding) redirect("/new-wedding");
+  if (!wedding) return <AboutContent signedIn />;
   const members = await getMembers(db, wedding.id);
   const me = members.find((m) => m.user_id === user.id)!;
 
