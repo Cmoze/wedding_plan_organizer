@@ -1,3 +1,4 @@
+import { isPlatformAdmin } from "@/lib/admin";
 import { getCurrentUser } from "@/lib/db/auth";
 import {
   IDEA_PHOTOS_BUCKET,
@@ -43,12 +44,22 @@ export async function createWedding(
   );
 }
 
-/** Weddings the current user belongs to, with their role in each. */
+/**
+ * Weddings the current user belongs to, with their role in each. For the platform admin
+ * (see lib/admin.ts), this is every wedding — the admin RLS override makes `is_member`
+ * true for every row, so a plain select already returns all of them.
+ */
 export async function getMyWeddings(
   db: Db,
 ): Promise<(Wedding & { role: MemberRole })[]> {
   const user = await getCurrentUser(db);
   if (!user) return [];
+  if (isPlatformAdmin(user.email)) {
+    const weddings = unwrap(
+      await db.from("weddings").select("*").order("created_at"),
+    );
+    return weddings.map((w) => ({ ...w, role: "couple" as MemberRole }));
+  }
   const rows = unwrap(
     await db
       .from("members")

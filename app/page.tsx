@@ -16,10 +16,16 @@ import { HomeSection } from "@/components/wedding/sections/home";
 import { RegistrySection } from "@/components/wedding/sections/registry";
 import { TeamSection } from "@/components/wedding/sections/team";
 import { ACTIVE_WEDDING_COOKIE } from "@/lib/active-wedding";
+import { isPlatformAdmin } from "@/lib/admin";
 import { getCurrentUser } from "@/lib/db/auth";
 import { toDateString } from "@/lib/db/shared";
 import { createClient } from "@/lib/db/supabase/server";
-import { canEdit, getMembers, getMyWeddings } from "@/lib/db/weddings";
+import {
+  canEdit,
+  getMembers,
+  getMyWeddings,
+  type Member,
+} from "@/lib/db/weddings";
 
 const sections = [
   "home",
@@ -68,7 +74,21 @@ async function SectionWorkspace({
   const wedding = weddings.find((w) => w.id === activeId) ?? weddings[0];
   if (!wedding) return <AboutContent signedIn />;
   const members = await getMembers(db, wedding.id);
-  const me = members.find((m) => m.user_id === user.id)!;
+  const realMe = members.find((m) => m.user_id === user.id);
+  if (!realMe && !isPlatformAdmin(user.email)) {
+    throw new Error("Signed-in user is not a member of this wedding");
+  }
+  // The platform admin never gets a real row here (see lib/admin.ts) — stand one in so
+  // the rest of the app, which assumes every viewer is a member, still works.
+  const me: Member = realMe ?? {
+    id: `admin-${user.id}`,
+    wedding_id: wedding.id,
+    user_id: user.id,
+    role: "couple",
+    display_name: user.displayName || "Admin",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
 
   const ctx: WeddingContext = {
     db,
