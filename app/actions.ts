@@ -369,13 +369,19 @@ export async function updateTaskAction(
   const db = await signedInDb();
   const title = text(form, "title");
   if (!title) return { error: "Add a task name." };
+  // "Assigned to" is one dropdown covering both real members and people who are invited
+  // but haven't joined yet, encoded as "member:<id>" / "invite:<id>" so one value picks
+  // exactly one of assignee_id (a real member) or invite_id (a pending one).
+  const assignee = text(form, "assigneeId");
+  const [assigneeKind, assigneeValue] = assignee?.split(":") ?? [];
   try {
     await updateTask(db, required(form, "taskId"), {
       title,
       category: text(form, "category") ?? null,
       due_date: text(form, "dueDate") ?? null,
       notes: text(form, "notes") ?? null,
-      assignee_id: text(form, "assigneeId") ?? null,
+      assignee_id: assigneeKind === "member" ? assigneeValue : null,
+      invite_id: assigneeKind === "invite" ? assigneeValue : null,
     });
     refresh();
     return { message: "Task updated." };

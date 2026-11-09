@@ -14,6 +14,7 @@ import { memberName, type WeddingContext } from "@/components/wedding/context";
 import { formatDate, formatMoney } from "@/components/wedding/format";
 import { Badge, Card, CardTitle, EmptyState } from "@/components/wedding/ui";
 import { getBudgetItems, type BudgetItem } from "@/lib/db/budget";
+import { listInvites, type Invite } from "@/lib/db/invites";
 import {
   OPEN_STATUSES,
   PLANNED_STATUSES,
@@ -45,10 +46,11 @@ export async function ChecklistSection({
   ctx: WeddingContext;
   show?: string;
 }) {
-  const [tasks, vendorList, budgetItems] = await Promise.all([
+  const [tasks, vendorList, budgetItems, pendingInvites] = await Promise.all([
     getTasks(ctx.db, ctx.wedding.id),
     getVendors(ctx.db, ctx.wedding.id),
     getBudgetItems(ctx.db, ctx.wedding.id),
+    ctx.canEdit ? listInvites(ctx.db, ctx.wedding.id) : Promise.resolve([]),
   ]);
   const filter = FILTERS.find((f) => f.id === show)?.id ?? "open";
   const visible = tasks.filter((t) =>
@@ -160,6 +162,7 @@ export async function ChecklistSection({
                     task.vendor_id ? vendors.get(task.vendor_id) : undefined
                   }
                   cost={costs.get(task.id)}
+                  pendingInvites={pendingInvites}
                 />
               ))}
             </ul>
@@ -176,12 +179,14 @@ function TaskRow({
   nextUp,
   vendor,
   cost,
+  pendingInvites,
 }: {
   task: Task;
   ctx: WeddingContext;
   nextUp: boolean;
   vendor?: Vendor;
   cost?: BudgetItem;
+  pendingInvites: Invite[];
 }) {
   const finished = PLANNED_STATUSES.includes(task.status);
   const overdue =
@@ -198,7 +203,14 @@ function TaskRow({
       : undefined;
   const hasDetails = Boolean(vendor || amount !== undefined || task.notes);
   const canUpdate = ctx.canEdit || task.assignee_id === ctx.me.id;
-  const assignee = memberName(ctx, task.assignee_id);
+  const pendingInvite = task.invite_id
+    ? pendingInvites.find((i) => i.id === task.invite_id)
+    : undefined;
+  const assignee =
+    memberName(ctx, task.assignee_id) ??
+    (pendingInvite
+      ? `${pendingInvite.email ?? "Invited"} (not joined yet)`
+      : null);
 
   return (
     <li className="flex flex-wrap items-center gap-4 py-3">
@@ -266,7 +278,14 @@ function TaskRow({
             Edit task
           </summary>
           <div className="basis-full rounded-2xl bg-[#fffaf8] p-4 sm:p-5">
-            <EditTaskForm task={task} members={ctx.members} />
+            <EditTaskForm
+              task={task}
+              members={ctx.members}
+              pendingInvites={pendingInvites.map((i) => ({
+                id: i.id,
+                email: i.email,
+              }))}
+            />
           </div>
         </details>
       )}

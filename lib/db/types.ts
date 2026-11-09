@@ -797,6 +797,7 @@ export type Database = {
           created_at: string;
           due_date: string | null;
           id: string;
+          invite_id: string | null;
           months_before: number | null;
           notes: string | null;
           sort_order: number;
@@ -814,6 +815,7 @@ export type Database = {
           created_at?: string;
           due_date?: string | null;
           id?: string;
+          invite_id?: string | null;
           months_before?: number | null;
           notes?: string | null;
           sort_order?: number;
@@ -831,6 +833,7 @@ export type Database = {
           created_at?: string;
           due_date?: string | null;
           id?: string;
+          invite_id?: string | null;
           months_before?: number | null;
           notes?: string | null;
           sort_order?: number;
@@ -848,6 +851,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "members";
             referencedColumns: ["id", "wedding_id"];
+          },
+          {
+            foreignKeyName: "tasks_invite_id_fkey";
+            columns: ["invite_id"];
+            isOneToOne: false;
+            referencedRelation: "invites";
+            referencedColumns: ["id"];
           },
           {
             foreignKeyName: "tasks_template_id_fkey";

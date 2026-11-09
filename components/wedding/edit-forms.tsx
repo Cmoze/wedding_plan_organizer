@@ -25,14 +25,23 @@ import {
 export function EditTaskForm({
   task,
   members,
+  pendingInvites = [],
 }: {
   task: Task;
   members: { id: string; display_name: string }[];
+  /** People invited but not joined yet, assignable the same as a member (see migration
+   * task_pending_assignee). */
+  pendingInvites?: { id: string; email: string | null }[];
 }) {
   const [state, action, pending] = useActionState<FormState, FormData>(
     updateTaskAction,
     {},
   );
+  const assigneeValue = task.assignee_id
+    ? `member:${task.assignee_id}`
+    : task.invite_id
+      ? `invite:${task.invite_id}`
+      : "";
 
   return (
     <form action={action} className="mt-3 grid gap-4 sm:grid-cols-2">
@@ -64,13 +73,18 @@ export function EditTaskForm({
       <Field label="Assigned to">
         <select
           name="assigneeId"
-          defaultValue={task.assignee_id ?? ""}
+          defaultValue={assigneeValue}
           className={inputClass}
         >
           <option value="">No one</option>
           {members.map((member) => (
-            <option key={member.id} value={member.id}>
+            <option key={member.id} value={`member:${member.id}`}>
               {member.display_name}
+            </option>
+          ))}
+          {pendingInvites.map((invite) => (
+            <option key={invite.id} value={`invite:${invite.id}`}>
+              {(invite.email ?? "Invited") + " — invited, not joined yet"}
             </option>
           ))}
         </select>
