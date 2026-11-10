@@ -103,7 +103,12 @@ async function SectionWorkspace({
     home: <HomeSection ctx={ctx} />,
     tasks: <ChecklistSection ctx={ctx} show={param("show")} />,
     calendar: (
-      <CalendarSection ctx={ctx} month={param("month")} day={param("day")} />
+      <CalendarSection
+        ctx={ctx}
+        month={param("month")}
+        day={param("day")}
+        q={param("q")}
+      />
     ),
     budget: <BudgetSection ctx={ctx} />,
     guests: (

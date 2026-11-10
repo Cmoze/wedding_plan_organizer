@@ -16,6 +16,9 @@ import {
   Card,
   CardTitle,
   EmptyState,
+  Field,
+  inputClass,
+  primaryButtonClass,
   quietButtonClass,
 } from "@/components/wedding/ui";
 import { getCalendarItems, type CalendarItem } from "@/lib/db/calendar";
@@ -56,13 +59,40 @@ export async function CalendarSection({
   ctx,
   month,
   day,
+  q,
 }: {
   ctx: WeddingContext;
   month?: string;
   /** `YYYY-MM-DD`: the day whose details are open. */
   day?: string;
+  /** Searches task/event/payment titles; shown instead of the month grid. */
+  q?: string;
 }) {
   const items = await getCalendarItems(ctx.db, ctx.wedding.id);
+  const query = q?.trim();
+  if (query) {
+    const matches = items.filter((i) =>
+      i.title.toLowerCase().includes(query.toLowerCase()),
+    );
+    return (
+      <div className="mt-10 space-y-6">
+        <SearchBox defaultValue={query} />
+        <Card>
+          <CardTitle>
+            {matches.length} result{matches.length === 1 ? "" : "s"} for &ldquo;
+            {query}&rdquo;
+          </CardTitle>
+          {matches.length === 0 ? (
+            <div className="mt-3">
+              <EmptyState title="Nothing matches that." />
+            </div>
+          ) : (
+            <ItemList items={matches} ctx={ctx} />
+          )}
+        </Card>
+      </div>
+    );
+  }
   const validDay = /^\d{4}-\d{2}-\d{2}$/.test(day ?? "") ? day : undefined;
   const shown = /^\d{4}-\d{2}$/.test(month ?? "")
     ? month!
@@ -92,6 +122,7 @@ export async function CalendarSection({
 
   return (
     <div className="mt-10 space-y-6">
+      <SearchBox />
       <Card>
         <div className="flex items-center justify-between gap-3">
           <Link
@@ -269,7 +300,7 @@ function MonthGrid({
               {dayItems.slice(0, CHIPS_PER_DAY).map((item) => (
                 <span
                   key={`${item.kind}-${item.id}`}
-                  className={`block truncate rounded px-1 py-0.5 text-xs font-semibold ${KIND[item.kind].chip} ${item.done ? "line-through opacity-50" : ""}`}
+                  className={`line-clamp-2 block rounded px-1 py-0.5 text-xs font-semibold ${KIND[item.kind].chip} ${item.done ? "line-through opacity-50" : ""}`}
                 >
                   {item.title.replace(/^Payment due: /, "")}
                 </span>
@@ -364,5 +395,39 @@ function ItemList({
         );
       })}
     </ul>
+  );
+}
+
+function SearchBox({ defaultValue }: { defaultValue?: string }) {
+  return (
+    <Card>
+      <CardTitle>Find on the calendar</CardTitle>
+      <form
+        action="/"
+        method="get"
+        className="mt-4 flex flex-wrap items-end gap-4"
+      >
+        <input type="hidden" name="section" value="calendar" />
+        <div className="min-w-0 flex-1">
+          <Field label="Search tasks, events, and payments">
+            <input
+              type="search"
+              name="q"
+              defaultValue={defaultValue}
+              className={inputClass}
+              placeholder="e.g. cake tasting"
+            />
+          </Field>
+        </div>
+        <button type="submit" className={primaryButtonClass}>
+          Search
+        </button>
+        {defaultValue && (
+          <Link href="/?section=calendar" className={quietButtonClass}>
+            Back to calendar
+          </Link>
+        )}
+      </form>
+    </Card>
   );
 }
