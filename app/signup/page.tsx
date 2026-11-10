@@ -13,7 +13,7 @@ export default function SignUpPage({
   return (
     <AuthLayout
       title="Create your account"
-      description="Plan the wedding together with your family and friends."
+      description="Plan the wedding together with the people helping you."
     >
       <Suspense fallback={<SignUpForm />}>
         <InviteSignUp searchParams={searchParams} />

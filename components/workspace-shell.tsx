@@ -76,7 +76,7 @@ const sectionCopy: Record<SectionId, { title: string; description: string }> = {
   team: {
     title: "Your wedding team",
     description:
-      "Invite family and friends by email so they can add ideas and help with the plan.",
+      "Invite the people helping you by email so they can add ideas and help with the plan.",
   },
 };
 
@@ -325,8 +325,8 @@ function HomeWelcome() {
           </span>
           <h2 className="mt-5 text-xl font-bold">Better, together</h2>
           <p className="mt-2 text-base leading-7 text-[#695b60]">
-            Invite family and friends to help. Everyone can see the plan and
-            know what comes next.
+            Invite the people helping you. Everyone can see the plan and know
+            what comes next.
           </p>
         </div>
         <Link
