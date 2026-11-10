@@ -1,6 +1,8 @@
 import "server-only";
 import { AiError, type AiErrorCode } from "@/lib/ai/client";
 import { takeRateLimit } from "@/lib/ai/rate-limit";
+import { isPlatformAdmin } from "@/lib/admin";
+import { getCurrentUser } from "@/lib/db/auth";
 import type { Db } from "@/lib/db/shared";
 import { canEdit, getMyMembership } from "@/lib/db/weddings";
 
@@ -34,10 +36,17 @@ export async function checkAiAccess(
   options: { editorsOnly?: boolean; rateLimit?: boolean } = {},
 ): Promise<Response | null> {
   const member = await getMyMembership(db, weddingId).catch(() => null);
-  if (!member) return jsonError(403, "You're not part of this wedding");
-  if (options.editorsOnly && !canEdit(member.role))
+  // The platform admin (lib/admin.ts) never gets a real members row anywhere, by design.
+  let userId = member?.user_id;
+  if (!member) {
+    const user = await getCurrentUser(db);
+    if (!user || !isPlatformAdmin(user.email))
+      return jsonError(403, "You're not part of this wedding");
+    userId = user.id;
+  }
+  if (options.editorsOnly && member && !canEdit(member.role))
     return jsonError(403, "Only the couple or a planner can use this");
-  if (options.rateLimit !== false && !takeRateLimit(member.user_id))
+  if (options.rateLimit !== false && userId && !takeRateLimit(userId))
     return jsonError(
       429,
       "You've asked Piper a lot just now. Try again in a few minutes.",

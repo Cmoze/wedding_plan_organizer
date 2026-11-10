@@ -2,6 +2,7 @@ import { z } from "zod";
 import { runAssistant } from "@/lib/ai/assistant";
 import { isAiConfigured } from "@/lib/ai/client";
 import { aiErrorResponse, checkAiAccess, jsonError } from "@/lib/ai/http";
+import { isPlatformAdmin } from "@/lib/admin";
 import { getCurrentUser } from "@/lib/db/auth";
 import { toDateString } from "@/lib/db/shared";
 import { createClient } from "@/lib/db/supabase/server";
@@ -31,7 +32,8 @@ export async function POST(request: Request) {
   const { weddingId, messages } = body.data;
 
   const db = await createClient();
-  if (!(await getCurrentUser(db))) return jsonError(401, "Please log in");
+  const user = await getCurrentUser(db);
+  if (!user) return jsonError(401, "Please log in");
   const denied = await checkAiAccess(db, weddingId);
   if (denied) return denied;
   if (!isAiConfigured())
@@ -39,11 +41,13 @@ export async function POST(request: Request) {
 
   try {
     const member = await getMyMembership(db, weddingId);
+    // The platform admin (lib/admin.ts) never gets a real members row; treat as an editor.
+    const editor = member ? canEdit(member.role) : isPlatformAdmin(user.email);
     const result = await runAssistant(
       {
         db,
         weddingId,
-        canEdit: Boolean(member && canEdit(member.role)),
+        canEdit: editor,
         today: toDateString(new Date()),
       },
       messages,
