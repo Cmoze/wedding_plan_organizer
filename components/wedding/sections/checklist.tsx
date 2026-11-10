@@ -26,6 +26,7 @@ import {
 import { getVendors, type Vendor } from "@/lib/db/vendors";
 
 const FILTERS = [
+  { id: "mine", label: "Assigned to me" },
   { id: "open", label: "To do" },
   { id: "overdue", label: "Past due" },
   { id: "planned", label: "Done & booked" },
@@ -53,16 +54,19 @@ export async function ChecklistSection({
     ctx.canEdit ? listInvites(ctx.db, ctx.wedding.id) : Promise.resolve([]),
   ]);
   const filter = FILTERS.find((f) => f.id === show)?.id ?? "open";
+  const mineCount = tasks.filter((t) => t.assignee_id === ctx.me.id).length;
   const visible = tasks.filter((t) =>
-    filter === "all"
-      ? true
-      : filter === "open"
-        ? OPEN_STATUSES.includes(t.status)
-        : filter === "overdue"
-          ? OPEN_STATUSES.includes(t.status) &&
-            t.due_date !== null &&
-            t.due_date < ctx.today
-          : PLANNED_STATUSES.includes(t.status),
+    filter === "mine"
+      ? t.assignee_id === ctx.me.id
+      : filter === "all"
+        ? true
+        : filter === "open"
+          ? OPEN_STATUSES.includes(t.status)
+          : filter === "overdue"
+            ? OPEN_STATUSES.includes(t.status) &&
+              t.due_date !== null &&
+              t.due_date < ctx.today
+            : PLANNED_STATUSES.includes(t.status),
   );
   const finished = tasks.filter((t) =>
     PLANNED_STATUSES.includes(t.status),
@@ -93,13 +97,24 @@ export async function ChecklistSection({
                   key={f.id}
                   href={`/?section=tasks&show=${f.id}`}
                   aria-current={f.id === filter ? "page" : undefined}
-                  className={`inline-flex min-h-11 items-center rounded-full px-4 text-base font-semibold ${
+                  className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 text-base font-semibold ${
                     f.id === filter
                       ? "bg-[#6f1d37] text-white"
                       : "border border-[#ddcbd1] text-[#6f1d37] hover:bg-[#fbf3f5]"
                   }`}
                 >
                   {f.label}
+                  {f.id === "mine" && mineCount > 0 && (
+                    <span
+                      className={`inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-sm ${
+                        f.id === filter
+                          ? "bg-white/20"
+                          : "bg-[#f4e7eb] text-[#6f1d37]"
+                      }`}
+                    >
+                      {mineCount}
+                    </span>
+                  )}
                 </Link>
               ))}
             </nav>
@@ -131,19 +146,23 @@ export async function ChecklistSection({
         {ordered.length === 0 ? (
           <EmptyState
             title={
-              filter === "open"
-                ? "Nothing left to do. Nice work!"
-                : "No tasks here yet."
+              filter === "mine"
+                ? "Nothing's assigned to you yet."
+                : filter === "open"
+                  ? "Nothing left to do. Nice work!"
+                  : "No tasks here yet."
             }
           />
         ) : (
           <Card>
             <CardTitle>
-              {filter === "planned"
-                ? "Done and booked"
-                : filter === "overdue"
-                  ? "Past-due tasks"
-                  : "By due date"}
+              {filter === "mine"
+                ? "Assigned to you"
+                : filter === "planned"
+                  ? "Done and booked"
+                  : filter === "overdue"
+                    ? "Past-due tasks"
+                    : "By due date"}
             </CardTitle>
             {filter !== "planned" && (
               <p className="mt-1 text-base text-[#695b60]">
