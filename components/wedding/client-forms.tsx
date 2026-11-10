@@ -1024,8 +1024,8 @@ export function GuestForm({
         />
       </Field>
       <Field
-        label="Invitation"
-        hint="Pick someone already on the list to send them one invitation together."
+        label="Household"
+        hint="Adding someone to a family or couple already on the list sends them one invitation together, instead of their own."
       >
         <select
           name="householdId"
@@ -1033,10 +1033,10 @@ export function GuestForm({
           onChange={(e) => setHouseholdId(e.target.value)}
           className={inputClass}
         >
-          <option value="">Their own invitation</option>
+          <option value="">A new household, just for them</option>
           {households.map((h) => (
             <option key={h.id} value={h.id}>
-              With {h.name}
+              Add to {h.name}&apos;s household
             </option>
           ))}
         </select>
