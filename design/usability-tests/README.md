@@ -23,3 +23,4 @@ Plan and script: `000-test-plan.md`. Copy `000-test-template.md` for each sessio
 | 5 | B: parent (planner) | | 2026-11-07 | `005-parent-planner.md` |
 | 6 | B: wedding party (helper) | friend, first time | 2026-11-09 | `006-wedding-party-helper.md` |
 | 7 | B: friend (planner) | friend, first time | 2026-11-09 | `007-friend-planner.md` |
+| 8 | B: helper | helper, seeded demo wedding | 2026-11-09 | `008-helper-maya-jordan.md` |
