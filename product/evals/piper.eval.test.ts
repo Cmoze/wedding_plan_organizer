@@ -16,6 +16,7 @@ const data = async () => (await import("./piper-fixture.json")).default;
 vi.mock("@/lib/db/weddings", async (original) => ({
   ...(await original<object>()),
   getWedding: async () => (await data()).wedding,
+  getMembers: async () => (await data()).members,
 }));
 vi.mock("@/lib/db/budget", async (original) => {
   const actual = await original<typeof import("@/lib/db/budget")>();

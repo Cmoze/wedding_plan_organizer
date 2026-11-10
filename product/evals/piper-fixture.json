@@ -8,6 +8,11 @@
     "wedding_date": "2027-06-12",
     "budget_total": 35000
   },
+  "members": [
+    { "id": "m1", "display_name": "Maya Chen" },
+    { "id": "m2", "display_name": "Jordan Reyes" },
+    { "id": "m3", "display_name": "Devon Ruiz" }
+  ],
   "tasks": [
     {
       "id": "t1",
@@ -31,7 +36,8 @@
       "status": "todo",
       "due_date": "2026-11-05",
       "category": "Guests",
-      "notes": null
+      "notes": null,
+      "assignee_id": "m3"
     },
     {
       "id": "t4",

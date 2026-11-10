@@ -53,6 +53,9 @@ vi.mock("@/lib/db/gifts", () => ({
     },
   ],
 }));
+vi.mock("@/lib/db/weddings", () => ({
+  getMembers: async () => [{ id: "m1", display_name: "Sue Miller" }],
+}));
 
 const { buildAssistantTools, checkAction, trimHistory } =
   await import("@/lib/ai/assistant");

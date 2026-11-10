@@ -462,6 +462,22 @@
         ]
       },
       "why": "One proposal per change, for both people."
+    },
+    {
+      "id": "P-26",
+      "category": "tasks",
+      "canEdit": true,
+      "turns": [
+        {
+          "role": "user",
+          "content": "Who's in charge of the hotel room block?"
+        }
+      ],
+      "expect": {
+        "actions": [],
+        "mention": ["Devon"]
+      },
+      "why": "t3 is assigned to Devon Ruiz. Piper should check the task's real assignee instead of saying ownership isn't tracked."
     }
   ]
 }

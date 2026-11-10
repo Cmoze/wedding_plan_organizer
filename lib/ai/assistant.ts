@@ -18,7 +18,7 @@ import { getRegistryLinks } from "@/lib/db/registry";
 import type { Db } from "@/lib/db/shared";
 import { getTasks, OPEN_STATUSES } from "@/lib/db/tasks";
 import { getVendors } from "@/lib/db/vendors";
-import { getWedding } from "@/lib/db/weddings";
+import { getMembers, getWedding } from "@/lib/db/weddings";
 
 /**
  * Piper the Planner, the site assistant: a chat that can look things up in the wedding plan and offer to do things.
@@ -128,7 +128,7 @@ export function buildAssistantTools(ctx: AssistantContext) {
     betaZodTool({
       name: "list_tasks",
       description:
-        "Checklist tasks with ids, status and due dates, soonest first. Filter by status, a text search, or a latest due date.",
+        "Checklist tasks with ids, status, due dates and who's assigned, soonest first. Filter by status, a text search, or a latest due date.",
       inputSchema: z.object({
         status: z
           .enum(["open", "done", "all"])
@@ -138,15 +138,19 @@ export function buildAssistantTools(ctx: AssistantContext) {
         due_before: z.string().optional().describe("YYYY-MM-DD, inclusive"),
       }),
       run: async ({ status = "open", search, due_before }) => {
-        const tasks = await getTasks(db, weddingId, {
-          status:
-            status === "open"
-              ? OPEN_STATUSES
-              : status === "done"
-                ? ["done", "booked"]
-                : undefined,
-          dueTo: due_before,
-        });
+        const [tasks, members] = await Promise.all([
+          getTasks(db, weddingId, {
+            status:
+              status === "open"
+                ? OPEN_STATUSES
+                : status === "done"
+                  ? ["done", "booked"]
+                  : undefined,
+            dueTo: due_before,
+          }),
+          getMembers(db, weddingId),
+        ]);
+        const memberName = new Map(members.map((m) => [m.id, m.display_name]));
         return json(
           tasks
             .filter((t) => matchesText(search, t.title, t.category, t.notes))
@@ -157,6 +161,10 @@ export function buildAssistantTools(ctx: AssistantContext) {
               status: t.status,
               due_date: t.due_date,
               category: t.category,
+              assigned_to: t.assignee_id
+                ? (memberName.get(t.assignee_id) ??
+                  "someone no longer on the team")
+                : null,
             })),
         );
       },
