@@ -1,6 +1,6 @@
 # Spec 002: Fix every finding from the Sprint 4 user tests
 
-**Status:** Draft
+**Status:** In progress
 **Date:** 2026-11-16
 
 ## Problem
@@ -43,6 +43,16 @@ in as the role the tester had.
 
 The sprint plan says 11 findings. The write-ups have 13 product rows; merging the two copy
 rows (row 12) leaves the 12 here. This spec covers all 12.
+
+## Progress
+
+Checked on https://togetherwedding.vercel.app, in the role named.
+
+| Row | Shipped | Checked on live | Result |
+| --- | ------- | --------------- | ------ |
+| 3 | 2026-11-16 (`b82a748`) | 2026-11-16, demo helper, pane at about 620 px and at 375 px | Pass. All 42 task rows have a checkbox; the 39 that aren't the helper's are locked, each with a reason; tapping one shows it. Known wart: the reason note covers the next row's title until you tap away. |
+| 4 | 2026-11-16 (`2b9c7f0`) | 2026-11-16, demo helper, same widths | Pass. Home listed the helper's three overdue tasks, marked "Overdue", and linked to Tasks → Assigned to me. The "assigned for later" wording was not seen live (no account in that state). |
+| 6 | 2026-11-16 (`7f68e17`) | 2026-11-16, form only | Not passed yet. The three choices render with Partner 1 selected; saving as Partner 2 and as "Someone else" is untested. |
 
 ## Order
 
