@@ -38,7 +38,7 @@ export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
     calendarItems,
     budget,
     activity,
-    weekTasks,
+    openTasks,
     plannedTasks,
     photoUrl,
     households,
@@ -50,11 +50,7 @@ export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
     }),
     getBudgetSummary(db, wedding.id),
     getActivity(db, wedding.id, 5),
-    getTasks(db, wedding.id, {
-      status: OPEN_STATUSES,
-      dueFrom: today,
-      dueTo: addDays(today, 7),
-    }),
+    getTasks(db, wedding.id, { status: OPEN_STATUSES }),
     getAlreadyPlanned(db, wedding.id),
     getCouplePhotoUrl(db, wedding),
     getGuestList(db, wedding.id),
@@ -62,9 +58,16 @@ export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
   const guestCounts = countGuests(households);
   const respondedCount = guestCounts.attending + guestCounts.declined;
   const upcoming = calendarItems.filter((item) => !item.done).slice(0, 5);
-  const myWeekTasks = weekTasks.filter(
+  // "My tasks": overdue first, then the next 7 days. Overdue ones count: a card that says
+  // "nothing this week" while two assigned tasks are past due reads as "nothing assigned".
+  const weekEnd = addDays(today, 7);
+  const myOpenTasks = openTasks.filter(
     (task) => task.assignee_id === ctx.me.id,
   );
+  const myDueTasks = myOpenTasks.filter(
+    (task) => task.due_date && task.due_date <= weekEnd,
+  );
+  const myLaterCount = myOpenTasks.length - myDueTasks.length;
   const bookedTasks = plannedTasks.filter((task) => task.status === "booked");
   const daysToGo = wedding.wedding_date
     ? Math.ceil(
@@ -238,34 +241,54 @@ export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
               Your week
             </p>
             <h2 className="font-heading mt-1 text-xl text-[#35151f]">
-              My tasks this week
+              My tasks
             </h2>
-            {myWeekTasks.length ? (
-              <ul className="mt-3 space-y-2">
-                {myWeekTasks.slice(0, 3).map((task) => (
-                  <li
-                    key={task.id}
-                    className="flex items-start justify-between gap-3 text-sm"
-                  >
-                    <span className="leading-5 font-semibold text-[#4b2734]">
-                      {task.title}
-                    </span>
-                    <span className="shrink-0 text-[#796a70]">
-                      {formatDate(task.due_date)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+            {myDueTasks.length ? (
+              <>
+                <ul className="mt-3 space-y-2">
+                  {myDueTasks.slice(0, 5).map((task) => {
+                    const overdue = !!task.due_date && task.due_date < today;
+                    return (
+                      <li key={task.id} className="text-sm">
+                        <p className="leading-5 font-semibold text-[#4b2734]">
+                          {task.title}
+                        </p>
+                        <p
+                          className={
+                            overdue
+                              ? "font-semibold text-[#8a3f1d]"
+                              : "text-[#796a70]"
+                          }
+                        >
+                          {overdue ? "Overdue · " : "Due "}
+                          {formatDate(task.due_date)}
+                        </p>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {myDueTasks.length > 5 && (
+                  <p className="mt-2 text-sm text-[#796a70]">
+                    and {myDueTasks.length - 5} more
+                  </p>
+                )}
+              </>
             ) : (
               <p className="mt-3 text-sm leading-6 text-[#796a70]">
-                No tasks assigned to you this week.
+                {myLaterCount > 0
+                  ? `Nothing due this week. ${myLaterCount} ${myLaterCount === 1 ? "task is" : "tasks are"} assigned to you for later.`
+                  : "No tasks are assigned to you yet."}
               </p>
             )}
             <Link
               className="mt-3 inline-flex min-h-10 items-center gap-2 text-sm font-bold text-[#6f1d37] hover:underline"
-              href="/?section=tasks"
+              href={
+                myOpenTasks.length
+                  ? "/?section=tasks&show=mine"
+                  : "/?section=tasks"
+              }
             >
-              Open checklist{" "}
+              {myOpenTasks.length ? "Open my tasks" : "Open checklist"}{" "}
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </section>
