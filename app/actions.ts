@@ -184,14 +184,26 @@ export async function createWeddingAction(
   const db = await signedInDb();
   const partner1Name = text(form, "partner1Name");
   if (!partner1Name) return { error: "Enter at least one name." };
+  // "Which one are you?": blank lets create_wedding fall back to Partner 1's name.
+  const who = text(form, "who");
+  const partner2Name = text(form, "partner2Name");
+  const displayName =
+    who === "partner2"
+      ? partner2Name
+      : who === "other"
+        ? text(form, "displayName")
+        : undefined;
+  if (who === "partner2" && !partner2Name)
+    return { error: "Enter Partner 2's name, or pick who you are." };
+  if (who === "other" && !displayName) return { error: "Enter your name." };
   try {
     await createWedding(db, {
       partner1Name,
-      partner2Name: text(form, "partner2Name"),
+      partner2Name,
       weddingDate: text(form, "weddingDate"),
       budgetTotal: money(form, "budgetTotal"),
       guestCountEstimate: money(form, "guestCount"),
-      displayName: text(form, "displayName"),
+      displayName,
     });
   } catch (e) {
     return { error: friendly(e) };

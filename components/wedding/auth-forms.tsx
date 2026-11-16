@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import {
   createWeddingAction,
   signInAction,
@@ -142,6 +142,7 @@ export function NewWeddingForm() {
     createWeddingAction,
     {},
   );
+  const [who, setWho] = useState<"partner1" | "partner2" | "other">("partner1");
   useEffect(() => {
     // A full page load: the router may still hold "/" as a redirect back here.
     if (state.redirectTo) window.location.assign(state.redirectTo);
@@ -189,9 +190,45 @@ export function NewWeddingForm() {
           />
         </Field>
       </div>
-      <Field label="Your name" hint="Leave blank to use Partner 1's name.">
-        <input name="displayName" className={inputClass} />
-      </Field>
+      <fieldset>
+        <legend className="text-base font-semibold text-[#35151f]">
+          Which one are you?
+        </legend>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {(
+            [
+              ["partner1", "Partner 1"],
+              ["partner2", "Partner 2"],
+              ["other", "Someone else"],
+            ] as const
+          ).map(([value, label]) => (
+            <label
+              key={value}
+              className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-[#d9c4cb] bg-white px-4 text-base has-checked:border-[#6f1d37] has-checked:bg-[#f9eef1]"
+            >
+              <input
+                type="radio"
+                name="who"
+                value={value}
+                checked={who === value}
+                onChange={() => setWho(value)}
+                className="accent-[#6f1d37]"
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      {who === "other" && (
+        <Field label="Your name" hint="How others in the wedding will see you.">
+          <input
+            name="displayName"
+            required
+            autoComplete="name"
+            className={inputClass}
+          />
+        </Field>
+      )}
       <FormMessage error={state.error} message={state.message} />
       <button
         type="submit"
