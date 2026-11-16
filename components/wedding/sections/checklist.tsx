@@ -4,6 +4,7 @@ import { ChecklistSuggestions } from "@/components/wedding/checklist-suggestions
 import { EditTaskForm } from "@/components/wedding/edit-forms";
 import {
   DeleteTaskButton,
+  LockedTaskCheckbox,
   NoticeProvider,
   TaskStatusButton,
   TaskDetailsForm,
@@ -240,7 +241,15 @@ function TaskRow({
           finished={finished}
         />
       ) : (
-        <span className="h-11 w-11" />
+        <LockedTaskCheckbox
+          title={task.title}
+          finished={finished}
+          reason={
+            assignee
+              ? `Assigned to ${assignee}. Only they, the couple, or a planner can check it off.`
+              : "Not assigned to you. Only the couple or a planner can check it off."
+          }
+        />
       )}
       <div className="min-w-0 flex-1">
         <p

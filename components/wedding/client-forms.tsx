@@ -755,6 +755,52 @@ export function NoticeProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * The checkbox a viewer sees on a task they can't update (a helper, on someone else's
+ * task). Looks disabled and says why on hover, tap, or focus, so "not mine" doesn't look
+ * like "broken".
+ */
+export function LockedTaskCheckbox({
+  title,
+  finished,
+  reason,
+}: {
+  title: string;
+  finished: boolean;
+  reason: string;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span className="relative">
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={finished}
+        aria-disabled="true"
+        aria-label={`“${title}” is ${finished ? "done" : "not done"}. ${reason}`}
+        title={reason}
+        onClick={() => setOpen((v) => !v)}
+        onBlur={() => setOpen(false)}
+        className={`flex h-11 w-11 cursor-not-allowed items-center justify-center rounded-xl border-2 border-dashed ${
+          finished
+            ? "border-[#cbb9c0] bg-[#e6dade] text-white"
+            : "border-[#e1d5d9] bg-[#f6f1f2] text-transparent"
+        }`}
+      >
+        <Check className="h-6 w-6" aria-hidden="true" />
+      </button>
+      {open && (
+        <span
+          role="status"
+          className="absolute top-12 left-0 z-10 w-64 rounded-xl border border-[#eadfe2] bg-white p-3 text-sm leading-5 text-[#4b2734] shadow-lg"
+        >
+          {reason}
+        </span>
+      )}
+    </span>
+  );
+}
+
 export function TaskStatusButton({
   taskId,
   title,
