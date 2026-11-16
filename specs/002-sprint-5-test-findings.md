@@ -52,7 +52,7 @@ Checked on https://togetherwedding.vercel.app, in the role named.
 | --- | ------- | --------------- | ------ |
 | 3 | 2026-11-16 (`b82a748`) | 2026-11-16, demo helper, pane at about 620 px and at 375 px | Pass. All 42 task rows have a checkbox; the 39 that aren't the helper's are locked, each with a reason; tapping one shows it. Known wart: the reason note covers the next row's title until you tap away. |
 | 4 | 2026-11-16 (`2b9c7f0`) | 2026-11-16, demo helper, same widths | Pass. Home listed the helper's three overdue tasks, marked "Overdue", and linked to Tasks → Assigned to me. The "assigned for later" wording was not seen live (no account in that state). |
-| 6 | 2026-11-16 (`7f68e17`) | 2026-11-16, form only | Not passed yet. The three choices render with Partner 1 selected; saving as Partner 2 and as "Someone else" is untested. |
+| 6 | 2026-11-16 (`7f68e17`) | 2026-11-16, demo helper account | Pass. Created one wedding as Partner 2 and one as "Someone else": each member got the right name (Partner 2's name; the typed name) and the name was never asked for twice. Partner 1 uses the unchanged fall-back and was not re-tested. Follow-up fix, not yet live: choosing Partner 2 with that field empty used to clear the whole form with an error; the browser now stops the submit instead. |
 
 ## Order
 

@@ -143,6 +143,12 @@ export function NewWeddingForm() {
     {},
   );
   const [who, setWho] = useState<"partner1" | "partner2" | "other">("partner1");
+  // React clears the form after a failed submit; put the choice back in step with it.
+  const [seenState, setSeenState] = useState(state);
+  if (seenState !== state) {
+    setSeenState(state);
+    if (state.error) setWho("partner1");
+  }
   useEffect(() => {
     // A full page load: the router may still hold "/" as a redirect back here.
     if (state.redirectTo) window.location.assign(state.redirectTo);
@@ -161,6 +167,7 @@ export function NewWeddingForm() {
         <Field label="Partner 2">
           <input
             name="partner2Name"
+            required={who === "partner2"}
             className={inputClass}
             placeholder="Jordan"
           />
