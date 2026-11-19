@@ -2,6 +2,7 @@
 
 import {
   useActionState,
+  useRef,
   useState,
   useSyncExternalStore,
   useTransition,
@@ -33,8 +34,18 @@ export function EditTaskForm({
    * task_pending_assignee). */
   pendingInvites?: { id: string; email: string | null }[];
 }) {
+  const formRef = useRef<HTMLFormElement>(null);
+  // Close the surrounding "Edit task" panel once a save succeeds; keep it open on an
+  // error so the message and the typed values stay in view.
   const [state, action, pending] = useActionState<FormState, FormData>(
-    updateTaskAction,
+    async (prev, form) => {
+      const result = await updateTaskAction(prev, form);
+      if (!result.error) {
+        const details = formRef.current?.closest("details");
+        if (details) details.open = false;
+      }
+      return result;
+    },
     {},
   );
   const assigneeValue = task.assignee_id
@@ -44,7 +55,11 @@ export function EditTaskForm({
       : "";
 
   return (
-    <form action={action} className="mt-3 grid gap-4 sm:grid-cols-2">
+    <form
+      ref={formRef}
+      action={action}
+      className="mt-3 grid gap-4 sm:grid-cols-2"
+    >
       <input type="hidden" name="taskId" value={task.id} />
       <Field label="Task name">
         <input
