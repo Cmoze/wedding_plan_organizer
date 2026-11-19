@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { describeActivity, getActivity } from "@/lib/db/activity";
 import { getBudgetSummary } from "@/lib/db/budget";
+import { hasCouple } from "@/components/wedding/roles";
 import { getCalendarItems } from "@/lib/db/calendar";
 import {
   formatDate,
@@ -161,6 +162,26 @@ export async function HomeSection({ ctx }: { ctx: WeddingContext }) {
           </Link>
         </div>
       </section>
+
+      {ctx.canEdit && !hasCouple(ctx.members) && (
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-[1.75rem] border border-[#eadfe2] bg-[#fbf3f5] p-5 sm:p-7">
+          <div className="min-w-0">
+            <h2 className="font-heading text-2xl text-[#35151f]">
+              Invite the couple
+            </h2>
+            <p className="mt-1 text-base text-[#695b60]">
+              Neither partner has joined yet. Once they do, they&apos;ll have
+              full control of the wedding.
+            </p>
+          </div>
+          <Link
+            href="/?section=team"
+            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#6f1d37] px-5 text-sm font-bold text-white hover:bg-[#58172c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6f1d37]"
+          >
+            Invite them <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </section>
+      )}
 
       <WeeklySummaryCard weddingId={ctx.wedding.id} />
 

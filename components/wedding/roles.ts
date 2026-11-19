@@ -24,6 +24,18 @@ export const ROLE_INFO: Record<
   },
 };
 
-/** Roles someone may hand out: only the couple can add another member of the couple. */
-export const invitableRoles = (myRole: MemberRole): MemberRole[] =>
-  myRole === "couple" ? ["helper", "planner", "couple"] : ["helper", "planner"];
+/**
+ * Roles someone may hand out: only the couple can add another member of the couple,
+ * except while the wedding has no couple yet (a planner set it up), when a planner can
+ * invite them. Matches the RLS policy on `invites`.
+ */
+export const invitableRoles = (
+  myRole: MemberRole,
+  weddingHasCouple = true,
+): MemberRole[] =>
+  myRole === "couple" || !weddingHasCouple
+    ? ["helper", "planner", "couple"]
+    : ["helper", "planner"];
+
+export const hasCouple = (members: { role: MemberRole }[]) =>
+  members.some((m) => m.role === "couple");

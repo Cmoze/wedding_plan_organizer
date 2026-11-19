@@ -40,6 +40,7 @@ import {
 } from "@/lib/db/tasks";
 import { createVendor, deleteVendor } from "@/lib/db/vendors";
 import {
+  createWedding,
   getMembers,
   getMyMembership,
   getMyWeddings,
@@ -475,6 +476,52 @@ describe.skipIf(!process.env.RUN_DB_TESTS)(
           /expired/,
         );
         await deleteInvite(couple, expired.id);
+      });
+    });
+
+    describe("a wedding someone else set up (spec 002 row 6b)", () => {
+      it("makes the creator a planner, who can invite the couple until one joins", async () => {
+        const created = await createWedding(planner, {
+          partner1Name: "Test Partner",
+          displayName: "Test Planner",
+          role: "planner",
+        });
+        try {
+          expect(await getMyMembership(planner, created.id)).toMatchObject({
+            role: "planner",
+            display_name: "Test Planner",
+          });
+
+          const coupleInvite = await createInvite(
+            planner,
+            created.id,
+            "couple",
+          );
+          expect(await acceptInvite(outsider, coupleInvite.token)).toBe(
+            created.id,
+          );
+          expect(await getMyMembership(outsider, created.id)).toMatchObject({
+            role: "couple",
+          });
+
+          // A couple exists now: inviting as couple is theirs alone again.
+          await expect(
+            createInvite(planner, created.id, "couple"),
+          ).rejects.toThrow();
+          const extra = await createInvite(outsider, created.id, "couple");
+          await deleteInvite(outsider, extra.id);
+        } finally {
+          await admin.from("weddings").delete().eq("id", created.id);
+        }
+      });
+
+      it("refuses a helper as the creator's role", async () => {
+        await expect(
+          planner.rpc("create_wedding", {
+            _partner1_name: "Test Partner",
+            _role: "helper",
+          }),
+        ).resolves.toMatchObject({ error: expect.anything() });
       });
     });
   },

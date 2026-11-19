@@ -993,6 +993,7 @@ export type Database = {
           _guest_count_estimate?: number;
           _partner1_name: string;
           _partner2_name?: string;
+          _role?: Database["public"]["Enums"]["member_role"];
           _wedding_date?: string;
         };
         Returns: {

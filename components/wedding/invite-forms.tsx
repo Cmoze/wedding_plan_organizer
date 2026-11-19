@@ -76,11 +76,13 @@ export function InviteForm({
   roles,
   inviterName,
   weddingTitle,
+  defaultRole = "helper",
 }: {
   weddingId: string;
   roles: MemberRole[];
   inviterName: string;
   weddingTitle: string;
+  defaultRole?: MemberRole;
 }) {
   const [state, action, pending] = useActionState<InviteFormState, FormData>(
     createInviteAction,
@@ -124,7 +126,7 @@ export function InviteForm({
           />
         </Field>
         <Field label="What they can do">
-          <select name="role" defaultValue="helper" className={inputClass}>
+          <select name="role" defaultValue={defaultRole} className={inputClass}>
             {roles.map((r) => (
               <option key={r} value={r}>
                 {ROLE_INFO[r].label}

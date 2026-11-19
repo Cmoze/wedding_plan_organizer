@@ -227,6 +227,11 @@ export function NewWeddingForm() {
         </div>
       </fieldset>
       {who === "other" && (
+        <p className="-mt-2 text-sm text-[#695b60]">
+          You&apos;ll join as a planner and can invite the couple next.
+        </p>
+      )}
+      {who === "other" && (
         <Field label="Your name" hint="How others in the wedding will see you.">
           <input
             name="displayName"

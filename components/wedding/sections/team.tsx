@@ -13,7 +13,11 @@ import {
   InviteForm,
   InviteLinkActions,
 } from "@/components/wedding/invite-forms";
-import { invitableRoles, ROLE_INFO } from "@/components/wedding/roles";
+import {
+  hasCouple,
+  invitableRoles,
+  ROLE_INFO,
+} from "@/components/wedding/roles";
 import {
   Badge,
   Card,
@@ -35,6 +39,7 @@ export async function TeamSection({
 }) {
   const invites = ctx.canEdit ? await listInvites(ctx.db, ctx.wedding.id) : [];
   const isCouple = ctx.me.role === "couple";
+  const weddingHasCouple = hasCouple(ctx.members);
   const title = weddingTitle(ctx.wedding);
   const inviterName = ctx.me.display_name || "We";
   const now = new Date().toISOString();
@@ -43,14 +48,19 @@ export async function TeamSection({
     <div className="mt-10 space-y-6">
       {ctx.canEdit ? (
         <Card>
-          <CardTitle>Invite someone</CardTitle>
+          <CardTitle>
+            {weddingHasCouple ? "Invite someone" : "Invite the couple"}
+          </CardTitle>
           <p className="mt-1 text-base text-[#695b60]">
-            Add their email and we&apos;ll write the invite for you. Your email
-            app opens with the message and link ready to send.
+            {weddingHasCouple
+              ? "Add their email and we'll write the invite for you."
+              : "Neither partner has joined yet. Invite them as Couple and they'll have full control once they join."}{" "}
+            Your email app opens with the message and link ready to send.
           </p>
           <InviteForm
             weddingId={ctx.wedding.id}
-            roles={invitableRoles(ctx.me.role)}
+            roles={invitableRoles(ctx.me.role, weddingHasCouple)}
+            defaultRole={weddingHasCouple ? "helper" : "couple"}
             inviterName={inviterName}
             weddingTitle={title}
           />

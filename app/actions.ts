@@ -200,6 +200,8 @@ export async function createWeddingAction(
     await createWedding(db, {
       partner1Name,
       partner2Name,
+      // Someone who isn't a partner joins as a planner and invites the couple (spec 002 row 6b).
+      role: who === "other" ? "planner" : "couple",
       weddingDate: text(form, "weddingDate"),
       budgetTotal: money(form, "budgetTotal"),
       guestCountEstimate: money(form, "guestCount"),

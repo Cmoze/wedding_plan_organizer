@@ -18,7 +18,10 @@ export type Wedding = Tables<"weddings">;
 export type Member = Tables<"members">;
 export type MemberRole = Enums<"member_role">;
 
-/** Creates the wedding, makes the current user `couple` and copies in the checklist. */
+/**
+ * Creates the wedding, makes the current user a member (`couple` by default, or
+ * `planner` when someone else sets it up) and copies in the checklist.
+ */
 export async function createWedding(
   db: Db,
   input: {
@@ -28,6 +31,7 @@ export async function createWedding(
     budgetTotal?: number;
     guestCountEstimate?: number;
     displayName?: string;
+    role?: "couple" | "planner";
   },
 ): Promise<Wedding> {
   return unwrap(
@@ -39,6 +43,7 @@ export async function createWedding(
         _budget_total: input.budgetTotal,
         _guest_count_estimate: input.guestCountEstimate,
         _display_name: input.displayName,
+        _role: input.role,
       })
       .single(),
   );
