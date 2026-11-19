@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Fragment } from "react";
 import { deleteEventAction } from "@/app/actions";
@@ -12,7 +12,6 @@ import {
   parseDate,
 } from "@/components/wedding/format";
 import {
-  Badge,
   Card,
   CardTitle,
   EmptyState,
@@ -24,28 +23,21 @@ import {
 import { getCalendarItems, type CalendarItem } from "@/lib/db/calendar";
 import { toDateString } from "@/lib/db/shared";
 
+// Spec 003: each kind looks like what it is. Appointments (events) take the app's pink and
+// maroon; tasks are quiet checklist lines with a grey checkbox; payments the same with "$".
 const KIND = {
   task: {
-    label: "Task",
-    dot: "bg-[#6f1d37]",
-    chip: "bg-[#f4e7eb] text-[#6f1d37]",
-    tone: "good",
+    dot: "bg-[#b8a9ae]",
     href: "/?section=tasks",
     open: "Open tasks",
   },
   event: {
-    label: "Event",
-    dot: "bg-[#3d5f9c]",
-    chip: "bg-[#e6ecf6] text-[#2f4b7c]",
-    tone: "info",
+    dot: "bg-[#6f1d37]",
     href: null,
     open: null,
   },
   payment: {
-    label: "Payment",
-    dot: "bg-[#b4532a]",
-    chip: "bg-[#f8e9e0] text-[#8e3f1e]",
-    tone: "warn",
+    dot: "bg-[#b8a9ae]",
     href: "/?section=budget",
     open: "Open budget",
   },
@@ -54,6 +46,45 @@ const KIND = {
 const CHIPS_PER_DAY = 3;
 
 const dayOf = (item: CalendarItem) => item.start.slice(0, 10);
+
+/** Events first in a day, so an appointment never hides under "+N more". */
+const eventsFirst = (a: CalendarItem, b: CalendarItem) =>
+  Number(b.kind === "event") - Number(a.kind === "event");
+
+/** The small marker in front of a task or payment: an empty checkbox, or "$". */
+function KindMark({
+  item,
+  size = "row",
+}: {
+  item: CalendarItem;
+  size?: "row" | "chip";
+}) {
+  const box =
+    size === "row"
+      ? "h-5 w-5 rounded-[4px] border-2 text-sm"
+      : "h-3 w-3 rounded-[3px] border text-[9px]";
+  if (item.kind === "payment")
+    return (
+      <span
+        aria-hidden="true"
+        className={`inline-flex shrink-0 items-center justify-center font-bold text-[#806c74] ${
+          size === "row" ? "h-5 w-5 text-base" : "h-3 w-3 text-[11px]"
+        }`}
+      >
+        $
+      </span>
+    );
+  return (
+    <span
+      aria-hidden="true"
+      className={`inline-flex shrink-0 items-center justify-center border-[#806c74] ${box} ${
+        item.done ? "bg-[#806c74] text-white" : ""
+      }`}
+    >
+      {item.done ? "✓" : ""}
+    </span>
+  );
+}
 
 export async function CalendarSection({
   ctx,
@@ -110,9 +141,9 @@ export async function CalendarSection({
       7,
     );
 
-  const upcoming = items
-    .filter((i) => dayOf(i) >= ctx.today && !i.done)
-    .slice(0, 15);
+  const ahead = items.filter((i) => dayOf(i) >= ctx.today && !i.done);
+  const appointments = ahead.filter((i) => i.kind === "event").slice(0, 10);
+  const dueSoon = ahead.filter((i) => i.kind !== "event").slice(0, 15);
   const overdue = items.filter(
     (i) => dayOf(i) < ctx.today && !i.done && i.kind !== "event",
   );
@@ -154,12 +185,17 @@ export async function CalendarSection({
           </Link>
         </div>
         <MonthGrid first={first} items={items} selected={selected} ctx={ctx} />
-        <p className="mt-4 flex flex-wrap gap-4 text-base text-[#695b60]">
-          {Object.values(KIND).map((k) => (
-            <span key={k.label} className="flex items-center gap-2">
-              <span className={`h-3 w-3 rounded-full ${k.dot}`} /> {k.label}
-            </span>
-          ))}
+        <p className="mt-4 flex flex-wrap items-center gap-4 text-base text-[#695b60]">
+          <span className="flex items-center gap-2">
+            <span className="h-3 w-5 rounded-sm bg-[#6f1d37]" /> Appointment
+          </span>
+          <span className="flex items-center gap-2">
+            <span className="h-3.5 w-3.5 rounded-[3px] border-2 border-[#806c74]" />{" "}
+            Task
+          </span>
+          <span className="flex items-center gap-2">
+            <span className="font-bold text-[#806c74]">$</span> Payment
+          </span>
           <span className="text-[#806c74]">
             Tap a day to see what&apos;s on it.
           </span>
@@ -202,13 +238,24 @@ export async function CalendarSection({
       )}
 
       <Card>
-        <CardTitle>Coming up</CardTitle>
-        {upcoming.length === 0 ? (
+        <CardTitle>Appointments</CardTitle>
+        {appointments.length === 0 ? (
+          <p className="mt-2 text-base text-[#695b60]">
+            No appointments yet. Add tastings, fittings and meetings below.
+          </p>
+        ) : (
+          <ItemList items={appointments} ctx={ctx} />
+        )}
+      </Card>
+
+      <Card>
+        <CardTitle>Due soon</CardTitle>
+        {dueSoon.length === 0 ? (
           <div className="mt-3">
-            <EmptyState title="Nothing scheduled yet" />
+            <EmptyState title="No tasks or payments due" />
           </div>
         ) : (
-          <ItemList items={upcoming} ctx={ctx} />
+          <ItemList items={dueSoon} ctx={ctx} />
         )}
       </Card>
 
@@ -247,6 +294,7 @@ function MonthGrid({
   const byDay = new Map<string, CalendarItem[]>();
   for (const item of items)
     byDay.set(dayOf(item), [...(byDay.get(dayOf(item)) ?? []), item]);
+  for (const list of byDay.values()) list.sort(eventsFirst);
 
   return (
     <div className="mt-5 grid grid-cols-7 gap-1 text-center">
@@ -297,14 +345,29 @@ function MonthGrid({
               ))}
             </span>
             <span className="mt-1 hidden space-y-0.5 sm:block">
-              {dayItems.slice(0, CHIPS_PER_DAY).map((item) => (
-                <span
-                  key={`${item.kind}-${item.id}`}
-                  className={`line-clamp-2 block rounded px-1 py-0.5 text-xs font-semibold ${KIND[item.kind].chip} ${item.done ? "line-through opacity-50" : ""}`}
-                >
-                  {item.title.replace(/^Payment due: /, "")}
-                </span>
-              ))}
+              {dayItems.slice(0, CHIPS_PER_DAY).map((item) =>
+                item.kind === "event" ? (
+                  <span
+                    key={`${item.kind}-${item.id}`}
+                    className={`line-clamp-2 block rounded bg-[#6f1d37] px-1 py-0.5 text-xs font-semibold break-words text-white ${item.done ? "opacity-50" : ""}`}
+                  >
+                    <LocalTime iso={item.start} allDay={item.allDay} short />
+                    {item.title}
+                  </span>
+                ) : (
+                  <span
+                    key={`${item.kind}-${item.id}`}
+                    className={`flex items-start gap-1 px-1 py-0.5 text-xs text-[#695b60] ${item.done ? "line-through opacity-50" : ""}`}
+                  >
+                    <span className="mt-0.5">
+                      <KindMark item={item} size="chip" />
+                    </span>
+                    <span className="line-clamp-2">
+                      {item.title.replace(/^Payment due: /, "")}
+                    </span>
+                  </span>
+                ),
+              )}
               {extra > 0 && (
                 <span className="block px-1 text-xs font-semibold text-[#806c74]">
                   +{extra} more
@@ -331,12 +394,58 @@ function ItemList({
     <ul className="mt-3 divide-y divide-[#f0e8ea]">
       {items.map((item) => {
         const kind = KIND[item.kind];
+        if (item.kind === "event") {
+          return (
+            <li key={`${item.kind}-${item.id}`} className="py-2">
+              <div className="flex flex-wrap items-center gap-3 rounded-xl border-l-4 border-[#6f1d37] bg-[#f4e7eb] px-4 py-3 text-[#4b2734]">
+                <div className="basis-full text-sm leading-5 font-bold text-[#6f1d37] sm:w-32 sm:shrink-0 sm:basis-auto">
+                  {showDate && (
+                    <span className="mr-2 sm:mr-0 sm:block">
+                      {formatDate(dayOf(item))}
+                    </span>
+                  )}
+                  <LocalTime iso={item.start} allDay={item.allDay} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={`text-lg font-bold text-[#35151f] ${item.done ? "line-through opacity-60" : ""}`}
+                  >
+                    {item.title}
+                  </p>
+                  {item.location && (
+                    <p className="flex items-center gap-1 text-base text-[#6f1d37]">
+                      <MapPin className="h-4 w-4" aria-hidden="true" />
+                      {item.location}
+                    </p>
+                  )}
+                </div>
+                {ctx.canEdit && (
+                  <form action={deleteEventAction}>
+                    <input type="hidden" name="eventId" value={item.id} />
+                    <button
+                      type="submit"
+                      aria-label={`Delete ${item.title}`}
+                      className={quietButtonClass}
+                    >
+                      <Trash2 className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                  </form>
+                )}
+                {ctx.canEdit && (
+                  <details className="-mt-2 basis-full">
+                    <summary className="inline-flex min-h-11 cursor-pointer list-none items-center text-sm font-semibold text-[#6f1d37] underline underline-offset-4">
+                      Edit appointment
+                    </summary>
+                    <div className="mt-2 rounded-2xl bg-white p-4 sm:p-5">
+                      <EditCalendarEventForm event={item} />
+                    </div>
+                  </details>
+                )}
+              </div>
+            </li>
+          );
+        }
         const details = [
-          showDate && formatDate(dayOf(item)),
-          item.kind === "event" && (
-            <LocalTime key="time" iso={item.start} allDay={item.allDay} />
-          ),
-          item.location,
           item.amountDue ? `${formatMoney(item.amountDue)} due` : null,
           item.done && (item.kind === "payment" ? "Paid" : "Done"),
         ].filter(Boolean);
@@ -345,22 +454,29 @@ function ItemList({
             key={`${item.kind}-${item.id}`}
             className="flex flex-wrap items-center gap-3 py-3"
           >
-            <Badge tone={kind.tone}>{kind.label}</Badge>
+            <KindMark item={item} />
             <div className="min-w-0 flex-1">
               <p
-                className={`text-lg font-semibold ${item.done ? "text-[#806c74] line-through" : ""}`}
+                className={`text-base text-[#35151f] ${item.done ? "text-[#806c74] line-through" : ""}`}
               >
                 {item.title}
               </p>
-              <p className="text-base text-[#695b60]">
-                {details.map((d, i) => (
-                  <Fragment key={i}>
-                    {i > 0 && " · "}
-                    {d}
-                  </Fragment>
-                ))}
-              </p>
+              {details.length > 0 && (
+                <p className="text-sm text-[#695b60]">
+                  {details.map((d, i) => (
+                    <Fragment key={i}>
+                      {i > 0 && " · "}
+                      {d}
+                    </Fragment>
+                  ))}
+                </p>
+              )}
             </div>
+            {showDate && (
+              <span className="text-sm text-[#695b60]">
+                {formatDate(dayOf(item))}
+              </span>
+            )}
             {kind.href && (
               <Link
                 href={kind.href}
@@ -368,28 +484,6 @@ function ItemList({
               >
                 {kind.open}
               </Link>
-            )}
-            {item.kind === "event" && ctx.canEdit && (
-              <details className="basis-full">
-                <summary className="inline-flex min-h-11 cursor-pointer list-none items-center rounded-lg border border-[#ddcbd1] px-3 text-base font-semibold text-[#6f1d37] hover:bg-[#fbf3f5]">
-                  Edit event
-                </summary>
-                <div className="rounded-2xl bg-[#fffaf8] p-4 sm:p-5">
-                  <EditCalendarEventForm event={item} />
-                </div>
-              </details>
-            )}
-            {item.kind === "event" && ctx.canEdit && (
-              <form action={deleteEventAction}>
-                <input type="hidden" name="eventId" value={item.id} />
-                <button
-                  type="submit"
-                  aria-label={`Delete ${item.title}`}
-                  className={quietButtonClass}
-                >
-                  <Trash2 className="h-5 w-5" aria-hidden="true" />
-                </button>
-              </form>
             )}
           </li>
         );

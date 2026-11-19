@@ -44,11 +44,24 @@ import { createClient } from "@/lib/db/supabase/browser";
 export function LocalTime({
   iso,
   allDay = false,
+  short = false,
 }: {
   iso: string;
   allDay?: boolean;
+  /** "2p" / "2:30p", for month-grid chips. Nothing for all-day events. */
+  short?: boolean;
 }) {
   const date = new Date(iso);
+  if (short) {
+    if (allDay) return null;
+    const h = date.getHours();
+    const m = date.getMinutes();
+    return (
+      <time dateTime={iso} suppressHydrationWarning>
+        {`${h % 12 || 12}${m ? `:${String(m).padStart(2, "0")}` : ""}${h < 12 ? "a" : "p"} `}
+      </time>
+    );
+  }
   return (
     <time dateTime={iso} suppressHydrationWarning>
       {allDay
