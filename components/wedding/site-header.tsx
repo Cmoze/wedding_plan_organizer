@@ -2,8 +2,12 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { BrandMark } from "@/components/wedding/brand-mark";
 
-/** Header for the signed-out pages (landing and about). */
-export function SiteHeader() {
+/**
+ * Header for the landing and about pages. A signed-in visitor (no wedding yet) gets no
+ * "Log in", and "Get started" goes to /new-wedding: /login and /signup redirect a
+ * signed-in user back to "/", which is this same page, so those links did nothing.
+ */
+export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
   return (
     <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-12">
       <Link href="/" className="flex items-center gap-3 rounded-xl">
@@ -31,14 +35,16 @@ export function SiteHeader() {
           <Search className="h-4 w-4" aria-hidden="true" />
           Find an event
         </Link>
+        {!signedIn && (
+          <Link
+            href="/login"
+            className="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-[#603344] hover:bg-[#f8eef1]"
+          >
+            Log in
+          </Link>
+        )}
         <Link
-          href="/login"
-          className="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-[#603344] hover:bg-[#f8eef1]"
-        >
-          Log in
-        </Link>
-        <Link
-          href="/signup"
+          href={signedIn ? "/new-wedding" : "/signup"}
           className="inline-flex min-h-11 items-center rounded-full bg-[#6f1d37] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#58172c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6f1d37]"
         >
           Get started

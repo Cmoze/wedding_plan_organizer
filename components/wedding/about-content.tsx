@@ -100,7 +100,7 @@ export function AboutContent({ signedIn = false }: { signedIn?: boolean }) {
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#fffdfb] text-[#35151f]">
-      <SiteHeader />
+      <SiteHeader signedIn={signedIn} />
 
       <section className="mx-auto max-w-4xl px-5 pt-10 pb-14 sm:px-8 sm:pt-14 sm:pb-16 lg:px-12">
         <p className="text-sm font-bold tracking-[0.16em] text-[#916173] uppercase">
