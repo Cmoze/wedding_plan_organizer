@@ -125,6 +125,20 @@ async function seed() {
   ) as { id: string; email_slug: string };
   const w = wedding.id;
 
+  // New weddings start with an empty checklist (spec 003). The demo couple picked every
+  // suggestion, so the demo wedding has the full list to show and test against.
+  const templates = check(
+    await couple.from("checklist_templates").select("id"),
+    "checklist templates",
+  );
+  check(
+    await couple.rpc("add_template_tasks", {
+      _wedding_id: w,
+      _template_ids: templates.map((t) => t.id),
+    }),
+    "pick checklist",
+  );
+
   for (const role of ["planner", "helper"] as const) {
     const invite = check(
       await couple
@@ -338,6 +352,17 @@ async function seed() {
 
   check(
     await couple.from("events").insert([
+      {
+        // Spec 002 row 1 / usability test 005 B6: a planner should find this from Calendar.
+        wedding_id: w,
+        title: "Cake tasting",
+        starts_at: (() => {
+          const at = new Date(Date.now() + 9 * day);
+          at.setHours(14, 0, 0, 0);
+          return at.toISOString();
+        })(),
+        location: "Sweet Layers Bakery",
+      },
       {
         wedding_id: w,
         title: "Engagement photos",

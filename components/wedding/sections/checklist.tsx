@@ -1,6 +1,11 @@
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { ChecklistSuggestions } from "@/components/wedding/checklist-suggestions";
+import { SuggestionPicker } from "@/components/wedding/suggestion-picker";
+import {
+  getChecklistTemplates,
+  groupSuggestions,
+} from "@/lib/db/checklist-suggestions";
 import { EditTaskForm } from "@/components/wedding/edit-forms";
 import {
   DeleteTaskButton,
@@ -48,12 +53,30 @@ export async function ChecklistSection({
   ctx: WeddingContext;
   show?: string;
 }) {
-  const [tasks, vendorList, budgetItems, pendingInvites] = await Promise.all([
-    getTasks(ctx.db, ctx.wedding.id),
-    getVendors(ctx.db, ctx.wedding.id),
-    getBudgetItems(ctx.db, ctx.wedding.id),
-    ctx.canEdit ? listInvites(ctx.db, ctx.wedding.id) : Promise.resolve([]),
-  ]);
+  const [tasks, vendorList, budgetItems, pendingInvites, templates] =
+    await Promise.all([
+      getTasks(ctx.db, ctx.wedding.id),
+      getVendors(ctx.db, ctx.wedding.id),
+      getBudgetItems(ctx.db, ctx.wedding.id),
+      ctx.canEdit ? listInvites(ctx.db, ctx.wedding.id) : Promise.resolve([]),
+      ctx.canEdit ? getChecklistTemplates(ctx.db) : Promise.resolve([]),
+    ]);
+  const suggestionGroups = groupSuggestions(
+    templates,
+    tasks.map((t) => t.template_id),
+  ).map(({ phase, items }) => ({
+    key: phase.key,
+    label: phase.label,
+    items: items.map((t) => ({
+      id: t.id,
+      title: t.title,
+      category: t.category,
+    })),
+  }));
+  const suggestionCount = suggestionGroups.reduce(
+    (n, g) => n + g.items.length,
+    0,
+  );
   const filter = FILTERS.find((f) => f.id === show)?.id ?? "open";
   const mineCount = tasks.filter((t) => t.assignee_id === ctx.me.id).length;
   const visible = tasks.filter((t) =>
@@ -130,7 +153,40 @@ export async function ChecklistSection({
           </div>
         </Card>
 
-        {ctx.canEdit && (
+        {ctx.canEdit && suggestionCount > 0 && (
+          <details
+            open={tasks.length === 0}
+            className="group rounded-[1.75rem] border border-[#eadfe2] bg-white p-5 shadow-sm sm:p-7"
+          >
+            <summary className="flex min-h-11 cursor-pointer list-none flex-wrap items-center justify-between gap-2">
+              <span>
+                <span className="block text-xl font-bold text-[#35151f]">
+                  Browse suggestions
+                </span>
+                <span className="block text-base text-[#695b60]">
+                  {tasks.length === 0
+                    ? "No to-dos yet. Pick from what most couples plan, or add your own."
+                    : `${suggestionCount} common to-dos you haven't added yet.`}
+                </span>
+              </span>
+              <span className="text-base font-semibold text-[#6f1d37] underline underline-offset-4 group-open:hidden">
+                Show
+              </span>
+              <span className="hidden text-base font-semibold text-[#6f1d37] underline underline-offset-4 group-open:inline">
+                Hide
+              </span>
+            </summary>
+            <div className="mt-5">
+              <SuggestionPicker
+                weddingId={ctx.wedding.id}
+                groups={suggestionGroups}
+                mode="panel"
+              />
+            </div>
+          </details>
+        )}
+
+        {ctx.canEdit && tasks.length > 0 && (
           <ChecklistSuggestions
             weddingId={ctx.wedding.id}
             fresh={finished === 0}
@@ -149,9 +205,11 @@ export async function ChecklistSection({
             title={
               filter === "mine"
                 ? "Nothing's assigned to you yet."
-                : filter === "open"
-                  ? "Nothing left to do. Nice work!"
-                  : "No tasks here yet."
+                : tasks.length === 0
+                  ? "Your checklist is empty. Add to-dos above."
+                  : filter === "open"
+                    ? "Nothing left to do. Nice work!"
+                    : "No tasks here yet."
             }
           />
         ) : (

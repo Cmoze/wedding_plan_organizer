@@ -10,6 +10,10 @@ import {
   getBudgetSummary,
 } from "@/lib/db/budget";
 import { getCalendarItems } from "@/lib/db/calendar";
+import {
+  addTemplateTasks,
+  getChecklistTemplates,
+} from "@/lib/db/checklist-suggestions";
 import { addComment, deleteComment } from "@/lib/db/comments";
 import { getEmails } from "@/lib/db/emails";
 import { addGuest, getGuestList, removeGuest } from "@/lib/db/guests";
@@ -522,6 +526,45 @@ describe.skipIf(!process.env.RUN_DB_TESTS)(
             _role: "helper",
           }),
         ).resolves.toMatchObject({ error: expect.anything() });
+      });
+    });
+
+    describe("custom checklist (spec 003)", () => {
+      it("starts a new wedding empty, adds picked suggestions once, with due dates", async () => {
+        const created = await createWedding(planner, {
+          partner1Name: "Test Partner",
+          weddingDate: "2030-06-01",
+          role: "planner",
+        });
+        try {
+          expect(await getTasks(planner, created.id)).toHaveLength(0);
+
+          const templates = (await getChecklistTemplates(planner)).slice(0, 2);
+          const ids = templates.map((t) => t.id);
+          const added = await addTemplateTasks(planner, created.id, ids);
+          expect(added.map((t) => t.template_id).sort()).toEqual(
+            [...ids].sort(),
+          );
+          expect(added.every((t) => t.due_date !== null)).toBe(true);
+
+          // Picking the same ones again adds nothing.
+          expect(await addTemplateTasks(planner, created.id, ids)).toHaveLength(
+            0,
+          );
+          expect(await getTasks(planner, created.id)).toHaveLength(2);
+        } finally {
+          await admin.from("weddings").delete().eq("id", created.id);
+        }
+      });
+
+      it("won't let a helper or an outsider add suggestions", async () => {
+        const [first] = await getChecklistTemplates(helper);
+        await expect(
+          addTemplateTasks(helper, weddingId, [first.id]),
+        ).rejects.toThrow();
+        await expect(
+          addTemplateTasks(outsider, weddingId, [first.id]),
+        ).rejects.toThrow();
       });
     });
   },

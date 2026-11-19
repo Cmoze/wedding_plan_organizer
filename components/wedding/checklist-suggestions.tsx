@@ -128,7 +128,7 @@ export function ChecklistSuggestions({
       </CardTitle>
       <p className="mt-2 text-base text-[#695b60]">
         {fresh
-          ? "This is a standard checklist. Piper can fit it to your date, guest count and budget: adding what's missing, moving dates and skipping what doesn't apply."
+          ? "Piper can fit your checklist to your date, guest count and budget: adding what's missing, moving dates and skipping what doesn't apply."
           : "Piper looks at your date, guest count and budget and suggests changes to the checklist."}{" "}
         Nothing changes until you say yes.
       </p>

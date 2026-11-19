@@ -5,7 +5,7 @@ export default function NewWeddingPage() {
   return (
     <AuthLayout
       title="Create your wedding"
-      description="We'll set up a starter checklist with about 40 tasks, with the big decisions first."
+      description="Next, you'll pick the to-dos that fit your wedding from a list of what most couples plan."
     >
       <NewWeddingForm />
     </AuthLayout>

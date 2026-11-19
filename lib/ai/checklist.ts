@@ -21,7 +21,7 @@ export type ChecklistInput = {
   doneTitles: string[];
 };
 
-const SYSTEM = `You personalize a wedding planning checklist. The family started from a standard checklist with due dates counted back from the wedding date. Suggest changes that fit THIS wedding's timeline, guest count and budget.
+const SYSTEM = `You personalize a wedding planning checklist. The couple picked their tasks, mostly from a list of common wedding to-dos, with due dates counted back from the wedding date; they may have skipped some on purpose. Suggest changes that fit THIS wedding's timeline, guest count and budget.
 
 You can suggest:
 - add_task: something important for this wedding that's missing (e.g. a large guest count needs a room block and shuttle; a short engagement needs rush orders).

@@ -17,6 +17,7 @@ import {
   deleteBudgetItem,
   updateBudgetItem,
 } from "@/lib/db/budget";
+import { addTemplateTasks } from "@/lib/db/checklist-suggestions";
 import { addComment } from "@/lib/db/comments";
 import { deleteEmail } from "@/lib/db/emails";
 import { createEvent, deleteEvent, updateEvent } from "@/lib/db/events";
@@ -196,8 +197,9 @@ export async function createWeddingAction(
   if (who === "partner2" && !partner2Name)
     return { error: "Enter Partner 2's name, or pick who you are." };
   if (who === "other" && !displayName) return { error: "Enter your name." };
+  let weddingId: string;
   try {
-    await createWedding(db, {
+    const wedding = await createWedding(db, {
       partner1Name,
       partner2Name,
       // Someone who isn't a partner joins as a planner and invites the couple (spec 002 row 6b).
@@ -207,10 +209,52 @@ export async function createWeddingAction(
       guestCountEstimate: money(form, "guestCount"),
       displayName,
     });
+    weddingId = wedding.id;
   } catch (e) {
     return { error: friendly(e) };
   }
-  return { redirectTo: "/?section=tasks" };
+  // Open the new wedding (not whichever one the cookie pointed at), then let them pick
+  // their to-dos: new weddings start with an empty checklist (spec 003).
+  await rememberWedding(weddingId);
+  forgetCachedPages();
+  return { redirectTo: `/new-wedding/checklist?wedding=${weddingId}` };
+}
+
+/**
+ * Adds picked suggestions and the person's own to-dos to the checklist (spec 003). Used by the
+ * "Pick your to-dos" setup step and Tasks' "Browse suggestions".
+ */
+export async function addChecklistAction(
+  _prev: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const db = await signedInDb();
+  const weddingId = text(form, "weddingId");
+  if (!weddingId || !UUID.test(weddingId))
+    return { error: "Something went wrong. Reload and try again." };
+  const templateIds = form
+    .getAll("template")
+    .filter((v): v is string => typeof v === "string" && UUID.test(v));
+  const custom = form
+    .getAll("custom")
+    .filter((v): v is string => typeof v === "string")
+    .map((v) => v.trim())
+    .filter(Boolean);
+  if (templateIds.length === 0 && custom.length === 0)
+    return { error: "Pick at least one to-do, or skip for now." };
+  try {
+    const added = await addTemplateTasks(db, weddingId, templateIds);
+    for (const title of custom) await createTask(db, weddingId, { title });
+    const count = added.length + custom.length;
+    forgetCachedPages();
+    if (text(form, "then") === "home") return { redirectTo: "/" };
+    refresh();
+    return {
+      message: `Added ${count} ${count === 1 ? "to-do" : "to-dos"} to your list.`,
+    };
+  } catch (e) {
+    return { error: friendly(e) };
+  }
 }
 
 /** Opens another wedding the user belongs to. */

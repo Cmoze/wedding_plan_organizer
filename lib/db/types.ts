@@ -986,6 +986,33 @@ export type Database = {
         Args: { _display_name?: string; _token: string };
         Returns: string;
       };
+      add_template_tasks: {
+        Args: { _template_ids: string[]; _wedding_id: string };
+        Returns: {
+          assignee_id: string | null;
+          category: string | null;
+          completed_at: string | null;
+          created_at: string;
+          due_date: string | null;
+          id: string;
+          invite_id: string | null;
+          months_before: number | null;
+          notes: string | null;
+          sort_order: number;
+          status: Database["public"]["Enums"]["task_status"];
+          template_id: string | null;
+          title: string;
+          updated_at: string;
+          vendor_id: string | null;
+          wedding_id: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "tasks";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       create_wedding: {
         Args: {
           _budget_total?: number;
