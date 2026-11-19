@@ -271,7 +271,14 @@ function TaskRow({
             </Badge>
           )}
           {task.category && <Badge>{task.category}</Badge>}
-          {assignee && <span>· {assignee}</span>}
+          <span>
+            ·{" "}
+            {task.assignee_id === ctx.me.id
+              ? "Assigned to you"
+              : assignee
+                ? `Assigned to ${assignee}`
+                : "Unassigned"}
+          </span>
         </p>
         {hasDetails && (
           <p className="mt-1 flex flex-wrap items-center gap-x-2 text-base text-[#4b2734]">
