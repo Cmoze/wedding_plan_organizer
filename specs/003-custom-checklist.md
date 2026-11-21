@@ -1,6 +1,6 @@
 # Spec 003: Custom checklist, picked from suggestions
 
-**Status:** Live (2026-11-18); checked on live 2026-11-20
+**Status:** Done. Live 2026-11-18; checked on live 2026-11-20, with the follow-ups below (due date on "Add your own", "Pick a wedding date" hidden once there's a date, past suggestions dated on the viewer's today). Piper eval after this change: 25/26 (spec 002 row 10).
 **Date:** 2026-11-18
 
 ## Progress (2026-11-18)

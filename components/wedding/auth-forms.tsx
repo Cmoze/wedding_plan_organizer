@@ -1,7 +1,13 @@
 "use client";
 
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
+import {
+  useActionState,
+  useEffect,
+  useState,
+  type InputHTMLAttributes,
+} from "react";
 import {
   createWeddingAction,
   signInAction,
@@ -18,6 +24,41 @@ import {
 /** Keeps an invite token across login and sign-up so the user lands back on the invite. */
 const withInvite = (path: string, invite?: string) =>
   invite ? `${path}?invite=${invite}` : path;
+
+/**
+ * A password field with a "Show" / "Hide" button, so people can check what they typed before
+ * submitting (builder's request, 2026-11-20). The button sits inside the field's right edge.
+ */
+function PasswordInput(props: InputHTMLAttributes<HTMLInputElement>) {
+  const [shown, setShown] = useState(false);
+  return (
+    <div className="relative">
+      <input
+        {...props}
+        name="password"
+        type={shown ? "text" : "password"}
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
+        className={`${inputClass} pr-24`}
+      />
+      <button
+        type="button"
+        onClick={() => setShown((s) => !s)}
+        aria-pressed={shown}
+        aria-label={shown ? "Hide password" : "Show password"}
+        className="absolute inset-y-0 right-1 my-auto inline-flex h-11 items-center gap-1.5 rounded-lg px-3 text-base font-semibold text-[#6f1d37] hover:bg-[#fbf3f5] focus-visible:outline-2 focus-visible:outline-[#6f1d37]"
+      >
+        {shown ? (
+          <EyeOff className="h-5 w-5" aria-hidden="true" />
+        ) : (
+          <Eye className="h-5 w-5" aria-hidden="true" />
+        )}
+        {shown ? "Hide" : "Show"}
+      </button>
+    </div>
+  );
+}
 
 function InviteNote({ joining }: { joining?: string }) {
   if (!joining) return null;
@@ -51,13 +92,7 @@ export function LoginForm({
         />
       </Field>
       <Field label="Password">
-        <input
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          className={inputClass}
-        />
+        <PasswordInput autoComplete="current-password" required />
       </Field>
       <FormMessage error={state.error} message={state.message} />
       <button
@@ -107,14 +142,7 @@ export function SignUpForm({
         />
       </Field>
       <Field label="Password" hint="At least 6 characters.">
-        <input
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          minLength={6}
-          required
-          className={inputClass}
-        />
+        <PasswordInput autoComplete="new-password" minLength={6} required />
       </Field>
       <FormMessage error={state.error} message={state.message} />
       <button

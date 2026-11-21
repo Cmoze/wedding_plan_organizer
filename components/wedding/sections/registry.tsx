@@ -39,7 +39,7 @@ export async function RegistrySection({ ctx }: { ctx: WeddingContext }) {
       {links.length === 0 ? (
         <EmptyState title="No registries yet">
           {ctx.canEdit
-            ? "Add the link to each store's registry so guests and family can find them all here."
+            ? "Add the link to each store's registry so guests can find them all here."
             : "Once the couple adds their registries, the links will show up here."}
         </EmptyState>
       ) : (
