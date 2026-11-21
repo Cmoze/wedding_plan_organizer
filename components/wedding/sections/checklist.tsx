@@ -1,7 +1,7 @@
 import { ExternalLink } from "lucide-react";
-import Link from "next/link";
 import { ChecklistSuggestions } from "@/components/wedding/checklist-suggestions";
 import { SuggestionPicker } from "@/components/wedding/suggestion-picker";
+import { TaskFilterLink } from "@/components/wedding/task-filter-link";
 import {
   getChecklistTemplates,
   groupSuggestions,
@@ -139,17 +139,17 @@ export async function ChecklistSection({
               <p className="text-base text-[#695b60]">What&apos;s next</p>
               <p className="text-3xl font-semibold">{headline}</p>
               {pastDue > 0 && (
-                <Link
+                <TaskFilterLink
                   href="/?section=tasks&show=overdue#task-list"
                   className="mt-1 inline-flex min-h-11 items-center text-lg font-semibold text-[#a4262c] underline underline-offset-4"
                 >
                   {pastDue} past due
-                </Link>
+                </TaskFilterLink>
               )}
             </div>
             <nav aria-label="Filter tasks" className="flex flex-wrap gap-2">
               {FILTERS.map((f) => (
-                <Link
+                <TaskFilterLink
                   key={f.id}
                   href={`/?section=tasks&show=${f.id}#task-list`}
                   aria-current={f.id === filter ? "page" : undefined}
@@ -171,7 +171,7 @@ export async function ChecklistSection({
                       {mineCount}
                     </span>
                   )}
-                </Link>
+                </TaskFilterLink>
               ))}
             </nav>
           </div>
@@ -237,8 +237,7 @@ export async function ChecklistSection({
           </Card>
         )}
 
-        {/* Filter links end in #task-list: on a phone the list starts two screens below the
-            filters, so without the jump a tap looked like it did nothing (spec 002 row 9). */}
+        {/* Filter links end in #task-list and jump here on a phone (TaskFilterLink). */}
         <div id="task-list" className="scroll-mt-24">
           {ordered.length === 0 ? (
             <EmptyState
