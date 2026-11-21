@@ -1,11 +1,31 @@
 #!/usr/bin/env bash
-# Block force pushes to main.
+# 1. Block force pushes to main.
+# 2. Run the production build before anything reaches main: a push to main deploys, and some
+#    failures only show up in `next build` (prerendering, Next.js security stops), not in check.sh.
+#    Skip with SKIP_BUILD=1 only when the same commit was just built (land.sh does this).
+pushes_main=0
 while read -r local_ref local_sha remote_ref remote_sha; do
-  if [ "$remote_ref" = "refs/heads/main" ] && [ "$remote_sha" != "0000000000000000000000000000000000000000" ]; then
-    if ! git merge-base --is-ancestor "$remote_sha" "$local_sha" 2>/dev/null; then
-      echo "Refusing to push: this would rewrite main (force push). Run 'git pull --rebase' instead." >&2
-      exit 1
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    pushes_main=1
+    if [ "$remote_sha" != "0000000000000000000000000000000000000000" ]; then
+      if ! git merge-base --is-ancestor "$remote_sha" "$local_sha" 2>/dev/null; then
+        echo "Refusing to push: this would rewrite main (force push). Run 'git pull --rebase' instead." >&2
+        exit 1
+      fi
     fi
   fi
 done
+
+if [ "$pushes_main" = 1 ] && [ "${SKIP_BUILD:-}" != "1" ]; then
+  if git status --porcelain --untracked-files=no | grep -q .; then
+    echo "Note: uncommitted changes are in the build below but won't be pushed." >&2
+  fi
+  log="${TMPDIR:-/tmp}/together-pre-push-build.log"
+  echo "==> production build (pre-push)"
+  npm run build >"$log" 2>&1 || {
+    tail -30 "$log" >&2
+    echo "Build failed, so nothing was pushed. Full log: $log" >&2
+    exit 1
+  }
+fi
 exit 0

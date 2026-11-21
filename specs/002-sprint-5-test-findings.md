@@ -183,6 +183,17 @@ date. The button says "Create the wedding" for "Someone else". `/about` signed i
 `20261121000000_add_template_tasks_today` (applied to dev 2026-11-20): the app passes the
 viewer's today, trusted only within a day of the database's; `npm run test:db` 26/26.
 
+### Test data to clean up
+
+Left in the shared dev project by checks; it shows on the live site. Delete by hand (some
+deletes use the browser's confirm dialog), then strike the line.
+
+- "Flicker test (delete me)" task in Maya & Jordan (demo wedding), checked off.
+- "Flicker test (delete me)" task in Test Alex & Test Riley.
+- Testfam family (3) and Countfam family (4) in Test Alex & Test Riley, on Guests.
+- The test wedding created as "Someone else" for row 6b: its planner creator can't delete it
+  (known gap); needs the platform admin.
+
 ## Order
 
 1. Rows 3, 4, 6: small, one file each.

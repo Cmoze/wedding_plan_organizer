@@ -6,7 +6,9 @@ This is the single source of truth. Other agent files only point here.
 ## Project
 Together (repo: wedding_plan_organizer): a web app for planning a wedding (guests, budget, vendors, timeline),
 started at a hackathon by three contributors. Since Sprint 4 (2026-10-30) Carter builds it alone as an MSB 341
-class product (`decisions/001-take-over-together.md`); commits still go straight to `main`.
+class product (`decisions/001-take-over-together.md`). Carter is the only human; the "teammates" now are
+several agent sessions running at once, so the git rules below are about keeping sessions out of each
+other's way.
 Product work lives next to the code: `discovery/`, `design/usability-tests/`, `decisions/`, `specs/`, `gtm/`
 (positioning in `gtm/positioning.md`) and `product/evals/` (Piper's eval sets). Sprint plans and reviews live in
 the class repo, Cmoze/cmoser0_msb341. Specs go in `specs/` before the work.
@@ -21,24 +23,52 @@ description of what's built).
 - If `git config core.hooksPath` doesn't print `.githooks`, setup hasn't been run: run it before doing anything else.
 
 ## Commands
-- Check everything before finishing: `./scripts/check.sh` (formatter check + lint + typecheck + tests)
-- Install: `npm install` (run again after any pull that changes `package.json`)
-- Dev server: `npm run dev` (http://localhost:3000)
+- Check everything before finishing: `./scripts/check.sh` (formatter check + lint + typecheck + tests).
+  It does not run the production build; the pre-push hook and `./scripts/land.sh` do.
+- Install: `npm install` (run again after any pull that changes `package.json`, then restart the dev server:
+  a running `next dev` keeps the old versions loaded)
+- Dev server: `npm run dev` (http://localhost:3000). Port 3000 is usually Carter's own server, started in
+  his terminal: don't stop it. In a worktree, use `npm run dev -- -p 3001` (any of 3001-3009).
+- Parallel work: `./scripts/worktree.sh new <name>`, then `./scripts/land.sh` (see "Parallel sessions").
 - Auto-format: `npm run format`. Single steps: `npm run lint`, `npm run typecheck`, `npm test`
 - Add a shadcn component: `npx shadcn@latest add <name>` (lands in `components/ui/`)
 - Production build (what Vercel runs): `npm run build`
 - Demo data in the shared dev project: `npm run db:seed` (`-- --reset` to recreate it)
 - Per-role RLS tests against the dev project (not part of `npm test`): `npm run test:db`
-- Regenerate DB types (B only, after a migration): `npm run db:types`
+- Regenerate DB types (after a migration): `npm run db:types`
 - Env vars: local values in `.env`; deployed values in Vercel (`vercel env ls`, `vercel env add <NAME> <env>`).
   When you add a variable, add its name to `.env.example` and set it in Vercel for production, preview and development.
 
-## Git workflow (we push straight to main)
+## Git workflow (main deploys)
+- A push to `main` deploys the live site (https://togetherwedding.vercel.app, Vercel project
+  `cmoze/togetherwedding`). Agents push only when Carter says to.
 - Run `git pull --rebase` before starting work and again right before pushing.
-- Commit small pieces with clear messages; push small and often.
-- NEVER force push (`git push --force` / `--force-with-lease`). It can erase a teammate's work.
+- Commit small pieces with clear messages.
+- NEVER force push (`git push --force` / `--force-with-lease`). It can erase another session's work.
 - Never rewrite history that is already on `main` (no rebasing pushed commits, no amend after push).
 - When resolving merge conflicts, preserve both sides' intent. If unsure, stop and ask the human.
+- After a push, confirm the deploy: `vercel ls` shows Ready or Error; for Error,
+  `vercel inspect <deployment-url> --logs`. Then load the changed page on the live site.
+
+## Parallel sessions
+Several agent sessions often work on Together at the same time. When they shared the one checkout in
+`../together`, they tripped the pre-commit hook on each other's unfinished files, edited the same spec
+under each other, and pushed between each other's commit and push. So:
+- **One writer per checkout.** A session that will change files starts its own worktree:
+  `./scripts/worktree.sh new <short-name>` makes `../together-wt/<short-name>` on branch `wt/<short-name>`
+  from the latest `origin/main`, with `.env` and `node_modules` copied. Work, test and commit there.
+- **The main checkout (`../together`) stays clean on `main`.** Use it only for reading, quick one-file fixes
+  when no other session is writing, and `git pull`. If `git status` there shows changes you didn't make,
+  another session is working: don't commit, stash, reset or reformat them; start a worktree instead.
+- **Land with `./scripts/land.sh`.** It rebases on the latest `origin/main`, runs `check.sh` and the
+  production build. `./scripts/land.sh --push` then pushes to `main` (only with Carter's OK) and pulls the
+  main checkout forward. Afterwards remove the worktree: `./scripts/worktree.sh remove <short-name>`.
+- **Commit only your own files.** `git add <paths>`, never `git add -A` / `git add .` in a shared checkout.
+- **Specs and other shared Markdown:** pull right before editing, keep edits to your own row or section,
+  and commit them soon so other sessions see them.
+- **Dev servers:** each worktree runs its own on 3001-3009; the browser pane's sign-in is per port.
+- **Who's doing what:** before starting, say which spec row or file you're taking, so Carter (and other
+  sessions reading the repo) can see it.
 
 ## Rules
 - Run `./scripts/check.sh` and make it pass before saying a task is done.
@@ -48,11 +78,23 @@ description of what's built).
 - Keep changes small. If a task needs a huge diff, stop and propose splitting it.
 
 ## Ownership
-- Carter owns everything now. During the hackathon the split was: Kai (frontend: `app/`, `components/`),
-  Caleb (data model, auth, RLS, `lib/db/`, `supabase/migrations/`), Carter (integrations, Vercel, `app/api/`,
-  `lib/email/`, `lib/ai/`). Kai and Caleb have stepped back.
-- The Supabase dev project is still in Caleb's Supabase org; moving it to Carter's org is pending.
-- Schema changes still go only through new migration files; ask the human before writing one.
+- Carter owns everything. Kai and Caleb (hackathon contributors) have stepped back.
+- The Supabase dev project is still in Caleb's Supabase org; moving it to Carter's org is pending. Until then
+  the Supabase MCP tools can't query it (permission denied): check data through the app or `npm run test:db`.
+- Schema changes go only through new migration files; ask the human before writing one.
+
+## Testing in the browser
+- Local and live both use the one shared Supabase dev project, so local tests write real data that the live
+  site shows.
+- Agents never type passwords into a sign-in form, not even demo ones: ask Carter to sign in in the browser
+  pane. The pane is shared by every session, so whoever signs in last decides the account and wedding; check
+  the header's wedding name before testing.
+- Demo logins (seeded by `npm run db:seed`): `couple@`, `planner@`, `helper@demo.wedding`; the password is
+  `DEMO_PASSWORD` in `scripts/seed.mts`. Their wedding is Maya & Jordan; keep it presentable (it's the demo).
+- Throwaway data goes in the test wedding "Test Alex & Test Riley" (account "Test Parent (QA)"; Carter has its
+  password, it isn't in the repo), named so it's easy to spot: "(delete me)" or a "Test…" last name.
+- Some deletes use the browser's own confirm dialog, which agents can't click. List anything left behind in
+  the current spec's "Test data to clean up" section instead of leaving it in chat.
 
 ## Backend (Supabase)
 - One Supabase dev project (`wedding-plan-organizer-dev`, ref `iafqkveouictofowncpz`) backs local dev and the live
@@ -77,7 +119,8 @@ description of what's built).
     Components/Actions/Route Handlers, `admin.ts` (service role, server-only) for webhooks and AI routes.
   - `lib/email/`, `lib/ai/`: inbound email and Claude helpers. `lib/utils.ts`: shared helpers (`cn`).
   - `proxy.ts`: Next 16's replacement for `middleware.ts`; refreshes the Supabase session.
-  - `supabase/migrations/`: schema (B only). `scripts/`: setup, check, seed. `docs/`: plan and data model.
+  - `supabase/migrations/`: schema. `scripts/`: setup, check, seed, worktree, land. `docs/`: plan and data model.
+  - `design/mockups/`: static HTML mockups referenced from specs (open in a browser; not app code).
   - `tests/`: cross-cutting tests; `*.db.test.ts` hit the real dev project and only run via `npm run test:db`.
 - Naming: files kebab-case (`guest-csv.ts`), React components PascalCase, functions camelCase,
   DB columns snake_case (keep them as-is in TS; don't remap).
@@ -89,6 +132,19 @@ description of what's built).
 
 ## Lessons learned
 <!-- When an agent makes the same mistake twice, add one line here. -->
+- `cacheComponents` is on: anything that reads cookies, the session or other per-visitor data must render
+  inside `<Suspense>`, or `next build` fails prerendering that page (2026-11-20, `/about`). `check.sh` and
+  `next dev` don't catch it; the build does.
+- Never put a `<form>` (or `<div>`, `<details>`) inside a `<p>`: the browser splits the `<p>` and hydration
+  fails for the whole page (2026-11-20, task rows).
+- React resets a form after its action runs, and a `<select>`'s `defaultValue` only applies on mount. Key edit
+  forms on the row's `updated_at` so they remount with saved values (2026-11-20, "Assigned to" fell back to
+  "No one").
+- A Next.js security advisory can stop `next build` outright (`SecurityFatalError`). Upgrade within the same
+  minor (`npm install --save-exact next@<fixed> eslint-config-next@<fixed>`) after Carter's OK; don't run
+  commands the error message suggests on its own.
+- Show a change's new state optimistically (`useOptimistic`) when the confirmation toast would otherwise
+  appear before the refreshed page does (2026-11-20, task checkbox).
 
 <!-- BEGIN:nextjs-agent-rules -->
 
