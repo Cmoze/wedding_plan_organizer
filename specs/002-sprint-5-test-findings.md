@@ -112,6 +112,18 @@ Checked on https://togetherwedding.vercel.app, in the role named.
   even when "Someone else" is chosen.
 - **`/about` header (live check, 2026-11-20):** the "Get started" fix covers `/` only; the
   `/about` page always shows the signed-out header ("Log in", "Get started" → /signup).
+- **Database "today" is UTC (2026-11-20):** `add_template_tasks` dated past suggestions on
+  `current_date` (UTC), so in the evening in the Americas they came out due tomorrow.
+
+**Fixed 2026-11-20 (built and checked locally, not yet live):** all of the above except show
+password. Times: the browser stores its zone in a `tz` cookie and the server shows event
+times, event days, "today" and Piper's event times in it (`lib/time-zone.ts`); the cake
+tasting shows 2:00 PM locally. About says "Pick your to-dos…". "Add your own" has an
+optional due date (saved and shown on Tasks). "Pick a wedding date" is hidden once there's a
+date. The button says "Create the wedding" for "Someone else". `/about` signed in shows
+"Open your wedding" or "Get started" → /new-wedding, no "Log in". Migration
+`20261121000000_add_template_tasks_today` (applied to dev 2026-11-20): the app passes the
+viewer's today, trusted only within a day of the database's; `npm run test:db` 26/26.
 
 ## Order
 

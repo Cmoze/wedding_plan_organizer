@@ -987,7 +987,7 @@ export type Database = {
         Returns: string;
       };
       add_template_tasks: {
-        Args: { _template_ids: string[]; _wedding_id: string };
+        Args: { _template_ids: string[]; _today?: string; _wedding_id: string };
         Returns: {
           assignee_id: string | null;
           category: string | null;

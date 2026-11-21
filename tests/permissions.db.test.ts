@@ -557,6 +557,39 @@ describe.skipIf(!process.env.RUN_DB_TESTS)(
         }
       });
 
+      it("dates past suggestions on the viewer's today, within a day of the database's", async () => {
+        const day = (offset: number) =>
+          new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+        // A wedding next week: every year-out suggestion is already past.
+        const created = await createWedding(planner, {
+          partner1Name: "Test Partner",
+          weddingDate: day(7),
+          role: "planner",
+        });
+        try {
+          const [a, b] = (await getChecklistTemplates(planner)).filter(
+            (t) => Number(t.months_before) >= 12,
+          );
+          const [yesterday] = await addTemplateTasks(
+            planner,
+            created.id,
+            [a.id],
+            day(-1),
+          );
+          expect(yesterday.due_date).toBe(day(-1));
+          // A date far from the database's is ignored.
+          const [ignored] = await addTemplateTasks(
+            planner,
+            created.id,
+            [b.id],
+            "2001-01-01",
+          );
+          expect(ignored.due_date).toBe(day(0));
+        } finally {
+          await admin.from("weddings").delete().eq("id", created.id);
+        }
+      });
+
       it("won't let a helper or an outsider add suggestions", async () => {
         const [first] = await getChecklistTemplates(helper);
         await expect(

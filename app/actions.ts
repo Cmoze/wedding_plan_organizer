@@ -46,6 +46,8 @@ import {
 import { createRegistryLink, deleteRegistryLink } from "@/lib/db/registry";
 import { DbError } from "@/lib/db/shared";
 import { createClient } from "@/lib/db/supabase/server";
+import { todayIn } from "@/lib/time-zone";
+import { viewerTimeZone } from "@/lib/time-zone-server";
 import {
   createTask,
   deleteTask,
@@ -253,7 +255,12 @@ export async function addChecklistAction(
   if (templateIds.length === 0 && custom.length === 0)
     return { error: "Pick at least one to-do, or skip for now." };
   try {
-    const added = await addTemplateTasks(db, weddingId, templateIds);
+    const added = await addTemplateTasks(
+      db,
+      weddingId,
+      templateIds,
+      todayIn(await viewerTimeZone()),
+    );
     for (const c of custom) await createTask(db, weddingId, c);
     const count = added.length + custom.length;
     forgetCachedPages();

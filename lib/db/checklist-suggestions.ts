@@ -23,12 +23,15 @@ export async function addTemplateTasks(
   db: Db,
   weddingId: string,
   templateIds: string[],
+  /** The viewer's today (`YYYY-MM-DD`): suggestions already past are due then, not on UTC's today. */
+  today?: string,
 ): Promise<Task[]> {
   if (templateIds.length === 0) return [];
   return unwrap(
     await db.rpc("add_template_tasks", {
       _wedding_id: weddingId,
       _template_ids: templateIds,
+      ...(today ? { _today: today } : {}),
     }),
   );
 }
