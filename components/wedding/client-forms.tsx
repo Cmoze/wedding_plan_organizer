@@ -7,6 +7,7 @@ import {
   useActionState,
   useContext,
   useEffect,
+  useOptimistic,
   useRef,
   useState,
   useTransition,
@@ -828,6 +829,11 @@ export function TaskStatusButton({
   const notify = useContext(NoticeContext);
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
   const nextStatus = finished ? "todo" : "done";
+  // Show the new state as soon as the change is confirmed, and hold it until the
+  // refreshed page arrives (or snap back if the save fails). Without this the "Task
+  // checked off." notice appeared while the box was still empty for about a second
+  // (spec 002 row 2).
+  const [shownFinished, setShownFinished] = useOptimistic(finished);
 
   useEffect(() => {
     if (confirmOpen) confirmButtonRef.current?.focus();
@@ -837,7 +843,9 @@ export function TaskStatusButton({
     const form = new FormData();
     form.set("taskId", taskId);
     form.set("status", nextStatus);
+    setConfirmOpen(false);
     startTransition(async () => {
+      setShownFinished(!finished);
       try {
         const result = await setTaskStatusAction(form);
         notify(
@@ -858,7 +866,6 @@ export function TaskStatusButton({
           error: true,
         });
       }
-      setConfirmOpen(false);
     });
   }
 
@@ -868,13 +875,16 @@ export function TaskStatusButton({
         type="button"
         disabled={pending}
         role="checkbox"
-        aria-checked={finished}
+        aria-checked={shownFinished}
+        aria-busy={pending}
         aria-label={
-          finished ? `Mark “${title}” as not done` : `Mark “${title}” as done`
+          shownFinished
+            ? `Mark “${title}” as not done`
+            : `Mark “${title}” as done`
         }
         onClick={() => setConfirmOpen(true)}
         className={`flex h-11 w-11 items-center justify-center rounded-xl border-2 ${
-          finished
+          shownFinished
             ? "border-[#6f1d37] bg-[#6f1d37] text-white"
             : "border-[#d9c4cb] bg-white text-transparent hover:border-[#6f1d37] hover:text-[#cba7b4]"
         }`}

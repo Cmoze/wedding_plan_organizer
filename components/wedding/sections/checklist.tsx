@@ -315,7 +315,9 @@ function TaskRow({
         >
           {task.title}
         </p>
-        <p className="mt-0.5 flex flex-wrap items-center gap-2 text-base text-[#695b60]">
+        {/* A div, not a p: TaskDueDate is a <form>, which can't sit inside a <p> (the
+            browser splits the p, and React's hydration fails for the whole page). */}
+        <div className="mt-0.5 flex flex-wrap items-center gap-2 text-base text-[#695b60]">
           {nextUp && <Badge tone="info">Next up</Badge>}
           {ctx.canEdit ? (
             <TaskDueDate taskId={task.id} dueDate={task.due_date} />
@@ -337,7 +339,7 @@ function TaskRow({
                 ? `Assigned to ${assignee}`
                 : "Unassigned"}
           </span>
-        </p>
+        </div>
         {hasDetails && (
           <p className="mt-1 flex flex-wrap items-center gap-x-2 text-base text-[#4b2734]">
             {vendor && <span className="font-semibold">{vendor.name}</span>}
@@ -371,7 +373,12 @@ function TaskRow({
             Edit task
           </summary>
           <div className="basis-full rounded-2xl bg-[#fffaf8] p-4 sm:p-5">
+            {/* Keyed on updated_at so a save remounts the form with the saved values.
+                React resets a form after its action runs, and a <select>'s defaultValue
+                only applies on mount, so without this "Assigned to" fell back to "No one"
+                after every save, and the next save would unassign the task. */}
             <EditTaskForm
+              key={task.updated_at}
               task={task}
               members={ctx.members}
               pendingInvites={pendingInvites.map((i) => ({

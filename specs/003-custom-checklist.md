@@ -1,6 +1,6 @@
 # Spec 003: Custom checklist, picked from suggestions
 
-**Status:** In progress (built, not yet live)
+**Status:** Live (2026-11-18); checked on live 2026-11-20
 **Date:** 2026-11-18
 
 ## Progress (2026-11-18)
@@ -23,6 +23,18 @@
   tasks were picked, not premade). Not checked: the setup step at 375 px, or "Skip for now".
 - The test wedding was deleted afterwards. The demo wedding got the cake tasting event
   directly (the seed script has it too); the seed was not re-run.
+
+## Live check (2026-11-20)
+
+On https://togetherwedding.vercel.app as the demo planner (pane at 575 px): created a test
+wedding as "Someone else" (wedding date 2027-09-18). The setup step listed the five phases,
+all unchecked. Picked 2 suggestions, "Add all in this phase" on "The week of" (3) and 1 of
+my own: "Add 6 to-dos" went to Home, and Tasks showed exactly those 6 with dates counted
+back from the wedding (the custom one had none). "Browse suggestions" said 36 left; adding
+one made it 7 tasks and 35 left. Gaps found: "Add your own" has no due-date field, and "Pick
+a wedding date" is suggested even when the date was entered (details in spec 002, "Noticed
+while checking"). Calendar results are in spec 002's progress table. Still not run: the
+Piper eval, "Skip for now", the setup step at 375 px.
 
 ## Problem
 

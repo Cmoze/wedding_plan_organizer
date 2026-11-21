@@ -89,7 +89,28 @@ Checked on https://togetherwedding.vercel.app, in the role named.
 | 4 | 2026-11-16 (`2b9c7f0`) | 2026-11-16, demo helper, same widths | Pass. Home listed the helper's three overdue tasks, marked "Overdue", and linked to Tasks → Assigned to me. The "assigned for later" wording was not seen live (no account in that state). Builder review (2026-11-18): looks good. |
 | 6 | 2026-11-16 (`7f68e17`) | 2026-11-16, demo helper account | Pass. Created one wedding as Partner 2 and one as "Someone else": each member got the right name (Partner 2's name; the typed name) and the name was never asked for twice. Partner 1 uses the unchanged fall-back and was not re-tested. Follow-up fix, not yet live: choosing Partner 2 with that field empty used to clear the whole form with an error; the browser now stops the submit instead. |
 | 6b | Migration `20261119030000_creator_role` applied to the dev project 2026-11-18; app code not yet live | Not yet. `npm run test:db` passes (23/23), including: a planner-created wedding has its creator as planner, that planner can invite as couple, and once the couple joins the planner's couple invite is refused. | Also built: Team's invite card becomes "Invite the couple" with Couple preselected while the wedding has no couple; Home shows an "Invite the couple" card to editors in that state. |
-| 1, 5 | Folded into spec 003 (2026-11-18), built, not yet live | Locally: the demo wedding's cake tasting is the first item on its day, as a maroon chip, and first under Appointments. The rehearsal template and existing tasks are renamed "Attend the rehearsal and rehearsal dinner". | The test wedding never had a cake tasting (checked the database); row 1's real problem was premade tasks crowding the Calendar. Row 5's Piper check still to do on live. |
+| 1, 5 | Folded into spec 003; live 2026-11-18 (`b042cc0`, `25e7eab`) | 2026-11-20, demo planner, pane at 575 px | Row 1 pass: the cake tasting is first under Appointments on Calendar, and Nov 27 has a maroon appointment dot while task and payment days are grey. **But** its time shows as 9:00 PM instead of 2:00 PM (see "Noticed while checking"). Row 5 pass for the rename: the demo wedding has "Plan the rehearsal dinner" and "Attend the rehearsal and rehearsal dinner", and new weddings get the new name. Row 5's Piper question still not asked on live. |
+| 6b | Live 2026-11-18 (`ce3abff`) | 2026-11-20, demo planner, created a test wedding as "Someone else" | Creator side passes: the form says "You'll join as a planner and can invite the couple next"; Team lists the creator as Planner; Team's card is "Invite the couple" with Couple preselected; Home shows an "Invite the couple" card. Not checked: the couple accepting and getting full control (needs a second account). The test wedding is still in the dev project: its planner creator can't delete it (known gap). |
+| Small fixes | Live 2026-11-18 | 2026-11-20, demo planner | Pass: every open task row in the demo wedding (36 of 36) says "Assigned to [name]", "Assigned to you" or "Unassigned". Pass: choosing Partner 2 with that name empty stops the submit with "Please fill out this field" and keeps the form. Pass: saving in "Edit task" closes the panel and shows the change. Not checked: "Get started" for a signed-in person with no wedding (the planner account has one). |
+| 2 | Built 2026-11-20, not yet live | Reproduced on live 2026-11-20 (Test Parent (QA), own task): after "Yes, check it off" the dialog closed and "Task checked off." appeared while the box was still empty and disabled for about 0.7 s; reopening did the same in reverse. Separately, after saving "Edit task", its "Assigned to" dropdown fell back to "No one" while the row said "Assigned to you", so a second save would have unassigned the task. Fixed locally (demo planner, 575 px): 5 check-offs and 4 reopens in a row, the box switched the moment the change was confirmed and never went back, and the row kept "Assigned to you"; after saving "Edit task" the dropdown kept the assignee. | Cause: the box waited for the refreshed page, but the notice didn't. Fix: `TaskStatusButton` shows the new state optimistically (`useOptimistic`) and closes the dialog on confirm; `EditTaskForm` is keyed on `updated_at` so it remounts with the saved values (React resets a form after its action, and a `<select>`'s `defaultValue` only applies on mount). The "Done" tag and strikethrough still follow about 0.5 s later, always forward. Also fixed: the row's details line was a `<p>` holding the due-date `<form>`, which made hydration fail for the whole Tasks page; now a `<div>`. |
+
+### Noticed while checking (not yet scheduled)
+
+- **Show password on Log in (builder, 2026-11-20):** add a show/hide toggle to the password
+  field on the Log in page (and sign up), so people can see what they typed before submitting.
+- **Event times show in UTC (live check, 2026-11-20):** Calendar renders `LocalTime` on the
+  server (UTC on Vercel), and `suppressHydrationWarning` keeps that text in the browser. In
+  Denver, the cake tasting (seeded for 2:00 PM local) shows "9:00 PM" and "9p". The seeded
+  events at 3:32 PM are seed-run time in UTC, so their times are off by the same amount.
+  Affects anyone not in UTC.
+- **About is out of date (live check, 2026-11-20):** it still says "A ready-made checklist,
+  biggest decisions first" under Tasks, but new weddings now pick their own.
+- **Setup step (live check, 2026-11-20):** "Add your own" has no due-date field, though spec
+  003 says it should; custom to-dos are added with no date. "Pick a wedding date" is
+  suggested even when the date was just entered. The form's button says "Create our wedding"
+  even when "Someone else" is chosen.
+- **`/about` header (live check, 2026-11-20):** the "Get started" fix covers `/` only; the
+  `/about` page always shows the signed-out header ("Log in", "Get started" → /signup).
 
 ## Order
 
