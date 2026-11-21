@@ -1,10 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { groupSuggestions, phaseFor } from "@/lib/db/checklist-suggestions";
+import {
+  groupSuggestions,
+  phaseFor,
+  PICK_DATE_TITLE,
+} from "@/lib/db/checklist-suggestions";
 
-const t = (id: string, months_before: number, sort_order: number) => ({
+const t = (
+  id: string,
+  months_before: number,
+  sort_order: number,
+  title = id,
+) => ({
   id,
   months_before,
   sort_order,
+  title,
 });
 
 describe("phaseFor", () => {
@@ -38,5 +48,18 @@ describe("groupSuggestions", () => {
       ["a", null],
     );
     expect(groups[0].items.map((i) => i.id)).toEqual(["b"]);
+  });
+
+  it("leaves out 'Pick a wedding date' once the wedding has a date", () => {
+    const templates = [t("a", 12, 1, PICK_DATE_TITLE), t("b", 12, 2)];
+    expect(groupSuggestions(templates)[0].items.map((i) => i.id)).toEqual([
+      "a",
+      "b",
+    ]);
+    expect(
+      groupSuggestions(templates, [], { hasWeddingDate: true })[0].items.map(
+        (i) => i.id,
+      ),
+    ).toEqual(["b"]);
   });
 });

@@ -50,16 +50,27 @@ export function phaseFor(monthsBefore: number): SuggestionPhase {
   );
 }
 
-/** Suggestions grouped by phase, in plan order, leaving out any already on the checklist. */
+/** The suggestion that's pointless once the wedding has a date. */
+export const PICK_DATE_TITLE = "Pick a wedding date";
+
+/**
+ * Suggestions grouped by phase, in plan order, leaving out any already on the checklist
+ * and, once the wedding has a date, "Pick a wedding date".
+ */
 export function groupSuggestions<
-  T extends Pick<ChecklistTemplate, "id" | "months_before" | "sort_order">,
+  T extends Pick<
+    ChecklistTemplate,
+    "id" | "months_before" | "sort_order" | "title"
+  >,
 >(
   templates: T[],
   alreadyAdded: Iterable<string | null> = [],
+  { hasWeddingDate = false }: { hasWeddingDate?: boolean } = {},
 ): { phase: SuggestionPhase; items: T[] }[] {
   const have = new Set(alreadyAdded);
   const sorted = templates
     .filter((t) => !have.has(t.id))
+    .filter((t) => !(hasWeddingDate && t.title === PICK_DATE_TITLE))
     .sort((a, b) => a.sort_order - b.sort_order);
   return SUGGESTION_PHASES.map((phase) => ({
     phase,

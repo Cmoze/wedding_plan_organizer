@@ -10,7 +10,7 @@ import {
 } from "@/lib/db/checklist-suggestions";
 import { createClient } from "@/lib/db/supabase/server";
 import { getTasks } from "@/lib/db/tasks";
-import { canEdit, getMyMembership } from "@/lib/db/weddings";
+import { canEdit, getMyMembership, getWedding } from "@/lib/db/weddings";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -43,13 +43,15 @@ async function Picker({ searchParams }: { searchParams: SearchParams }) {
   const me = await getMyMembership(db, weddingId).catch(() => null);
   if (!me || !canEdit(me.role)) redirect("/");
 
-  const [templates, tasks] = await Promise.all([
+  const [templates, tasks, wedding] = await Promise.all([
     getChecklistTemplates(db),
     getTasks(db, weddingId),
+    getWedding(db, weddingId),
   ]);
   const groups = groupSuggestions(
     templates,
     tasks.map((t) => t.template_id),
+    { hasWeddingDate: !!wedding.wedding_date },
   ).map(({ phase, items }) => ({
     key: phase.key,
     label: phase.label,

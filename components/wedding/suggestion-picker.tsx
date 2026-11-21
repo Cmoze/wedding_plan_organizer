@@ -2,8 +2,9 @@
 
 import { Check, Plus, X } from "lucide-react";
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
+import { Fragment, useActionState, useEffect, useState } from "react";
 import { addChecklistAction, type FormState } from "@/app/actions";
+import { formatDate } from "@/components/wedding/format";
 import {
   FormMessage,
   inputClass,
@@ -36,8 +37,9 @@ export function SuggestionPicker({
     {},
   );
   const [picked, setPicked] = useState<Set<string>>(new Set());
-  const [custom, setCustom] = useState<string[]>([]);
+  const [custom, setCustom] = useState<{ title: string; due: string }[]>([]);
   const [draft, setDraft] = useState("");
+  const [draftDue, setDraftDue] = useState("");
 
   // After a successful add (panel mode), start fresh. Done while rendering, not in an
   // effect: React's pattern for resetting state when a value changes.
@@ -76,8 +78,9 @@ export function SuggestionPicker({
   const addOwn = () => {
     const title = draft.trim();
     if (!title) return;
-    setCustom((prev) => [...prev, title]);
+    setCustom((prev) => [...prev, { title, due: draftDue }]);
     setDraft("");
+    setDraftDue("");
   };
 
   const count = picked.size + custom.length;
@@ -90,18 +93,17 @@ export function SuggestionPicker({
       {[...picked].map((id) => (
         <input key={id} type="hidden" name="template" value={id} />
       ))}
-      {custom.map((title, i) => (
-        <input
-          key={`${i}-${title}`}
-          type="hidden"
-          name="custom"
-          value={title}
-        />
+      {/* Same order in both lists: the action pairs custom[i] with customDue[i]. */}
+      {custom.map(({ title, due }, i) => (
+        <Fragment key={`${i}-${title}`}>
+          <input type="hidden" name="custom" value={title} />
+          <input type="hidden" name="customDue" value={due} />
+        </Fragment>
       ))}
 
       <section>
         <h3 className="text-lg font-bold text-[#35151f]">Add your own</h3>
-        <div className="mt-2 flex gap-2">
+        <div className="mt-2 flex flex-wrap gap-2">
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -111,10 +113,20 @@ export function SuggestionPicker({
                 addOwn();
               }
             }}
-            className={inputClass}
+            className={`${inputClass} min-w-0 basis-full`}
             placeholder="Book the cake tasting"
             aria-label="Your own to-do"
           />
+          <label className="flex min-w-0 flex-1 items-center gap-2 text-base text-[#695b60]">
+            <span className="shrink-0">Due</span>
+            <input
+              type="date"
+              value={draftDue}
+              onChange={(e) => setDraftDue(e.target.value)}
+              className={`${inputClass} min-w-0`}
+              aria-label="Due date for your own to-do (optional)"
+            />
+          </label>
           <button
             type="button"
             onClick={addOwn}
@@ -125,13 +137,20 @@ export function SuggestionPicker({
         </div>
         {custom.length > 0 && (
           <ul className="mt-3 space-y-2">
-            {custom.map((title, i) => (
+            {custom.map(({ title, due }, i) => (
               <li
                 key={`${i}-${title}`}
                 className="flex min-h-11 items-center gap-3 rounded-xl border border-[#6f1d37] bg-[#f9eef1] px-3"
               >
                 <Check className="h-5 w-5 text-[#6f1d37]" aria-hidden="true" />
-                <span className="flex-1 text-base">{title}</span>
+                <span className="flex-1 text-base">
+                  {title}
+                  {due && (
+                    <span className="block text-sm text-[#695b60]">
+                      Due {formatDate(due)}
+                    </span>
+                  )}
+                </span>
                 <button
                   type="button"
                   onClick={() =>

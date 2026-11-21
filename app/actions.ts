@@ -235,16 +235,26 @@ export async function addChecklistAction(
   const templateIds = form
     .getAll("template")
     .filter((v): v is string => typeof v === "string" && UUID.test(v));
+  // "customDue" is sent in the same order as "custom", "" when there's no date.
+  const dues = form.getAll("customDue");
   const custom = form
     .getAll("custom")
-    .filter((v): v is string => typeof v === "string")
-    .map((v) => v.trim())
-    .filter(Boolean);
+    .map((v, i) => {
+      const due = dues[i];
+      return {
+        title: typeof v === "string" ? v.trim() : "",
+        due_date:
+          typeof due === "string" && /^\d{4}-\d{2}-\d{2}$/.test(due)
+            ? due
+            : null,
+      };
+    })
+    .filter((c) => c.title);
   if (templateIds.length === 0 && custom.length === 0)
     return { error: "Pick at least one to-do, or skip for now." };
   try {
     const added = await addTemplateTasks(db, weddingId, templateIds);
-    for (const title of custom) await createTask(db, weddingId, { title });
+    for (const c of custom) await createTask(db, weddingId, c);
     const count = added.length + custom.length;
     forgetCachedPages();
     if (text(form, "then") === "home") return { redirectTo: "/" };

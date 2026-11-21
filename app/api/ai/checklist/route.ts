@@ -3,8 +3,9 @@ import { suggestChecklistChanges } from "@/lib/ai/checklist";
 import { isAiConfigured } from "@/lib/ai/client";
 import { aiErrorResponse, checkAiAccess, jsonError } from "@/lib/ai/http";
 import { getCurrentUser } from "@/lib/db/auth";
-import { toDateString } from "@/lib/db/shared";
 import { createClient } from "@/lib/db/supabase/server";
+import { todayIn } from "@/lib/time-zone";
+import { viewerTimeZone } from "@/lib/time-zone-server";
 import { getTasks, OPEN_STATUSES } from "@/lib/db/tasks";
 import { getWedding } from "@/lib/db/weddings";
 
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
       getTasks(db, weddingId),
     ]);
     const suggestions = await suggestChecklistChanges({
-      today: toDateString(new Date()),
+      today: todayIn(await viewerTimeZone()),
       wedding,
       tasks: tasks.filter((t) => OPEN_STATUSES.includes(t.status)),
       doneTitles: tasks

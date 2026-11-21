@@ -56,7 +56,7 @@ const features = [
   {
     icon: <ListChecks className="h-5 w-5" aria-hidden="true" />,
     title: "Tasks",
-    text: "A ready-made checklist, biggest decisions first. Finishing a task can record the vendor and the cost.",
+    text: "Pick your to-dos from what most couples plan, or write your own. Finishing a task can record the vendor and the cost.",
   },
   {
     icon: <CalendarDays className="h-5 w-5" aria-hidden="true" />,
@@ -95,12 +95,19 @@ const features = [
  * wedding. `signedIn` points "Create your wedding" at /new-wedding instead of
  * /signup, since an authenticated visitor hitting /signup just bounces back here.
  */
-export function AboutContent({ signedIn = false }: { signedIn?: boolean }) {
+export function AboutContent({
+  signedIn = false,
+  hasWedding = false,
+}: {
+  signedIn?: boolean;
+  /** Signed in and already on a wedding team: the header offers "Open your wedding". */
+  hasWedding?: boolean;
+}) {
   const createHref = signedIn ? "/new-wedding" : "/signup";
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#fffdfb] text-[#35151f]">
-      <SiteHeader signedIn={signedIn} />
+      <SiteHeader signedIn={signedIn} hasWedding={hasWedding} />
 
       <section className="mx-auto max-w-4xl px-5 pt-10 pb-14 sm:px-8 sm:pt-14 sm:pb-16 lg:px-12">
         <p className="text-sm font-bold tracking-[0.16em] text-[#916173] uppercase">

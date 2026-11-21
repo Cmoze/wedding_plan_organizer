@@ -87,7 +87,10 @@ export async function InboxSection({
                       </span>
                     </span>
                     <span className="text-base text-[#806c74]">
-                      <LocalDateTime iso={e.received_at} />
+                      <LocalDateTime
+                        iso={e.received_at}
+                        timeZone={ctx.timeZone}
+                      />
                     </span>
                   </Link>
                 </li>
@@ -151,7 +154,7 @@ async function EmailView({
               </span>
             </p>
             <p className="text-base text-[#806c74]">
-              <LocalDateTime iso={email.received_at} />
+              <LocalDateTime iso={email.received_at} timeZone={ctx.timeZone} />
             </p>
           </div>
           {ctx.canEdit && (

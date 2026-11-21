@@ -4,8 +4,9 @@ import { isAiConfigured } from "@/lib/ai/client";
 import { aiErrorResponse, checkAiAccess, jsonError } from "@/lib/ai/http";
 import { isPlatformAdmin } from "@/lib/admin";
 import { getCurrentUser } from "@/lib/db/auth";
-import { toDateString } from "@/lib/db/shared";
 import { createClient } from "@/lib/db/supabase/server";
+import { todayIn } from "@/lib/time-zone";
+import { viewerTimeZone } from "@/lib/time-zone-server";
 import { canEdit, getMyMembership } from "@/lib/db/weddings";
 
 const Body = z.object({
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
 
   try {
     const member = await getMyMembership(db, weddingId);
+    const timeZone = await viewerTimeZone();
     // The platform admin (lib/admin.ts) never gets a real members row; treat as an editor.
     const editor = member ? canEdit(member.role) : isPlatformAdmin(user.email);
     const result = await runAssistant(
@@ -48,7 +50,8 @@ export async function POST(request: Request) {
         db,
         weddingId,
         canEdit: editor,
-        today: toDateString(new Date()),
+        today: todayIn(timeZone),
+        timeZone,
       },
       messages,
     );

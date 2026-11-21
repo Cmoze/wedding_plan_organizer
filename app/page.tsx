@@ -18,8 +18,9 @@ import { TeamSection } from "@/components/wedding/sections/team";
 import { ACTIVE_WEDDING_COOKIE } from "@/lib/active-wedding";
 import { isPlatformAdmin } from "@/lib/admin";
 import { getCurrentUser } from "@/lib/db/auth";
-import { toDateString } from "@/lib/db/shared";
 import { createClient } from "@/lib/db/supabase/server";
+import { todayIn } from "@/lib/time-zone";
+import { viewerTimeZone } from "@/lib/time-zone-server";
 import {
   canEdit,
   getMembers,
@@ -90,13 +91,15 @@ async function SectionWorkspace({
     updated_at: new Date().toISOString(),
   };
 
+  const timeZone = await viewerTimeZone();
   const ctx: WeddingContext = {
     db,
     wedding,
     me,
     members,
     canEdit: canEdit(me.role),
-    today: toDateString(new Date()),
+    today: todayIn(timeZone),
+    timeZone,
   };
 
   const content: Partial<Record<Section, ReactNode>> = {

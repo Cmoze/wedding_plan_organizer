@@ -11,8 +11,9 @@ import {
 } from "@/lib/ai/weekly-summary";
 import { getCurrentUser } from "@/lib/db/auth";
 import { getBudgetItems } from "@/lib/db/budget";
-import { toDateString } from "@/lib/db/shared";
 import { createClient } from "@/lib/db/supabase/server";
+import { todayIn } from "@/lib/time-zone";
+import { viewerTimeZone } from "@/lib/time-zone-server";
 import { getOverdueTasks, getTasks, OPEN_STATUSES } from "@/lib/db/tasks";
 import { getMembers, getWedding } from "@/lib/db/weddings";
 
@@ -39,8 +40,10 @@ export async function GET(request: NextRequest) {
   if (denied) return denied;
 
   try {
-    const today = toDateString(new Date());
-    const until = toDateString(
+    const timeZone = await viewerTimeZone();
+    const today = todayIn(timeZone);
+    const until = todayIn(
+      timeZone,
       new Date(Date.now() + LOOKAHEAD_DAYS * 86_400_000),
     );
     const [wedding, overdue, upcoming, budgetItems, members] =

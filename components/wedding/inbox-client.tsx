@@ -26,20 +26,17 @@ import {
 } from "@/lib/ai/suggestions";
 import { createClient } from "@/lib/db/supabase/browser";
 import { emailHtmlDocument } from "@/lib/email/display";
+import { formatDateTimeInZone } from "@/lib/time-zone";
 
-/** Shows an ISO timestamp as a date and time in the viewer's own time zone. */
-export function LocalDateTime({ iso }: { iso: string }) {
-  return (
-    <time dateTime={iso} suppressHydrationWarning>
-      {new Date(iso).toLocaleString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      })}
-    </time>
-  );
+/** Shows an ISO timestamp as a date and time in the viewer's time zone (`ctx.timeZone`). */
+export function LocalDateTime({
+  iso,
+  timeZone,
+}: {
+  iso: string;
+  timeZone: string;
+}) {
+  return <time dateTime={iso}>{formatDateTimeInZone(iso, timeZone)}</time>;
 }
 
 export function CopyButton({ text }: { text: string }) {

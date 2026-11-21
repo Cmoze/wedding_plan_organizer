@@ -40,37 +40,36 @@ import {
 } from "@/components/wedding/ui";
 import { uploadIdeaPhoto } from "@/lib/db/ideas";
 import { createClient } from "@/lib/db/supabase/browser";
+import { formatTimeInZone } from "@/lib/time-zone";
 
-/** Shows an ISO timestamp in the viewer's own time zone. */
+/**
+ * Shows an ISO timestamp's time in the viewer's time zone (`ctx.timeZone`). The zone is
+ * passed in, not read from the browser, so the server and browser render the same text;
+ * formatting on the server without it showed UTC times.
+ */
 export function LocalTime({
   iso,
+  timeZone,
   allDay = false,
   short = false,
 }: {
   iso: string;
+  timeZone: string;
   allDay?: boolean;
   /** "2p" / "2:30p", for month-grid chips. Nothing for all-day events. */
   short?: boolean;
 }) {
-  const date = new Date(iso);
   if (short) {
     if (allDay) return null;
-    const h = date.getHours();
-    const m = date.getMinutes();
     return (
-      <time dateTime={iso} suppressHydrationWarning>
-        {`${h % 12 || 12}${m ? `:${String(m).padStart(2, "0")}` : ""}${h < 12 ? "a" : "p"} `}
-      </time>
+      <time
+        dateTime={iso}
+      >{`${formatTimeInZone(iso, timeZone, { short: true })} `}</time>
     );
   }
   return (
-    <time dateTime={iso} suppressHydrationWarning>
-      {allDay
-        ? "All day"
-        : date.toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-          })}
+    <time dateTime={iso}>
+      {allDay ? "All day" : formatTimeInZone(iso, timeZone)}
     </time>
   );
 }

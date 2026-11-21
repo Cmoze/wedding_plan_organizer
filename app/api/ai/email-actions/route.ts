@@ -7,8 +7,9 @@ import { getBudgetItems } from "@/lib/db/budget";
 import { getEmail } from "@/lib/db/emails";
 import { getGuestList } from "@/lib/db/guests";
 import { getRegistryLinks } from "@/lib/db/registry";
-import { toDateString } from "@/lib/db/shared";
 import { createClient } from "@/lib/db/supabase/server";
+import { todayIn } from "@/lib/time-zone";
+import { viewerTimeZone } from "@/lib/time-zone-server";
 import { getTasks, OPEN_STATUSES } from "@/lib/db/tasks";
 import { getVendors } from "@/lib/db/vendors";
 import { getWedding } from "@/lib/db/weddings";
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
         getRegistryLinks(db, email.wedding_id),
       ]);
     const suggestions = await suggestEmailActions(email, {
-      today: toDateString(new Date()),
+      today: todayIn(await viewerTimeZone()),
       wedding,
       vendors,
       budgetItems,

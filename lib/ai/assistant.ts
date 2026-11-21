@@ -2,6 +2,7 @@ import "server-only";
 import type Anthropic from "@anthropic-ai/sdk";
 import { betaZodTool } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
+import { dateInZone, formatTimeInZone } from "@/lib/time-zone";
 import {
   AssistantActionSchema,
   type AssistantAction,
@@ -33,8 +34,10 @@ export type AssistantContext = {
   weddingId: string;
   /** Couple/planner: may be offered actions. Helpers can only ask questions. */
   canEdit: boolean;
-  /** `YYYY-MM-DD` */
+  /** `YYYY-MM-DD`, in `timeZone` */
   today: string;
+  /** The asker's time zone; event times are given to Piper in it. Defaults to UTC. */
+  timeZone?: string;
 };
 
 export type AssistantReply = { reply: string; actions: AssistantAction[] };
@@ -51,7 +54,7 @@ const matchesText = (query: string | undefined, ...fields: (string | null)[]) =>
   fields.some((f) => f?.toLowerCase().includes(query.trim().toLowerCase()));
 
 function systemPrompt(ctx: AssistantContext): string {
-  return `You are Piper the Planner ("Piper" for short), the AI wedding planner inside "Together", a wedding planning site used by a couple, their family, friends and sometimes a professional planner. If asked, you are an AI assistant, not a person. Today is ${ctx.today}.
+  return `You are Piper the Planner ("Piper" for short), the AI wedding planner inside "Together", a wedding planning site used by a couple, their family, friends and sometimes a professional planner. If asked, you are an AI assistant, not a person. Today is ${ctx.today}. Event times from your tools are already in the user's time zone (${ctx.timeZone ?? "UTC"}); give them as they are.
 
 Answer questions about this wedding by looking things up with your tools: the checklist, budget, calendar, guest list and RSVPs, vendors, gifts, registries and the shared email inbox. Look things up rather than guessing, and never invent names, amounts or dates.
 
@@ -204,17 +207,31 @@ export function buildAssistantTools(ctx: AssistantContext) {
         to: z.string().optional().describe("YYYY-MM-DD"),
       }),
       run: async ({ from, to }) => {
+        // Days are the user's, not UTC's: fetch a day either side, then filter locally.
+        const timeZone = ctx.timeZone ?? "UTC";
+        const start = from ?? ctx.today;
+        const pad = (day: string, days: number) =>
+          new Date(
+            Date.parse(`${day}T00:00:00Z`) + days * 86_400_000,
+          ).toISOString();
         const events = await getEvents(db, weddingId, {
-          from: `${from ?? ctx.today}T00:00:00Z`,
-          to: to ? `${to}T23:59:59Z` : undefined,
+          from: pad(start, -1),
+          to: to ? pad(to, 2) : undefined,
         });
         return json(
-          events.slice(0, 40).map((e) => ({
-            title: e.title,
-            starts_at: e.starts_at,
-            all_day: e.all_day,
-            location: e.location,
-          })),
+          events
+            .filter((e) => {
+              const day = dateInZone(e.starts_at, timeZone);
+              return day >= start && (!to || day <= to);
+            })
+            .slice(0, 40)
+            .map((e) => ({
+              title: e.title,
+              date: dateInZone(e.starts_at, timeZone),
+              time: e.all_day ? null : formatTimeInZone(e.starts_at, timeZone),
+              all_day: e.all_day,
+              location: e.location,
+            })),
         );
       },
     }),

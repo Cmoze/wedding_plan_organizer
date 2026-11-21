@@ -17,7 +17,12 @@ import {
   TaskForm,
 } from "@/components/wedding/client-forms";
 import { memberName, type WeddingContext } from "@/components/wedding/context";
-import { formatDate, formatMoney } from "@/components/wedding/format";
+import {
+  formatDate,
+  formatMoney,
+  parseDate,
+} from "@/components/wedding/format";
+import { toDateString } from "@/lib/db/shared";
 import { Badge, Card, CardTitle, EmptyState } from "@/components/wedding/ui";
 import { getBudgetItems, type BudgetItem } from "@/lib/db/budget";
 import { listInvites, type Invite } from "@/lib/db/invites";
@@ -64,6 +69,7 @@ export async function ChecklistSection({
   const suggestionGroups = groupSuggestions(
     templates,
     tasks.map((t) => t.template_id),
+    { hasWeddingDate: !!ctx.wedding.wedding_date },
   ).map(({ phase, items }) => ({
     key: phase.key,
     label: phase.label,
@@ -95,6 +101,26 @@ export async function ChecklistSection({
   const finished = tasks.filter((t) =>
     PLANNED_STATUSES.includes(t.status),
   ).length;
+  // Spec 002 row 7: the summary answers "what do I need to do?", not just a done count.
+  const open = tasks.filter((t) => OPEN_STATUSES.includes(t.status));
+  const soonEnd = toDateString(
+    new Date(parseDate(ctx.today).getTime() + 30 * 86_400_000),
+  );
+  const pastDue = open.filter(
+    (t) => t.due_date !== null && t.due_date < ctx.today,
+  ).length;
+  const dueSoon = open.filter(
+    (t) =>
+      t.due_date !== null && t.due_date >= ctx.today && t.due_date <= soonEnd,
+  ).length;
+  const headline =
+    tasks.length === 0
+      ? "No to-dos yet"
+      : open.length === 0
+        ? "Everything is done or booked"
+        : dueSoon === 0
+          ? "Nothing due in the next 30 days"
+          : `${dueSoon} due in the next 30 days`;
   const ordered = sortTasksByDueDate(visible);
   const nextUpId = sortTasksByDueDate(tasks).find((t) =>
     OPEN_STATUSES.includes(t.status),
@@ -110,10 +136,16 @@ export async function ChecklistSection({
         <Card>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-base text-[#695b60]">Progress</p>
-              <p className="text-3xl font-semibold">
-                {finished} of {tasks.length} done or booked
-              </p>
+              <p className="text-base text-[#695b60]">What&apos;s next</p>
+              <p className="text-3xl font-semibold">{headline}</p>
+              {pastDue > 0 && (
+                <Link
+                  href="/?section=tasks&show=overdue"
+                  className="mt-1 inline-flex min-h-11 items-center text-lg font-semibold text-[#a4262c] underline underline-offset-4"
+                >
+                  {pastDue} past due
+                </Link>
+              )}
             </div>
             <nav aria-label="Filter tasks" className="flex flex-wrap gap-2">
               {FILTERS.map((f) => (
@@ -151,6 +183,11 @@ export async function ChecklistSection({
               }}
             />
           </div>
+          {tasks.length > 0 && (
+            <p className="mt-2 text-base text-[#695b60]">
+              {finished} of {tasks.length} to-dos done or booked
+            </p>
+          )}
         </Card>
 
         {ctx.canEdit && suggestionCount > 0 && (

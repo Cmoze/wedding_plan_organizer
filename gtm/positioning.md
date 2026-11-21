@@ -52,8 +52,8 @@ below.
 ## Features (what's live today)
 
 - Home: countdown, "What should we do this week?" from Piper, overdue items, budget summary
-- Tasks: a premade checklist in order, biggest decisions first; finishing a task can record
-  the vendor and cost
+- Tasks: the couple picks their to-dos from suggestions grouped by how far out they happen,
+  and adds their own; finishing a task can record the vendor and cost
 - Calendar: task due dates, payment due dates, and events in one place
 - Budget: categories, estimated vs. actual, what's paid and what's due
 - Guests: households with addresses, RSVPs, meal choices, CSV import, an RSVP page and QR

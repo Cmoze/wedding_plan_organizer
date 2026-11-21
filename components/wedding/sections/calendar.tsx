@@ -22,6 +22,7 @@ import {
 } from "@/components/wedding/ui";
 import { getCalendarItems, type CalendarItem } from "@/lib/db/calendar";
 import { toDateString } from "@/lib/db/shared";
+import { dateInZone } from "@/lib/time-zone";
 
 // Spec 003: each kind looks like what it is. Appointments (events) take the app's pink and
 // maroon; tasks are quiet checklist lines with a grey checkbox; payments the same with "$".
@@ -45,7 +46,12 @@ const KIND = {
 
 const CHIPS_PER_DAY = 3;
 
-const dayOf = (item: CalendarItem) => item.start.slice(0, 10);
+/** The item's day. Tasks and payments have plain dates; an event is an instant, so its day
+ * depends on the viewer's time zone (a 6 PM Denver event is the next day in UTC). */
+const dayOf = (item: CalendarItem, timeZone: string) =>
+  item.kind === "event"
+    ? dateInZone(item.start, timeZone)
+    : item.start.slice(0, 10);
 
 /** Events first in a day, so an appointment never hides under "+N more". */
 const eventsFirst = (a: CalendarItem, b: CalendarItem) =>
@@ -141,14 +147,16 @@ export async function CalendarSection({
       7,
     );
 
-  const ahead = items.filter((i) => dayOf(i) >= ctx.today && !i.done);
+  const ahead = items.filter(
+    (i) => dayOf(i, ctx.timeZone) >= ctx.today && !i.done,
+  );
   const appointments = ahead.filter((i) => i.kind === "event").slice(0, 10);
   const dueSoon = ahead.filter((i) => i.kind !== "event").slice(0, 15);
   const overdue = items.filter(
-    (i) => dayOf(i) < ctx.today && !i.done && i.kind !== "event",
+    (i) => dayOf(i, ctx.timeZone) < ctx.today && !i.done && i.kind !== "event",
   );
   const selectedItems = selected
-    ? items.filter((i) => dayOf(i) === selected)
+    ? items.filter((i) => dayOf(i, ctx.timeZone) === selected)
     : [];
 
   return (
@@ -293,7 +301,10 @@ function MonthGrid({
   ];
   const byDay = new Map<string, CalendarItem[]>();
   for (const item of items)
-    byDay.set(dayOf(item), [...(byDay.get(dayOf(item)) ?? []), item]);
+    byDay.set(dayOf(item, ctx.timeZone), [
+      ...(byDay.get(dayOf(item, ctx.timeZone)) ?? []),
+      item,
+    ]);
   for (const list of byDay.values()) list.sort(eventsFirst);
 
   return (
@@ -351,7 +362,12 @@ function MonthGrid({
                     key={`${item.kind}-${item.id}`}
                     className={`line-clamp-2 block rounded bg-[#6f1d37] px-1 py-0.5 text-xs font-semibold break-words text-white ${item.done ? "opacity-50" : ""}`}
                   >
-                    <LocalTime iso={item.start} allDay={item.allDay} short />
+                    <LocalTime
+                      iso={item.start}
+                      allDay={item.allDay}
+                      timeZone={ctx.timeZone}
+                      short
+                    />
                     {item.title}
                   </span>
                 ) : (
@@ -401,10 +417,14 @@ function ItemList({
                 <div className="basis-full text-sm leading-5 font-bold text-[#6f1d37] sm:w-32 sm:shrink-0 sm:basis-auto">
                   {showDate && (
                     <span className="mr-2 sm:mr-0 sm:block">
-                      {formatDate(dayOf(item))}
+                      {formatDate(dayOf(item, ctx.timeZone))}
                     </span>
                   )}
-                  <LocalTime iso={item.start} allDay={item.allDay} />
+                  <LocalTime
+                    iso={item.start}
+                    allDay={item.allDay}
+                    timeZone={ctx.timeZone}
+                  />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p
@@ -474,7 +494,7 @@ function ItemList({
             </div>
             {showDate && (
               <span className="text-sm text-[#695b60]">
-                {formatDate(dayOf(item))}
+                {formatDate(dayOf(item, ctx.timeZone))}
               </span>
             )}
             {kind.href && (

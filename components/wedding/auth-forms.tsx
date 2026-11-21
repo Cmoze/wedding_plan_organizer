@@ -249,7 +249,9 @@ export function NewWeddingForm() {
       >
         {pending || state.redirectTo
           ? "Setting up your wedding..."
-          : "Create our wedding"}
+          : who === "other"
+            ? "Create the wedding"
+            : "Create our wedding"}
       </button>
     </form>
   );

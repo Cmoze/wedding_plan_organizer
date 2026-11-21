@@ -8,8 +8,10 @@ export type WeddingContext = {
   me: Member;
   members: Member[];
   canEdit: boolean;
-  /** Today as `YYYY-MM-DD`. */
+  /** Today as `YYYY-MM-DD`, in the viewer's time zone. */
   today: string;
+  /** The viewer's time zone (lib/time-zone.ts), for event times and days. */
+  timeZone: string;
 };
 
 export const memberName = (ctx: WeddingContext, memberId: string | null) =>

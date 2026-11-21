@@ -3,11 +3,17 @@ import { Search } from "lucide-react";
 import { BrandMark } from "@/components/wedding/brand-mark";
 
 /**
- * Header for the landing and about pages. A signed-in visitor (no wedding yet) gets no
- * "Log in", and "Get started" goes to /new-wedding: /login and /signup redirect a
- * signed-in user back to "/", which is this same page, so those links did nothing.
+ * Header for the landing and about pages. A signed-in visitor gets no "Log in": /login and
+ * /signup redirect a signed-in user back to "/", so those links did nothing useful. With no
+ * wedding yet, "Get started" goes to /new-wedding; with one, "Open your wedding" goes to "/".
  */
-export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
+export function SiteHeader({
+  signedIn = false,
+  hasWedding = false,
+}: {
+  signedIn?: boolean;
+  hasWedding?: boolean;
+}) {
   return (
     <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-12">
       <Link href="/" className="flex items-center gap-3 rounded-xl">
@@ -44,10 +50,10 @@ export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
           </Link>
         )}
         <Link
-          href={signedIn ? "/new-wedding" : "/signup"}
+          href={!signedIn ? "/signup" : hasWedding ? "/" : "/new-wedding"}
           className="inline-flex min-h-11 items-center rounded-full bg-[#6f1d37] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#58172c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6f1d37]"
         >
-          Get started
+          {signedIn && hasWedding ? "Open your wedding" : "Get started"}
         </Link>
       </nav>
     </header>
