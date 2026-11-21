@@ -140,7 +140,7 @@ export async function ChecklistSection({
               <p className="text-3xl font-semibold">{headline}</p>
               {pastDue > 0 && (
                 <Link
-                  href="/?section=tasks&show=overdue"
+                  href="/?section=tasks&show=overdue#task-list"
                   className="mt-1 inline-flex min-h-11 items-center text-lg font-semibold text-[#a4262c] underline underline-offset-4"
                 >
                   {pastDue} past due
@@ -151,7 +151,7 @@ export async function ChecklistSection({
               {FILTERS.map((f) => (
                 <Link
                   key={f.id}
-                  href={`/?section=tasks&show=${f.id}`}
+                  href={`/?section=tasks&show=${f.id}#task-list`}
                   aria-current={f.id === filter ? "page" : undefined}
                   className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 text-base font-semibold ${
                     f.id === filter
@@ -237,52 +237,56 @@ export async function ChecklistSection({
           </Card>
         )}
 
-        {ordered.length === 0 ? (
-          <EmptyState
-            title={
-              filter === "mine"
-                ? "Nothing's assigned to you yet."
-                : tasks.length === 0
-                  ? "Your checklist is empty. Add to-dos above."
-                  : filter === "open"
-                    ? "Nothing left to do. Nice work!"
-                    : "No tasks here yet."
-            }
-          />
-        ) : (
-          <Card>
-            <CardTitle>
-              {filter === "mine"
-                ? "Assigned to you"
-                : filter === "planned"
-                  ? "Done and booked"
-                  : filter === "overdue"
-                    ? "Past-due tasks"
-                    : "By due date"}
-            </CardTitle>
-            {filter !== "planned" && (
-              <p className="mt-1 text-base text-[#695b60]">
-                Soonest first. The dates come from your wedding day, and you can
-                change any of them.
-              </p>
-            )}
-            <ul className="mt-3 divide-y divide-[#f0e8ea]">
-              {ordered.map((task) => (
-                <TaskRow
-                  key={task.id}
-                  task={task}
-                  ctx={ctx}
-                  nextUp={task.id === nextUpId}
-                  vendor={
-                    task.vendor_id ? vendors.get(task.vendor_id) : undefined
-                  }
-                  cost={costs.get(task.id)}
-                  pendingInvites={pendingInvites}
-                />
-              ))}
-            </ul>
-          </Card>
-        )}
+        {/* Filter links end in #task-list: on a phone the list starts two screens below the
+            filters, so without the jump a tap looked like it did nothing (spec 002 row 9). */}
+        <div id="task-list" className="scroll-mt-24">
+          {ordered.length === 0 ? (
+            <EmptyState
+              title={
+                filter === "mine"
+                  ? "Nothing's assigned to you yet."
+                  : tasks.length === 0
+                    ? "Your checklist is empty. Add to-dos above."
+                    : filter === "open"
+                      ? "Nothing left to do. Nice work!"
+                      : "No tasks here yet."
+              }
+            />
+          ) : (
+            <Card>
+              <CardTitle>
+                {filter === "mine"
+                  ? "Assigned to you"
+                  : filter === "planned"
+                    ? "Done and booked"
+                    : filter === "overdue"
+                      ? "Past-due tasks"
+                      : "By due date"}
+              </CardTitle>
+              {filter !== "planned" && (
+                <p className="mt-1 text-base text-[#695b60]">
+                  Soonest first. The dates come from your wedding day, and you
+                  can change any of them.
+                </p>
+              )}
+              <ul className="mt-3 divide-y divide-[#f0e8ea]">
+                {ordered.map((task) => (
+                  <TaskRow
+                    key={task.id}
+                    task={task}
+                    ctx={ctx}
+                    nextUp={task.id === nextUpId}
+                    vendor={
+                      task.vendor_id ? vendors.get(task.vendor_id) : undefined
+                    }
+                    cost={costs.get(task.id)}
+                    pendingInvites={pendingInvites}
+                  />
+                ))}
+              </ul>
+            </Card>
+          )}
+        </div>
       </div>
     </NoticeProvider>
   );

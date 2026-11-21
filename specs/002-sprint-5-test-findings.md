@@ -79,6 +79,57 @@ gets one line under it: "You'll join as a planner and can invite the couple next
 creator as planner; that planner can invite as couple; after a couple joins, the planner's
 couple invite is refused.
 
+### Row 8 design (builder, 2026-11-20)
+
+Mockup: `design/mockups/row-8-add-a-family.html` (open it in a browser). Picked from three
+options (a switch on the existing card, a separate card, an invitation-first form), taking
+the switch from the first, the button wording from the second, and the envelope preview from
+the third.
+
+**Add guests card.** "Add a guest" becomes "Add guests" with a switch at the top: **One
+person** (today's form, unchanged) / **A family or group**.
+
+**A family or group, names typed (default).**
+
+- "Who's in it?": rows of first name + last name, starting with two. Each new row's last
+  name is filled in from the row above. "+ Add another person" adds a row; ✕ removes one
+  (not the first). The first person's first name is required; empty extra rows are ignored.
+- Envelope preview beside the names (below them on a phone): the household name, the names
+  ("Maria, Daniel and Sofia"), and "3 people · 1 invitation". It updates as you type.
+- Household name is automatic: "The Lopez family" when everyone shares a last name,
+  otherwise the existing envelope name ("Maria Lopez & Sam Chen"). "Edit name" lets you type
+  your own; a typed name is kept as is.
+- "Whose side?" and the optional mailing address, as on the one-person form.
+- Button: **"Add the [last name] family"**, or "Add [n] people" when there's no shared last
+  name.
+
+**"Don't know everyone's names yet?"** switches the rows to: the first person's name
+(required), then "How many others are coming with [first name]?" with − / + (1 to 20).
+Placeholders are real guests named "[last name] guest 2", "guest 3"…, or "Guest 2"… with no
+last name, so counts, RSVPs and meals work. The preview reads "Maria and 3 others". "Type
+their names instead" switches back.
+
+**Saving.** One submit creates the household and every guest together. If adding the guests
+fails, the new household is removed, so nothing half-saved is left.
+
+**Guest list (every household, not only new ones).**
+
+- Each household shows **"N of M replied"** with a small bar; all replied turns green with a
+  check. Replied means Coming or Not coming.
+- Members are listed by name on one line. Only people who replied get a tag (Coming / Not
+  coming); there is no per-person "No reply yet".
+- Placeholder guests are greyed out with an "Add name" link (editors only) that renames them.
+- Couple and planners get **"Update RSVPs"**, which opens today's per-person Coming / Not
+  coming / No reply buttons (and remove), plus **"Mark everyone coming"**. Meals stay per
+  person. Helpers see the totals and tags only, the same access they have today.
+
+**Not in row 8:** the family typing their own names on the RSVP page (changes the public
+RSVP page; propose separately).
+
+**Done when (unchanged):** someone who hasn't seen the app adds three people as one household
+in under a minute without help. Also: a family added by headcount shows up with the right
+count on Guests and Home, and "Update RSVPs" still records each person.
+
 ## Progress
 
 Checked on https://togetherwedding.vercel.app, in the role named.
@@ -95,6 +146,7 @@ Checked on https://togetherwedding.vercel.app, in the role named.
 | 2 | Live 2026-11-20 (`662e5a0`) | Reproduced on live 2026-11-20 (Test Parent (QA), own task): after "Yes, check it off" the dialog closed and "Task checked off." appeared while the box was still empty and disabled for about 0.7 s; reopening did the same in reverse. Separately, after saving "Edit task", its "Assigned to" dropdown fell back to "No one" while the row said "Assigned to you", so a second save would have unassigned the task. Fixed locally (demo planner, 575 px): 5 check-offs and 4 reopens in a row, the box switched the moment the change was confirmed and never went back, and the row kept "Assigned to you"; after saving "Edit task" the dropdown kept the assignee. | Cause: the box waited for the refreshed page, but the notice didn't. Fix: `TaskStatusButton` shows the new state optimistically (`useOptimistic`) and closes the dialog on confirm; `EditTaskForm` is keyed on `updated_at` so it remounts with the saved values (React resets a form after its action, and a `<select>`'s `defaultValue` only applies on mount). The "Done" tag and strikethrough still follow about 0.5 s later, always forward. Also fixed: the row's details line was a `<p>` holding the due-date `<form>`, which made hydration fail for the whole Tasks page; now a `<div>`. |
 | 7 | Live 2026-11-20 (`ae18b67`) | Locally, demo planner (laptop and 375 px): the card reads "What's next · 4 due in the next 30 days", a red "12 past due" link to the Past due filter, and "7 of 43 to-dos done or booked" under the bar. No sideways scroll, no console errors. | **Changed plan (builder, 2026-11-20): no phase tiles.** Since spec 003, new weddings start with only the to-dos the couple picks (7 in the live test wedding), so the 42-task scroll she described is gone for new weddings, and with few tasks per phase the tiles would mostly read "0 of 1". What a short list doesn't fix is her other complaint: "0 of 43 done" didn't say what to do. So the summary now leads with what's due in the next 30 days and what's past due, and the done count moves under the bar. Bring the tiles back if a tester with a long list still gets lost. |
 | Live click-through | 2026-11-20, after `0a094c1` | Demo planner, pane at 575 px, 7:28 PM in Denver (already Nov 21 in UTC) | Row 2 pass: on the test wedding, 3 check-offs and 3 reopens in a row, sampled every 50 ms: each time the box switched once and never flipped back. Edit task pass: assigned a task, saved; the panel closed, the row said "Assigned to you", the dropdown kept the name, and a second save kept it. Row 7 pass: test wedding reads "What's next · 2 due in the next 30 days" and "1 of 9 to-dos done or booked". Times pass: the cake tasting shows "2p" and "2:00 PM" (also in the server's HTML, so no flash); Inbox shows 12:05 PM for an 18:05 UTC email. Piper pass: "What day and time is the cake tasting?" got "Friday, November 27, 2026, at 2:00 PM"; row 5's question got "Plan the rehearsal dinner", correctly unassigned. Database today pass: adding "Book the caterer" (date already past) gave it 2026-11-20, not UTC's 2026-11-21. Setup step pass: no "Pick a wedding date" on a dated wedding (setup and Browse suggestions), due-date field on "Add your own". Create form pass: "Create the wedding" for "Someone else", "Create our wedding" for Partner 1 or 2. `/about` signed in: "Open your wedding", no "Log in"; About copy says "Pick your to-dos…". Not checked: `/about` for a signed-in person with no wedding. |
+| 9 | Live since Sprint 4 | 2026-11-20, demo planner, pane at 375 px | Pass as written: "Assigned to me (2)" sits in the Tasks summary card, visible without scrolling, and one tap shows only the planner's 2 tasks, each "Assigned to you"; no sideways scroll. **Wart:** after the tap nothing visible changes but the pill: the first task is about 1,580 px down, two screens below the fold, under "Tailor my checklist" and "Add a task". Someone who taps it on a phone may think it did nothing. **Fixed 2026-11-20:** filter links (and "N past due") now end in `#task-list`, so a tap lands on the list heading; checked locally at 375 px ("Assigned to you" heading at the top, first task right under it). Not checked as a helper (no helper login in the pane). |
 
 ### Noticed while checking (not yet scheduled)
 
