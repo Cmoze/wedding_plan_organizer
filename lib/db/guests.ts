@@ -131,6 +131,49 @@ export async function addGuest(
   return createGuest(db, weddingId, { ...guest, household_id: householdId });
 }
 
+/**
+ * Adds a family or group as one invitation: the household and everyone in it (spec 002 row 8).
+ * If the guests can't be saved, the new household is removed again so nothing half-saved is
+ * left behind.
+ */
+export async function addFamily(
+  db: Db,
+  weddingId: string,
+  household: Omit<NewRow<"households">, "wedding_id">,
+  people: Pick<NewRow<"guests">, "first_name" | "last_name">[],
+): Promise<HouseholdWithGuests> {
+  const created = await createHousehold(db, weddingId, household);
+  try {
+    const guests = unwrap<Guest[]>(
+      await db
+        .from("guests")
+        .insert(
+          people.map((p) => ({
+            ...p,
+            wedding_id: weddingId,
+            household_id: created.id,
+          })),
+        )
+        .select(),
+    );
+    return { ...created, guests };
+  } catch (e) {
+    await deleteHousehold(db, created.id).catch(() => {});
+    throw e;
+  }
+}
+
+/** Sets everyone in one household to the same RSVP ("Mark everyone coming"). */
+export async function setHouseholdRsvp(
+  db: Db,
+  householdId: string,
+  rsvp: Guest["rsvp"],
+): Promise<void> {
+  unwrap(
+    await db.from("guests").update({ rsvp }).eq("household_id", householdId),
+  );
+}
+
 /** Removes one person, and their invitation too if nobody else is on it. Renames it like `addGuest`. */
 export async function removeGuest(db: Db, guestId: string): Promise<void> {
   const guest = unwrap<{

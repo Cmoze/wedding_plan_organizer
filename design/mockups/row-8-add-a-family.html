@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Row 8 mockup: add a family</title>
+    <!-- Spec 002 row 8 (2026-11-20). Static mockup, not app code. Open in a browser. -->
+    <style>
+      body {
+        margin: 0;
+        background: #f3ece7;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        color: #35151f;
+        padding: 24px 16px;
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-family: Georgia, serif;
+        font-weight: 500;
+        font-size: 26px;
+        margin: 0 0 4px;
+      }
+      .intro {
+        color: #695b60;
+        margin: 0 0 28px;
+      }
+      .ttl {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 28px 0 8px;
+      }
+      .m {
+        background: #fbf6f2;
+        border-radius: 16px;
+        padding: 20px;
+      }
+      .cd {
+        background: #fff;
+        border: 1px solid #eadde1;
+        border-radius: 20px;
+        padding: 20px 22px;
+      }
+      .h {
+        font-family: Georgia, serif;
+        font-size: 22px;
+        margin: 0 0 4px;
+      }
+      .s {
+        font-size: 14px;
+        color: #695b60;
+        margin: 0;
+      }
+      .lb {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0 0 6px;
+      }
+      .in {
+        height: 44px;
+        border: 1px solid #ddcbd1;
+        border-radius: 12px;
+        background: #fff;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        font-size: 15px;
+        min-width: 0;
+      }
+      .btn {
+        background: #6f1d37;
+        color: #fff;
+        border-radius: 12px;
+        height: 44px;
+        padding: 0 18px;
+        display: inline-flex;
+        align-items: center;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .q {
+        border: 1px solid #ddcbd1;
+        color: #6f1d37;
+        border-radius: 10px;
+        height: 40px;
+        padding: 0 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        background: #fff;
+      }
+      .lk {
+        font-size: 14px;
+        color: #6f1d37;
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 4px;
+      }
+      .g2 {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 22px;
+        gap: 8px;
+        align-items: center;
+      }
+      .req {
+        font-size: 12px;
+        color: #8a5a6a;
+        margin: 4px 0 0;
+      }
+      .env {
+        background: #fffaf8;
+        border: 1px dashed #d9c4cb;
+        border-radius: 14px;
+        padding: 18px 14px;
+        text-align: center;
+      }
+      .lay {
+        display: grid;
+        grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+      }
+      .seg {
+        display: inline-flex;
+        background: #f4e7eb;
+        border-radius: 12px;
+        padding: 4px;
+        margin: 16px 0 18px;
+      }
+      .seg span {
+        padding: 8px 14px;
+        font-size: 14px;
+        color: #6f1d37;
+        font-weight: 600;
+      }
+      .seg .on {
+        background: #6f1d37;
+        color: #fff;
+        border-radius: 9px;
+      }
+      .row2 {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 12px;
+        margin-top: 18px;
+      }
+      .x {
+        color: #b9a6ad;
+      }
+      .hh {
+        padding: 14px 0;
+        border-bottom: 1px solid #f0e6e9;
+      }
+      .hh:last-child {
+        border-bottom: 0;
+      }
+      .nm {
+        font-family: Georgia, serif;
+        font-size: 18px;
+        margin: 0;
+      }
+      .chip {
+        font-size: 12px;
+        border-radius: 8px;
+        padding: 3px 8px;
+        font-weight: 600;
+        display: inline-block;
+      }
+      .yes {
+        background: #e7f1ea;
+        color: #2d5a3f;
+      }
+      .no {
+        background: #f7ebe4;
+        color: #8a4a2a;
+      }
+      .bar {
+        height: 6px;
+        border-radius: 3px;
+        background: #f0e6e9;
+        overflow: hidden;
+        width: 120px;
+      }
+      .bar span {
+        display: block;
+        height: 100%;
+        background: #6f1d37;
+      }
+      .ph {
+        color: #8a7a80;
+      }
+      .pill {
+        border-radius: 999px;
+        height: 32px;
+        padding: 0 12px;
+        display: inline-flex;
+        align-items: center;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1px solid #ddcbd1;
+        color: #6f1d37;
+        background: #fff;
+      }
+      .pill.on {
+        background: #6f1d37;
+        color: #fff;
+        border-color: #6f1d37;
+      }
+      .prow {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        background: #faf6f3;
+        border-radius: 12px;
+        padding: 8px 12px;
+      }
+      .head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      @media (max-width: 560px) {
+        .lay,
+        .row2 {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Row 8: add a family or group</h1>
+      <p class="intro">
+        Spec 002 row 8, from usability test 001 (A3: "how do I add a family?").
+        Static mockup, agreed 2026-11-20.
+      </p>
+
+      <p class="ttl">
+        1. Add guests, "A family or group", names typed (the default)
+      </p>
+      <div class="m">
+        <div class="cd">
+          <p class="h">Add guests</p>
+          <p class="s">Add one person, or a whole family on one invitation.</p>
+          <div class="seg">
+            <span>One person</span><span class="on">A family or group</span>
+          </div>
+          <div class="lay">
+            <div>
+              <p class="lb">Who's in it?</p>
+              <div style="display: grid; gap: 8px">
+                <div class="g2">
+                  <div class="in">Maria</div>
+                  <div class="in">Lopez</div>
+                  <span></span>
+                </div>
+                <div class="g2">
+                  <div class="in">Daniel</div>
+                  <div class="in">Lopez</div>
+                  <span class="x">✕</span>
+                </div>
+                <div class="g2">
+                  <div class="in">Sofia</div>
+                  <div class="in">Lopez</div>
+                  <span class="x">✕</span>
+                </div>
+              </div>
+              <p class="req">
+                The first person's name is required. Last names carry down.
+              </p>
+              <div
+                style="
+                  display: flex;
+                  gap: 14px;
+                  flex-wrap: wrap;
+                  align-items: center;
+                  margin-top: 12px;
+                "
+              >
+                <span class="q">+ Add another person</span>
+                <span class="lk">Don't know everyone's names yet?</span>
+              </div>
+            </div>
+            <div class="env">
+              <div style="font-size: 22px; color: #6f1d37">✉</div>
+              <p
+                style="
+                  font-family: Georgia, serif;
+                  font-size: 18px;
+                  margin: 8px 0 2px;
+                "
+              >
+                The Lopez family
+              </p>
+              <p class="s" style="font-size: 13px">Maria, Daniel and Sofia</p>
+              <p class="s" style="font-size: 12px; margin-top: 4px">
+                3 people · 1 invitation
+              </p>
+              <p class="lk" style="font-size: 13px; margin: 10px 0 0">
+                Edit name
+              </p>
+            </div>
+          </div>
+          <div class="row2">
+            <div>
+              <p class="lb">Whose side?</p>
+              <div class="in" style="justify-content: space-between">
+                Both of us<span>▾</span>
+              </div>
+            </div>
+            <div style="align-self: end; padding-bottom: 12px">
+              <span class="lk" style="text-decoration: none"
+                >▾ Mailing address (optional)</span
+              >
+            </div>
+          </div>
+          <div style="margin-top: 18px">
+            <span class="btn">Add the Lopez family</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="ttl">2. After "Don't know everyone's names yet?"</p>
+      <div class="m">
+        <div class="cd">
+          <p class="h">Add guests</p>
+          <p class="s">Add one person, or a whole family on one invitation.</p>
+          <div class="seg">
+            <span>One person</span><span class="on">A family or group</span>
+          </div>
+          <div class="lay">
+            <div>
+              <p class="lb">Who's the main contact?</p>
+              <div
+                class="g2"
+                style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)"
+              >
+                <div class="in">Maria</div>
+                <div class="in">Lopez</div>
+              </div>
+              <p class="lb" style="margin-top: 16px">
+                How many others are coming with Maria?
+              </p>
+              <div style="display: flex; align-items: center; gap: 10px">
+                <span class="q" style="width: 44px; justify-content: center"
+                  >−</span
+                >
+                <div
+                  class="in"
+                  style="width: 64px; justify-content: center; font-weight: 600"
+                >
+                  3
+                </div>
+                <span class="q" style="width: 44px; justify-content: center"
+                  >+</span
+                >
+              </div>
+              <p
+                class="req"
+                style="font-size: 13px; line-height: 1.5; margin-top: 10px"
+              >
+                They'll show as "Lopez guest 2, 3 and 4" until you add their
+                names.
+              </p>
+              <p class="lk" style="margin: 12px 0 0">
+                Type their names instead
+              </p>
+            </div>
+            <div class="env">
+              <div style="font-size: 22px; color: #6f1d37">✉</div>
+              <p
+                style="
+                  font-family: Georgia, serif;
+                  font-size: 18px;
+                  margin: 8px 0 2px;
+                "
+              >
+                The Lopez family
+              </p>
+              <p class="s" style="font-size: 13px">Maria and 3 others</p>
+              <p class="s" style="font-size: 12px; margin-top: 4px">
+                4 people · 1 invitation
+              </p>
+              <p class="lk" style="font-size: 13px; margin: 10px 0 0">
+                Edit name
+              </p>
+            </div>
+          </div>
+          <div class="row2">
+            <div>
+              <p class="lb">Whose side?</p>
+              <div class="in" style="justify-content: space-between">
+                Both of us<span>▾</span>
+              </div>
+            </div>
+            <div style="align-self: end; padding-bottom: 12px">
+              <span class="lk" style="text-decoration: none"
+                >▾ Mailing address (optional)</span
+              >
+            </div>
+          </div>
+          <div style="margin-top: 18px">
+            <span class="btn">Add the Lopez family</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="ttl">3. Guest list: one reply total per household</p>
+      <div class="m">
+        <div class="cd" style="padding: 6px 20px">
+          <div class="hh">
+            <div class="head">
+              <p class="nm">The Lopez family</p>
+              <div style="display: flex; align-items: center; gap: 10px">
+                <div class="bar"><span style="width: 25%"></span></div>
+                <span class="s" style="font-weight: 600; color: #35151f"
+                  >1 of 4 replied</span
+                >
+              </div>
+            </div>
+            <p class="s" style="margin-top: 6px">
+              Maria Lopez <span class="chip yes">Coming</span> ·
+              <span class="ph">Lopez guest 2</span>
+              <span class="lk" style="font-size: 13px">Add name</span> ·
+              <span class="ph">Lopez guest 3</span> ·
+              <span class="ph">Lopez guest 4</span>
+            </p>
+            <div style="margin-top: 10px">
+              <span class="q">Update RSVPs</span>
+            </div>
+          </div>
+          <div class="hh">
+            <div class="head">
+              <p class="nm">Alex &amp; Sam Rivera</p>
+              <div style="display: flex; align-items: center; gap: 10px">
+                <div class="bar"><span style="width: 100%"></span></div>
+                <span class="s" style="font-weight: 600; color: #2d5a3f"
+                  >✓ 2 of 2 replied</span
+                >
+              </div>
+            </div>
+            <p class="s" style="margin-top: 6px">
+              Alex Rivera <span class="chip yes">Coming</span> · Sam Rivera
+              <span class="chip no">Not coming</span>
+            </p>
+            <div style="margin-top: 10px">
+              <span class="q">Update RSVPs</span>
+            </div>
+          </div>
+          <div class="hh">
+            <div class="head">
+              <p class="nm">Priya Shah</p>
+              <div style="display: flex; align-items: center; gap: 10px">
+                <div class="bar"><span style="width: 0"></span></div>
+                <span class="s" style="font-weight: 600; color: #35151f"
+                  >0 of 1 replied</span
+                >
+              </div>
+            </div>
+            <p class="s" style="margin-top: 6px">Priya Shah</p>
+            <div style="margin-top: 10px">
+              <span class="q">Update RSVPs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="ttl">4. After "Update RSVPs" (couple or planner only)</p>
+      <div class="m">
+        <div class="cd">
+          <div class="head">
+            <p class="nm">The Lopez family</p>
+            <span class="s" style="font-weight: 600; color: #35151f"
+              >1 of 4 replied</span
+            >
+          </div>
+          <div style="display: grid; gap: 8px; margin-top: 12px">
+            <div class="prow">
+              <span>Maria Lopez</span
+              ><span style="display: flex; gap: 6px"
+                ><span class="pill on">Coming</span
+                ><span class="pill">Not coming</span
+                ><span class="pill">No reply</span></span
+              >
+            </div>
+            <div class="prow">
+              <span class="ph">Lopez guest 2</span
+              ><span style="display: flex; gap: 6px"
+                ><span class="pill">Coming</span
+                ><span class="pill">Not coming</span
+                ><span class="pill on">No reply</span></span
+              >
+            </div>
+            <div class="prow">
+              <span class="ph">Lopez guest 3</span
+              ><span style="display: flex; gap: 6px"
+                ><span class="pill">Coming</span
+                ><span class="pill">Not coming</span
+                ><span class="pill on">No reply</span></span
+              >
+            </div>
+            <div class="prow">
+              <span class="ph">Lopez guest 4</span
+              ><span style="display: flex; gap: 6px"
+                ><span class="pill">Coming</span
+                ><span class="pill">Not coming</span
+                ><span class="pill on">No reply</span></span
+              >
+            </div>
+          </div>
+          <div
+            style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap"
+          >
+            <span class="q">Mark everyone coming</span
+            ><span class="q">Done</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

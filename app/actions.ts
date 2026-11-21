@@ -23,12 +23,15 @@ import { deleteEmail } from "@/lib/db/emails";
 import { createEvent, deleteEvent, updateEvent } from "@/lib/db/events";
 import { createGift, deleteGift, setThankYouSent } from "@/lib/db/gifts";
 import {
+  addFamily,
   addGuest,
   getGuestList,
   importGuests,
   removeGuest,
+  setHouseholdRsvp,
   updateGuest,
 } from "@/lib/db/guests";
+import { familyName, familyPeople } from "@/lib/db/household-form";
 import {
   addReaction,
   createIdeaBoard,
@@ -593,6 +596,78 @@ export async function setGuestRsvpAction(form: FormData) {
 export async function removeGuestAction(form: FormData) {
   const db = await signedInDb();
   await removeGuest(db, required(form, "guestId"));
+  refresh();
+}
+
+/** "A family or group" on Guests: one invitation and everyone on it (spec 002 row 8). */
+export async function addFamilyAction(
+  _prev: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const db = await signedInDb();
+  const firsts = form.getAll("firstName").map((v) => String(v));
+  const lasts = form.getAll("lastName").map((v) => String(v));
+  const result =
+    text(form, "mode") === "count"
+      ? familyPeople({
+          mode: "count",
+          first: { first_name: firsts[0] ?? "", last_name: lasts[0] ?? null },
+          others: Number(text(form, "others") ?? ""),
+        })
+      : familyPeople({
+          mode: "names",
+          rows: firsts.map((first_name, i) => ({
+            first_name,
+            last_name: lasts[i] ?? null,
+          })),
+        });
+  if ("error" in result) return { error: result.error };
+  // The automatic name is worked out from the typed names only, not the stand-ins.
+  const named =
+    text(form, "mode") === "count" ? result.people.slice(0, 1) : result.people;
+  const name = text(form, "householdName") ?? familyName(named);
+  try {
+    const household = await addFamily(
+      db,
+      required(form, "weddingId"),
+      {
+        name,
+        side: GUEST_SIDES.find((s) => s === text(form, "side")) ?? "both",
+        address_line1: text(form, "addressLine1") ?? null,
+        address_line2: text(form, "addressLine2") ?? null,
+        city: text(form, "city") ?? null,
+        region: text(form, "region") ?? null,
+        postal_code: text(form, "postalCode") ?? null,
+      },
+      result.people,
+    );
+    refresh();
+    const n = household.guests.length;
+    return {
+      message: `Added ${name}: ${n} ${n === 1 ? "person" : "people"} on one invitation.`,
+      id: household.id,
+    };
+  } catch (e) {
+    return { error: friendly(e) };
+  }
+}
+
+/** "Mark everyone coming" on a household. */
+export async function markHouseholdComingAction(form: FormData) {
+  const db = await signedInDb();
+  await setHouseholdRsvp(db, required(form, "householdId"), "attending");
+  refresh();
+}
+
+/** "Add name" on a stand-in guest ("Lopez guest 2"). */
+export async function nameGuestAction(form: FormData) {
+  const db = await signedInDb();
+  const firstName = text(form, "firstName");
+  if (!firstName) return;
+  await updateGuest(db, required(form, "guestId"), {
+    first_name: firstName,
+    last_name: text(form, "lastName") ?? null,
+  });
   refresh();
 }
 

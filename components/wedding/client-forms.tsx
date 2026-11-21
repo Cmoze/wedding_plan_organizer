@@ -1,6 +1,15 @@
 "use client";
 
-import { Check, Loader2, Trash2 } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Loader2,
+  Mail,
+  Minus,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import {
   createContext,
@@ -16,6 +25,7 @@ import {
 } from "react";
 import {
   addEventAction,
+  addFamilyAction,
   addGiftAction,
   addGuestAction,
   addIdeaBoardAction,
@@ -38,6 +48,13 @@ import {
   primaryButtonClass,
   quietButtonClass,
 } from "@/components/wedding/ui";
+import {
+  familyName,
+  listFirstNames,
+  MAX_FAMILY_SIZE,
+  placeholderName,
+  sharedLastName,
+} from "@/lib/db/household-form";
 import { uploadIdeaPhoto } from "@/lib/db/ideas";
 import { createClient } from "@/lib/db/supabase/browser";
 import { formatTimeInZone } from "@/lib/time-zone";
@@ -1127,41 +1144,7 @@ export function GuestForm({
                 (optional, for sending the invitation)
               </span>
             </legend>
-            <Field label="Street address">
-              <input
-                name="addressLine1"
-                autoComplete="off"
-                className={inputClass}
-                placeholder="418 Maple Ave"
-              />
-            </Field>
-            <Field label="Apt, suite, etc.">
-              <input
-                name="addressLine2"
-                autoComplete="off"
-                className={inputClass}
-              />
-            </Field>
-            <Field label="City">
-              <input name="city" autoComplete="off" className={inputClass} />
-            </Field>
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="State">
-                <input
-                  name="region"
-                  autoComplete="off"
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="ZIP code">
-                <input
-                  name="postalCode"
-                  autoComplete="off"
-                  inputMode="numeric"
-                  className={inputClass}
-                />
-              </Field>
-            </div>
+            <MailingAddressFields />
           </fieldset>
         </>
       )}
@@ -1200,6 +1183,455 @@ function Checkbox({ name, label }: { name: string; label: string }) {
       <input type="checkbox" name={name} className="h-5 w-5 accent-[#6f1d37]" />
       {label}
     </label>
+  );
+}
+
+/** Street, apt, city, state, ZIP: the household's envelope address. */
+function MailingAddressFields() {
+  return (
+    <>
+      <Field label="Street address">
+        <input
+          name="addressLine1"
+          autoComplete="off"
+          className={inputClass}
+          placeholder="418 Maple Ave"
+        />
+      </Field>
+      <Field label="Apt, suite, etc.">
+        <input name="addressLine2" autoComplete="off" className={inputClass} />
+      </Field>
+      <Field label="City">
+        <input name="city" autoComplete="off" className={inputClass} />
+      </Field>
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="State">
+          <input name="region" autoComplete="off" className={inputClass} />
+        </Field>
+        <Field label="ZIP code">
+          <input
+            name="postalCode"
+            autoComplete="off"
+            inputMode="numeric"
+            className={inputClass}
+          />
+        </Field>
+      </div>
+    </>
+  );
+}
+
+/**
+ * The "Add guests" card's body: a switch between one person (`GuestForm`) and a family or
+ * group (`FamilyForm`), so "how do I add a family?" has a visible answer (spec 002 row 8).
+ */
+export function AddGuests({
+  weddingId,
+  households,
+  sideLabel,
+}: {
+  weddingId: string;
+  households: { id: string; name: string }[];
+  sideLabel: Record<GuestSide, string>;
+}) {
+  const [kind, setKind] = useState<"one" | "family">("one");
+  const tab = (value: "one" | "family", label: string) => (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={kind === value}
+      onClick={() => setKind(value)}
+      className={`min-h-11 rounded-lg px-4 text-base font-semibold ${
+        kind === value ? "bg-[#6f1d37] text-white" : "text-[#6f1d37]"
+      }`}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <>
+      <div
+        role="radiogroup"
+        aria-label="Who are you adding?"
+        className="mt-4 inline-flex flex-wrap gap-1 rounded-xl bg-[#f4e7eb] p-1"
+      >
+        {tab("one", "One person")}
+        {tab("family", "A family or group")}
+      </div>
+      {kind === "one" ? (
+        <GuestForm
+          weddingId={weddingId}
+          households={households}
+          sideLabel={sideLabel}
+        />
+      ) : (
+        <FamilyForm weddingId={weddingId} sideLabel={sideLabel} />
+      )}
+    </>
+  );
+}
+
+type FamilyRow = { first: string; last: string };
+const emptyRows = (): FamilyRow[] => [
+  { first: "", last: "" },
+  { first: "", last: "" },
+];
+
+/** Several people on one invitation: typed names, or a name plus how many others. */
+function FamilyForm({
+  weddingId,
+  sideLabel,
+}: {
+  weddingId: string;
+  sideLabel: Record<GuestSide, string>;
+}) {
+  const [mode, setMode] = useState<"names" | "count">("names");
+  const [rows, setRows] = useState<FamilyRow[]>(emptyRows);
+  const [others, setOthers] = useState(1);
+  const [customName, setCustomName] = useState<string | null>(null);
+  const [formKey, setFormKey] = useState(0);
+  const [state, action, pending] = useActionState<FormState, FormData>(
+    async (prev, form) => {
+      const [result] = await Promise.all([
+        addFamilyAction(prev, form),
+        atLeast(600),
+      ]);
+      if (!result.error) {
+        setRows(emptyRows());
+        setOthers(1);
+        setCustomName(null);
+        setMode("names");
+        setFormKey((k) => k + 1);
+      }
+      return result;
+    },
+    {},
+  );
+
+  const typed = (mode === "names" ? rows : rows.slice(0, 1))
+    .filter((r) => r.first.trim())
+    .map((r) => ({ first_name: r.first.trim(), last_name: r.last.trim() }));
+  const autoName = familyName(typed);
+  const name = customName ?? autoName;
+  const people =
+    mode === "names" ? typed.length : (typed.length > 0 ? 1 : 0) + others;
+  const shared = sharedLastName(typed);
+  const firstName = rows[0].first.trim();
+
+  const setRow = (i: number, patch: Partial<FamilyRow>) =>
+    setRows((prev) => prev.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+  const addRow = () =>
+    setRows((prev) =>
+      prev.length >= MAX_FAMILY_SIZE
+        ? prev
+        : [...prev, { first: "", last: prev[prev.length - 1]?.last ?? "" }],
+    );
+
+  return (
+    <form key={formKey} action={action} className="mt-5 grid gap-5">
+      <input type="hidden" name="weddingId" value={weddingId} />
+      <input type="hidden" name="mode" value={mode} />
+      {customName !== null && (
+        <input type="hidden" name="householdName" value={customName} />
+      )}
+      <div className="grid gap-5 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-start">
+        <div>
+          {mode === "names" ? (
+            <fieldset>
+              <legend className="mb-2 text-base font-semibold text-[#4b2734]">
+                Who&apos;s in it?
+              </legend>
+              <div className="grid gap-2">
+                {rows.map((row, i) => (
+                  <div
+                    key={i}
+                    className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2.75rem] items-center gap-2"
+                  >
+                    <input
+                      name="firstName"
+                      value={row.first}
+                      onChange={(e) => setRow(i, { first: e.target.value })}
+                      required={i === 0}
+                      autoComplete="off"
+                      aria-label={`Person ${i + 1}: first name`}
+                      placeholder={i === 0 ? "Maria" : "First name"}
+                      className={inputClass}
+                    />
+                    <input
+                      name="lastName"
+                      value={row.last}
+                      onChange={(e) => setRow(i, { last: e.target.value })}
+                      autoComplete="off"
+                      aria-label={`Person ${i + 1}: last name`}
+                      placeholder={i === 0 ? "Lopez" : "Last name"}
+                      className={inputClass}
+                    />
+                    {i > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setRows((prev) => prev.filter((_, j) => j !== i))
+                        }
+                        aria-label={`Remove person ${i + 1}`}
+                        className={quietButtonClass}
+                      >
+                        <X className="h-5 w-5" aria-hidden="true" />
+                      </button>
+                    ) : (
+                      <span />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="mt-1.5 text-sm text-[#806c74]">
+                The first person&apos;s name is required. Last names carry down.
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+                <button
+                  type="button"
+                  onClick={addRow}
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-[#ddcbd1] bg-white px-3 text-base font-semibold text-[#6f1d37] hover:bg-[#fbf3f5]"
+                >
+                  <Plus className="h-5 w-5" aria-hidden="true" />
+                  Add another person
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode("count")}
+                  className="min-h-11 text-base font-semibold text-[#6f1d37] underline underline-offset-4"
+                >
+                  Don&apos;t know everyone&apos;s names yet?
+                </button>
+              </div>
+            </fieldset>
+          ) : (
+            <fieldset>
+              <legend className="mb-2 text-base font-semibold text-[#4b2734]">
+                Who&apos;s the main contact?
+              </legend>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  name="firstName"
+                  value={rows[0].first}
+                  onChange={(e) => setRow(0, { first: e.target.value })}
+                  required
+                  autoComplete="off"
+                  aria-label="First name"
+                  placeholder="Maria"
+                  className={inputClass}
+                />
+                <input
+                  name="lastName"
+                  value={rows[0].last}
+                  onChange={(e) => setRow(0, { last: e.target.value })}
+                  autoComplete="off"
+                  aria-label="Last name"
+                  placeholder="Lopez"
+                  className={inputClass}
+                />
+              </div>
+              <p
+                id="family-others-label"
+                className="mt-4 mb-2 text-base font-semibold text-[#4b2734]"
+              >
+                How many others are coming with {firstName || "them"}?
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setOthers((n) => Math.max(1, n - 1))}
+                  aria-label="Fewer"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-[#ddcbd1] bg-white text-[#6f1d37]"
+                >
+                  <Minus className="h-5 w-5" aria-hidden="true" />
+                </button>
+                <input
+                  name="others"
+                  type="number"
+                  min={1}
+                  max={MAX_FAMILY_SIZE - 1}
+                  value={others}
+                  onChange={(e) =>
+                    setOthers(
+                      Math.min(
+                        MAX_FAMILY_SIZE - 1,
+                        Math.max(1, Number(e.target.value) || 1),
+                      ),
+                    )
+                  }
+                  aria-labelledby="family-others-label"
+                  className={`${inputClass} w-20! text-center font-semibold`}
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOthers((n) => Math.min(MAX_FAMILY_SIZE - 1, n + 1))
+                  }
+                  aria-label="More"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-[#ddcbd1] bg-white text-[#6f1d37]"
+                >
+                  <Plus className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </div>
+              <p className="mt-2 text-sm text-[#806c74]">
+                They&apos;ll show as &ldquo;
+                {placeholderName(rows[0].last, 2)}
+                {others > 1 ? ` to ${others + 1}` : ""}&rdquo; until you add
+                their names.
+              </p>
+              <button
+                type="button"
+                onClick={() => setMode("names")}
+                className="mt-2 min-h-11 text-base font-semibold text-[#6f1d37] underline underline-offset-4"
+              >
+                Type their names instead
+              </button>
+            </fieldset>
+          )}
+        </div>
+
+        <FamilyEnvelope
+          name={name}
+          names={
+            mode === "names"
+              ? listFirstNames(typed.map((t) => t.first_name))
+              : `${firstName || "Someone"} and ${others} ${others === 1 ? "other" : "others"}`
+          }
+          people={people}
+          customName={customName}
+          onRename={(value) => setCustomName(value)}
+          autoName={autoName}
+        />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Whose side?">
+          <select name="side" defaultValue="both" className={inputClass}>
+            {(["partner1", "partner2", "both"] as const).map((s) => (
+              <option key={s} value={s}>
+                {sideLabel[s]}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </div>
+      <details className="group">
+        <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 text-base font-semibold text-[#6f1d37]">
+          <ChevronDown
+            className="h-5 w-5 transition-transform group-open:rotate-180"
+            aria-hidden="true"
+          />
+          Mailing address{" "}
+          <span className="font-normal text-[#806c74]">(optional)</span>
+        </summary>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          <MailingAddressFields />
+        </div>
+      </details>
+
+      <div className="space-y-4">
+        <button
+          type="submit"
+          disabled={pending}
+          className={`${primaryButtonClass} gap-2`}
+        >
+          {pending && (
+            <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+          )}
+          {pending
+            ? "Adding..."
+            : shared
+              ? `Add the ${shared} family`
+              : `Add ${people} ${people === 1 ? "person" : "people"}`}
+        </button>
+        {!pending && state.error && <FormMessage error={state.error} />}
+        {!pending && state.message && (
+          <p
+            role="status"
+            className="flex items-center gap-1.5 rounded-xl bg-[#f4e7eb] px-4 py-3 text-base font-semibold text-[#6f1d37]"
+          >
+            <Check className="h-5 w-5" aria-hidden="true" />
+            {state.message}
+          </p>
+        )}
+      </div>
+    </form>
+  );
+}
+
+/** The envelope preview beside the family form: the name that will be saved, and who's on it. */
+function FamilyEnvelope({
+  name,
+  names,
+  people,
+  customName,
+  autoName,
+  onRename,
+}: {
+  name: string;
+  names: string;
+  people: number;
+  customName: string | null;
+  autoName: string;
+  onRename: (value: string | null) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  return (
+    <div
+      aria-live="polite"
+      className="rounded-2xl border border-dashed border-[#d9c4cb] bg-[#fffaf8] px-4 py-5 text-center"
+    >
+      <Mail className="mx-auto h-6 w-6 text-[#6f1d37]" aria-hidden="true" />
+      {editing ? (
+        <div className="mt-2 grid gap-2">
+          <input
+            value={customName ?? autoName}
+            onChange={(e) => onRename(e.target.value)}
+            aria-label="Name on the invitation"
+            className={inputClass}
+            autoFocus
+          />
+          <div className="flex justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="min-h-11 text-base font-semibold text-[#6f1d37] underline underline-offset-4"
+            >
+              Done
+            </button>
+            {customName !== null && (
+              <button
+                type="button"
+                onClick={() => {
+                  onRename(null);
+                  setEditing(false);
+                }}
+                className="min-h-11 text-base font-semibold text-[#6f1d37] underline underline-offset-4"
+              >
+                Use the automatic name
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <>
+          <p className="font-heading mt-2 text-xl text-[#35151f]">
+            {name || "Your family or group"}
+          </p>
+          {names && <p className="text-sm text-[#695b60]">{names}</p>}
+          <p className="mt-1 text-sm text-[#806c74]">
+            {people} {people === 1 ? "person" : "people"} · 1 invitation
+          </p>
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="mt-2 min-h-11 text-sm font-semibold text-[#6f1d37] underline underline-offset-4"
+          >
+            Edit name
+          </button>
+        </>
+      )}
+    </div>
   );
 }
 
