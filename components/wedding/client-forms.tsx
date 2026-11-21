@@ -1271,7 +1271,8 @@ export function AddGuests({
   );
 }
 
-type FamilyRow = { first: string; last: string };
+/** `lastTyped`: this row's last name was typed by hand, so row 1's no longer fills it in. */
+type FamilyRow = { first: string; last: string; lastTyped?: boolean };
 const emptyRows = (): FamilyRow[] => [
   { first: "", last: "" },
   { first: "", last: "" },
@@ -1318,8 +1319,22 @@ function FamilyForm({
   const shared = sharedLastName(typed);
   const firstName = rows[0].first.trim();
 
+  // Row 1's last name fills in every later row whose last name wasn't typed by hand, so
+  // typing "Maria Lopez" then "Daniel" makes the Lopez family (spec 002 row 8).
   const setRow = (i: number, patch: Partial<FamilyRow>) =>
-    setRows((prev) => prev.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+    setRows((prev) =>
+      prev.map((r, j) => {
+        if (j === i)
+          return {
+            ...r,
+            ...patch,
+            ...(i > 0 && patch.last !== undefined ? { lastTyped: true } : {}),
+          };
+        if (i === 0 && patch.last !== undefined && j > 0 && !r.lastTyped)
+          return { ...r, last: patch.last };
+        return r;
+      }),
+    );
   const addRow = () =>
     setRows((prev) =>
       prev.length >= MAX_FAMILY_SIZE
@@ -1542,7 +1557,9 @@ function FamilyForm({
             ? "Adding..."
             : shared
               ? `Add the ${shared} family`
-              : `Add ${people} ${people === 1 ? "person" : "people"}`}
+              : people === 0
+                ? "Add people"
+                : `Add ${people} ${people === 1 ? "person" : "people"}`}
         </button>
         {!pending && state.error && <FormMessage error={state.error} />}
         {!pending && state.message && (
