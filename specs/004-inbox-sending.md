@@ -1,7 +1,23 @@
 # Spec 004: Send and reply from the wedding inbox
 
-**Status:** Draft
+**Status:** In progress. Step 1 (domain and DNS) done 2026-11-25.
 **Date:** 2026-11-25
+
+## Progress
+
+- **2026-11-25, domain:** the builder bought `togetherwed.com` through Vercel (DNS on Vercel,
+  renews 2027-11-25). Mail domain is `mail.togetherwed.com`, added in Resend (us-east-1,
+  domain id `7f4da41c-a4f7-4f6f-b58e-1810af77a95e`) with sending and receiving on, and open
+  and click tracking off.
+- **DNS records** (added with `vercel dns add`; all **verified** in Resend at 16:42 MST):
+  DKIM TXT `resend._domainkey.mail`; return path MX and SPF TXT on `send.mail`; CNAME
+  `rsend.mail`; receiving MX `mail` → `receive.forge.rmta.net`; DMARC TXT `_dmarc.mail` =
+  `v=DMARC1; p=none; adkim=r; aspf=r` (no `rua` yet: report address still an open question).
+- **Not done yet:** a test send and the inbox-placement checks in "Definition of done";
+  `INBOUND_EMAIL_DOMAIN` still points at `resend.app`. Don't just switch that variable:
+  `findInboxAddress` matches one domain, so switching it would drop mail to the old addresses.
+  The code has to accept both domains first (step 2). Until then, mail sent to
+  `@mail.togetherwed.com` reaches the webhook and is acknowledged and dropped.
 
 ## Problem
 
