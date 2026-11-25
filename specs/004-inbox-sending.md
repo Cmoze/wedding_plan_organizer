@@ -13,8 +13,15 @@
   DKIM TXT `resend._domainkey.mail`; return path MX and SPF TXT on `send.mail`; CNAME
   `rsend.mail`; receiving MX `mail` → `receive.forge.rmta.net`; DMARC TXT `_dmarc.mail` =
   `v=DMARC1; p=none; adkim=r; aspf=r` (no `rua` yet: report address still an open question).
-- **Not done yet:** a test send and the inbox-placement checks in "Definition of done";
-  `INBOUND_EMAIL_DOMAIN` still points at `resend.app`. Don't just switch that variable:
+- **2026-11-25, first test send:** from `Together <test@mail.togetherwed.com>` through the
+  Resend API to the builder's Gmail. Gmail's headers: **SPF pass** (mail from
+  `send.mail.togetherwed.com`), **DKIM pass** (`d=mail.togetherwed.com`, selector `resend`),
+  **DMARC pass** (`header.from=mail.togetherwed.com`, p=NONE). It landed in the **inbox, not
+  spam**, but in the **Updates tab, not Primary**. Likely because it looked automated (a
+  "Together" sender name, a `test@` address, no earlier conversation). The real check is a
+  reply in a vendor's thread with the couple's names as the sender (step 3).
+- **Not done yet:** the Outlook.com and iCloud checks, mail-tester.com, and Primary placement
+  in "Definition of done"; `INBOUND_EMAIL_DOMAIN` still points at `resend.app`. Don't just switch that variable:
   `findInboxAddress` matches one domain, so switching it would drop mail to the old addresses.
   The code has to accept both domains first (step 2). Until then, mail sent to
   `@mail.togetherwed.com` reaches the webhook and is acknowledged and dropped.
